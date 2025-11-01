@@ -1,0 +1,13 @@
+{
+  "id": "perma-damage",
+  "type": "feature",
+  "category": "challenge",
+  "name": "Perma-damage Mode",
+  "ui": {
+    "label": "Perma-damage mode?"
+  },
+  "supportedGames": [
+    "trr-123",
+    "trr-45"
+  ]
+}

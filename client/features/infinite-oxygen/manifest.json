@@ -1,0 +1,13 @@
+{
+  "id": "infinite-oxygen",
+  "type": "feature",
+  "category": "vitals",
+  "name": "Infinite Oxygen",
+  "ui": {
+    "label": "Infinite oxygen?"
+  },
+  "supportedGames": [
+    "trr-123",
+    "trr-45"
+  ]
+}

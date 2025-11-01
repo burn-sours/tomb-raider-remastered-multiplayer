@@ -1,0 +1,13 @@
+{
+  "id": "super-jump",
+  "type": "feature",
+  "category": "super-lara",
+  "name": "Super Jump",
+  "ui": {
+    "label": "Super jump?"
+  },
+  "supportedGames": [
+    "trr-123",
+    "trr-45"
+  ]
+}

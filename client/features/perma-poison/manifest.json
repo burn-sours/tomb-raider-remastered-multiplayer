@@ -1,0 +1,12 @@
+{
+  "id": "perma-poison",
+  "type": "feature",
+  "category": "challenge",
+  "name": "Perma-poison Mode",
+  "ui": {
+    "label": "Perma-poison mode?"
+  },
+  "supportedGames": [
+    "trr-45"
+  ]
+}

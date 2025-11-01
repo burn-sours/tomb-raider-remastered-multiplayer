@@ -1,0 +1,485 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #010101;
+    color: #f5f3f0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+}
+
+.header {
+    text-align: left;
+    font-size: 24px;
+    padding: 0 10px;
+    background-color: #010101;
+    color: #f5f3f0;
+    flex-shrink: 0;
+    height: 60px;
+    align-items: center;
+    justify-content: space-between;
+    display: flex;
+    gap: 20px;
+}
+
+.header .logo {
+    height: 45px;
+    width: auto;
+    filter: drop-shadow(0 2px 8px rgba(251, 96, 16, 0.4));
+    user-select: none;
+    pointer-events: none;
+}
+
+.header-links {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.icon-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: #9ca3af;
+    transition: color 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+.icon-link:hover {
+    color: #fb6010;
+    transform: translateY(-1px);
+}
+
+.icon-link svg {
+    width: 20px;
+    height: 20px;
+}
+
+main {
+    background-color: #010101;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    flex: 1;
+    margin: 0 10px 10px;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    user-select: none;
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    user-select: none;
+}
+
+h3.subtitle {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0px;
+    color: #fb6010;
+    margin: 15px 0 0 0;
+    user-select: none;
+}
+
+.section.multi .heading h3.subtitle {
+    margin-top: 0;
+}
+
+.section.game {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.section.game label {
+    text-transform: uppercase;
+    font-size: 12px;
+    font-family: system-ui;
+    font-weight: 600;
+}
+
+.section.game select, .section.patch select {
+    padding: 10px 8px;
+    font-size: 16px;
+    background: #2a2522;
+    color: #f5f3f0;
+    border: 2px solid #0f0d0b;
+    box-shadow: 2px 2px 1px 1px #0f0d0b;
+    border-radius: 6px;
+    outline: none !important;
+    font-weight: lighter;
+    font-family: system-ui;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+}
+
+.section.game select:focus, .section.patch select:focus {
+    box-shadow: 0 0 0 2px rgba(251, 96, 16, 0.3);
+}
+
+.section.patch {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.section.patch label {
+    text-transform: uppercase;
+    font-size: 12px;
+    font-family: system-ui;
+    font-weight: 600;
+}
+
+.section.patch .patch-error-msg {
+    color: #fb6010;
+    font-size: 13px;
+    margin: 5px 0;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.section.multi, .section.featuresOptions {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+}
+
+label.field > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section .heading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.section.multi label.field {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-family: system-ui;
+    font-weight: 600;
+}
+
+.section.multi label.field select {
+    padding: 10px 8px;
+    font-size: 16px;
+    margin-top: 5px;
+    background: #2a2522;
+    color: #f5f3f0;
+    border: 2px solid #0f0d0b;
+    box-shadow: 2px 2px 1px 1px #0f0d0b;
+    border-radius: 6px;
+    outline: none !important;
+    font-weight: lighter;
+    font-family: system-ui;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease;
+}
+
+.section.multi label.field select:focus {
+    box-shadow: 0 0 0 2px rgba(251, 96, 16, 0.3);
+}
+
+.section.multi label.field:not(:first-child) {
+    margin-top: 10px;
+}
+
+.section.multi label.field input[type=text],
+.section.multi label.field input[type=number] {
+    padding: 10px 8px;
+    font-size: 16px;
+    margin-top: 5px;
+    background: #2a2522;
+    color: #f5f3f0;
+    border: 2px solid #0f0d0b;
+    box-shadow: 2px 2px 1px 1px #0f0d0b;
+    display: flex;
+    border-radius: 6px;
+    outline: none !important;
+    font-weight: lighter;
+    font-style: oblique;
+    font-family: system-ui;
+    transition: box-shadow 0.2s ease;
+}
+
+.section.multi label.field input[type=text]:focus,
+.section.multi label.field input[type=number]:focus {
+    box-shadow: 0 0 0 2px rgba(251, 96, 16, 0.3);
+}
+
+.section.multi label.field input[type=text].errored,
+.section.multi label.field input[type=number].errored {
+    border-color: red;
+}
+
+/* Remove number input arrows */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer {
+    position: relative;
+    bottom: 0;
+    background-color: #010101;
+    padding: 10px;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+    height: 40px;
+    flex-shrink: 0;
+    justify-content: center;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.footer button {
+    width: 100%;
+}
+
+.footer .icon-button {
+    width: 40px;
+    min-width: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background-color: #3a3532;
+}
+
+.footer .icon-button:hover {
+    background-color: #4a4542;
+}
+
+.footer .icon-button.active {
+    background-color: #fb6010 !important;
+}
+
+.footer .icon-button.active:hover {
+    background-color: #db5510 !important;
+}
+
+.footer .icon-button svg {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+}
+
+button {
+    background-color: #fb6010;
+    color: white;
+    font-size: 16px;
+    padding: 10px;
+    border: none;
+    border-radius: 28px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #db5510;
+}
+
+button#launchGameButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+button svg {
+    width: 25px !important;
+    height: 25px !important;
+    fill: #fff;
+    color: #fff;
+    margin-right: 5px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 18px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #2a2522;
+    border: 1px solid #0f0d0b;
+    transition: background-color 0.4s;
+    border-radius: 28px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #f5f3f0;
+    transition: transform 0.4s;
+    border-radius: 50%;
+}
+.switch input:checked + .slider {
+    background-color: #fb6010;
+}
+.switch input:checked + .slider:before {
+    transform: translateX(13px);
+}
+.switch input:focus + .slider {
+    box-shadow: 0 0 1px #db5510;
+}
+
+.custom-checkbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.custom-checkbox .checkmark {
+    position: relative;
+    height: 18px;
+    width: 18px;
+    background-color: #2a2522;
+    border: 2px solid #0f0d0b;
+    border-radius: 4px;
+    transition: background-color 0.3s, box-shadow 0.2s;
+    margin-right: 8px;
+}
+
+.custom-checkbox input:focus + .checkmark {
+    box-shadow: 0 0 0 2px rgba(251, 96, 16, 0.3);
+}
+
+.custom-checkbox input:checked + .checkmark {
+    background-color: #fb6010;
+}
+
+.custom-checkbox .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.custom-checkbox input:checked + .checkmark:after {
+    display: block;
+}
+
+.custom-checkbox .checkmark:after {
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background: #2a2522;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #3a3532;
+}
+::-webkit-scrollbar-track {
+    background: #0f0d0b;
+    border-radius: 4px;
+}
+
+[disabled] {
+    position: relative;
+    cursor: not-allowed !important;
+}
+[disabled]::after {
+    content: "";
+    background: rgba(0, 0, 0, 0.5);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    position: absolute;
+    border-radius: inherit;
+}
+
+input[disabled], select[disabled] {
+    background-color: #1a1816 !important;
+    color: #5a5654 !important;
+    cursor: not-allowed !important;
+}
+
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}

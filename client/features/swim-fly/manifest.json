@@ -1,0 +1,13 @@
+{
+  "id": "swim-fly",
+  "type": "feature",
+  "category": "super-lara",
+  "name": "Swim Fly",
+  "ui": {
+    "label": "Swim fly [F11]?"
+  },
+  "supportedGames": [
+    "trr-123",
+    "trr-45"
+  ]
+}

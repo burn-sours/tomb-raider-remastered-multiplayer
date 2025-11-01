@@ -1,0 +1,13 @@
+{
+  "id": "spider-lara",
+  "type": "feature",
+  "category": "super-lara",
+  "name": "Spider Lara",
+  "ui": {
+    "label": "Spider Lara (climb anywhere)?"
+  },
+  "supportedGames": [
+    "trr-123",
+    "trr-45"
+  ]
+}

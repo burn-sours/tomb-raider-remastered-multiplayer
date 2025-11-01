@@ -1,0 +1,13 @@
+{
+  "id": "no-fall-damage",
+  "type": "feature",
+  "name": "No Fall Damage",
+  "category": "super-lara",
+  "ui": {
+    "label": "No fall damage?"
+  },
+  "supportedGames": [
+    "trr-123",
+    "trr-45"
+  ]
+}

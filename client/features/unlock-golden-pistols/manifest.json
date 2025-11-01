@@ -1,0 +1,13 @@
+{
+  "id": "unlock-golden-pistols",
+  "type": "feature",
+  "category": "unlocks",
+  "name": "Unlock Golden Pistols",
+  "ui": {
+    "label": "Unlock golden pistols?"
+  },
+  "supportedGames": [
+    "trr-123",
+    "trr-45"
+  ]
+}

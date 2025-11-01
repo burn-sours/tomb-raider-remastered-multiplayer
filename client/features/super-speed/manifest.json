@@ -1,0 +1,27 @@
+{
+  "id": "super-speed",
+  "type": "feature",
+  "category": "game-speed",
+  "name": "Super Speed",
+  "ui": {
+    "label": "Super speed?",
+    "altOptions": [
+      {
+        "id": "super-speed-climb",
+        "label": "Shimmy & Climb?"
+      },
+      {
+        "id": "super-speed-pushblocks",
+        "label": "Pushblocks?"
+      },
+      {
+        "id": "super-speed-swimming",
+        "label": "Swimming?"
+      }
+    ]
+  },
+  "supportedGames": [
+    "trr-123",
+    "trr-45"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "glitch-lara",
+  "type": "feature",
+  "category": "super-lara",
+  "name": "Glitch Lara",
+  "ui": {
+    "label": "Glitch Lara (qwop anywhere)?"
+  },
+  "supportedGames": [
+    "trr-123"
+  ]
+}
