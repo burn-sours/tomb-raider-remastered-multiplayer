@@ -102,6 +102,10 @@ contextBridge.exposeInMainWorld('api', {
         return await ipcRenderer.invoke('selectExeFile');
     },
 
+    stopMods: () => {
+        ipcRenderer.send('stopMods');
+    },
+
     log: (...m) => ipcRenderer.send('log', m),
     errorBox: (...m) => ipcRenderer.send('errorBox', m),
 });

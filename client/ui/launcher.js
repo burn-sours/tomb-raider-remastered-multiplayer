@@ -102,6 +102,7 @@ function generateFeatureUI() {
 
 const multiplayerCheckbox = document.getElementById('multiplayer');
 const launchButton = document.getElementById('launchGameButton');
+const stopModsButton = document.getElementById('stopModsButton');
 const selectExeButton = document.getElementById('selectExeButton');
 const gameSelect = document.getElementById('gameSelect');
 const patchSection = document.getElementById('patchSection');
@@ -134,6 +135,21 @@ selectExeButton.addEventListener('click', async () => {
         selectExeButton.classList.add('active');
         selectExeButton.title = `Custom executable: ${filePath}`;
     }
+});
+
+stopModsButton.addEventListener('click', () => {
+    window.api.stopMods();
+
+    alreadyInjected = false;
+    isLaunching = false;
+    launchButton.innerText = 'Launch Mods';
+    launchButton.removeAttribute('disabled');
+    stopModsButton.classList.add('hidden');
+    selectExeButton.classList.remove('hidden');
+
+    document.querySelectorAll('input, select').forEach(input => input.removeAttribute('disabled'));
+    multiplayerCheckbox.parentNode.removeAttribute('disabled');
+    patchSection.classList.add('hidden');
 });
 
 launchButton.addEventListener('click', () => {
@@ -236,7 +252,9 @@ window.api.onModAttached((options) => {
     isLaunching = false;
     launchButton.innerHTML = options.multiplayer ? 'Connecting to server...' : '<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px">    <path d="M43.171,10.925L24.085,33.446l-9.667-9.015l1.363-1.463l8.134,7.585L41.861,9.378C37.657,4.844,31.656,2,25,2 C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23C48,19.701,46.194,14.818,43.171,10.925z"/></svg> Attached to game';
 
-    // Re-enable feature checkboxes only
+    stopModsButton.classList.remove('hidden');
+
+    // Re-enable feature checkboxes
     document.querySelectorAll('#featureOptions input').forEach(input => input.removeAttribute('disabled'));
 
     // Re-enable lobby code fields (can be changed while playing)
