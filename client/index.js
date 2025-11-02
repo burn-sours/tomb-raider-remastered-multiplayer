@@ -119,8 +119,9 @@ async function launchGame(launchOptions) {
     if (setupSuccess === false) return;
 
     try {
-        await activeGameClient.launchGame(activeUserData);
         ui.sendLauncherMessage('modInjected');
+
+        await activeGameClient.launchGame(activeUserData);
     } catch (err) {}
 }
 
@@ -136,8 +137,9 @@ async function updateGame(launchOptions) {
     delete optionsToSave.manualPatch;
     userdata.writeOptions(optionsToSave);
 
-    await activeGameClient.updateGame(activeUserData);
     ui.sendLauncherMessage('modInjected');
+
+    await activeGameClient.updateGame(activeUserData);
 }
 
 async function setupFrida() {
