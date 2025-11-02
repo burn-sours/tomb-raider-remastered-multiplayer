@@ -19,7 +19,7 @@ const buildClient = async () => {
 
 const buildServer = async () => {
     console.log('Building server...');
-    const outputDir = path.join(__dirname, 'releases', 'dev');
+    const outputDir = path.join(__dirname, 'releases');
     const outputExe = path.join(outputDir, `Burn's Multiplayer Server ${version}.exe`);
 
     if (!fs.existsSync(outputDir)) {

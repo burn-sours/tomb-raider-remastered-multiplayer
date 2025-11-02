@@ -19,4 +19,4 @@ temp/
 *.asar
 .idea/
 .claude/
-/releases/dev/
+/releases/

@@ -20,7 +20,8 @@
         "@types/frida-gum": "^18.7.2",
         "electron": "27.0.0",
         "electron-builder": "^25.1.8",
-        "pkg": "^5.8.1"
+        "pkg": "^5.8.1",
+        "resedit": "^2.0.3"
     },
     "pkg": {
         "assets": [
@@ -44,7 +45,7 @@
             "node_modules/frida/package.json"
         ],
         "directories": {
-            "output": "releases/dev"
+            "output": "releases"
         },
         "win": {
             "publisherName": "burn_sours",
