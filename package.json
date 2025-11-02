@@ -6,40 +6,52 @@
     "author": "burn_sours",
     "main": "client/index.js",
     "scripts": {
-      "start-server": "node server/index.js",
-      "start-client": "electron client/index.js",
-      "deploy": "node ./deploy.js"
+        "start-server": "node server/index.js",
+        "start-client": "electron client/index.js",
+        "deploy": "node ./deploy.js"
     },
     "dependencies": {
-      "dgram": "^1.0.1",
-      "frida": "16.4.10",
-      "zstd-codec": "^0.1.5"
+        "dgram": "^1.0.1",
+        "frida": "16.4.10",
+        "zstd-codec": "^0.1.5"
     },
     "gypfile": true,
     "devDependencies": {
-      "@types/frida-gum": "^18.7.2",
-      "electron": "27.0.0",
-      "electron-builder": "^25.1.8"
+        "@types/frida-gum": "^18.7.2",
+        "electron": "27.0.0",
+        "electron-builder": "^25.1.8",
+        "pkg": "^5.8.1"
+    },
+    "pkg": {
+        "assets": [
+            "shared/**/*",
+            "server/**/*.js"
+        ],
+        "scripts": [
+            "shared/**/*.js",
+            "server/**/*.js"
+        ]
     },
     "build": {
-      "appId": "com.laracrofts.launcher",
-      "productName": "Burn's Mods Launcher",
-      "copyright": "Copyright © 2025 burn_sours",
-      "files": [
-        "client/**/*",
-        "shared/**/*",
-        "*.ico",
-        "node_modules/frida/build/frida_binding.node",
-        "node_modules/frida/package.json"
-      ],
-      "directories": {
-        "output": "releases/dev"
-      },
-      "win": {
-        "publisherName": "burn_sours",
-        "target": ["portable"],
-        "icon": "client/ui/images/burn_256.png"
-      }
+        "appId": "com.laracrofts.launcher",
+        "productName": "Burn's Mods Launcher",
+        "copyright": "Copyright © 2025 burn_sours",
+        "files": [
+            "client/**/*",
+            "shared/**/*",
+            "*.ico",
+            "node_modules/frida/build/frida_binding.node",
+            "node_modules/frida/package.json"
+        ],
+        "directories": {
+            "output": "releases/dev"
+        },
+        "win": {
+            "publisherName": "burn_sours",
+            "target": [
+                "portable"
+            ],
+            "icon": "client/ui/images/burn_256.png"
+        }
     }
-  }
-  
+}
