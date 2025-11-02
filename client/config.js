@@ -4,11 +4,11 @@ module.exports = {
          * Community Server
          */
         server: 'trrmulti-live.laracrofts.com',
-        port: 41234,
+        port: 41236,
 
         /**
          * Client major version
          */
-        major: 193971476,
+        major: 195155219,
     }
 };
