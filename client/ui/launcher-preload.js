@@ -3,6 +3,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 const launcherOptionsCallbacks = [];
 const modAttachedCallbacks = [];
 const serverConnectedCallbacks = [];
+const connectionFailedCallbacks = [];
+const versionOutdatedCallbacks = [];
 const requiredInputFailedCallbacks = [];
 const patchDetectionFailedCallbacks = [];
 let launcherOptions = {};
@@ -23,6 +25,14 @@ ipcRenderer.on('modInjected', (e) => {
 
 ipcRenderer.on('serverConnected', (e, playerId) => {
     serverConnectedCallbacks.forEach(callback => callback(launcherOptions, playerId));
+});
+
+ipcRenderer.on('connectionFailed', (e) => {
+    connectionFailedCallbacks.forEach(callback => callback(launcherOptions));
+});
+
+ipcRenderer.on('versionOutdated', (e) => {
+    versionOutdatedCallbacks.forEach(callback => callback(launcherOptions));
 });
 
 ipcRenderer.on('requiredInputFailed', (e, input) => {
@@ -51,6 +61,16 @@ contextBridge.exposeInMainWorld('api', {
     onServerConnected: (callback) => {
         if (typeof callback === 'function') {
             serverConnectedCallbacks.push(callback);
+        }
+    },
+    onConnectionFailed: (callback) => {
+        if (typeof callback === 'function') {
+            connectionFailedCallbacks.push(callback);
+        }
+    },
+    onVersionOutdated: (callback) => {
+        if (typeof callback === 'function') {
+            versionOutdatedCallbacks.push(callback);
         }
     },
     onRequiredInputFailed: (callback) => {
@@ -83,4 +103,5 @@ contextBridge.exposeInMainWorld('api', {
     },
 
     log: (...m) => ipcRenderer.send('log', m),
+    errorBox: (...m) => ipcRenderer.send('errorBox', m),
 });

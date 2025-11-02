@@ -39,6 +39,7 @@ app.on('second-instance', () => ui.focus());
 ui.setupEvents({
     "launchGame": (e, launchOptions) => launchGame(launchOptions),
     "updateOptions": (e, launchOptions) => updateGame(launchOptions),
+    "stopMods": () => stopMods(),
     "log": (e, m) => console.log(...m),
     "errorBox": (e, m) => dialog.showErrorBox(...m),
     "openMultiplayerTool": () => ui.createMultiplayerWindow(activeUserData),
@@ -142,6 +143,18 @@ async function updateGame(launchOptions) {
     await activeGameClient.updateGame(activeUserData);
 }
 
+async function stopMods() {
+    if (activeGameClient) {
+        activeGameClient.exiting = true;
+        activeGameClient.stopConnectionHealthCheck();
+        activeGameClient.socket.close();
+        activeGameClient.socket = dgram.createSocket('udp4');
+        await activeGameClient.cleanup();
+        activeGameClient.exiting = false;
+        activeGameClient = null;
+    }
+}
+
 async function setupFrida() {
     if (!activeGameClient) {
         activeGameClient = gameClients.find(c => c.id === activeUserData.game)?.client;
@@ -177,18 +190,6 @@ async function setupFrida() {
             await delay(100);
         }
     }
-
-    activeGameClient.on("outdated", async () => {
-        exiting = true;
-
-        dialog.showErrorBox(
-            'Outdated Version',
-            'A new version is available. To play Multiplayer, please download the updated launcher at https://www.laracrofts.com'
-        );
-
-        await cleanup();
-        app?.quit();
-    });
 
     await activeGameClient.setupGameScript(activeUserData);
 

@@ -1,4 +1,3 @@
-const EventEmitter = require('events');
 const fs = require('fs');
 const path = require('path');
 const frida = require('frida');
@@ -11,7 +10,7 @@ const ui = require('./ui');
 const userdata = require('./userdata');
 const config = require("./config");
 
-class BaseGameClient extends EventEmitter {
+class BaseGameClient {
     socket;
     bundleId;
     bundleIdInteger;
@@ -32,9 +31,10 @@ class BaseGameClient extends EventEmitter {
     pvpDamage = [null, 0, 0]; // player, damage, weapon
     pvpMode = false;
     inPhotoMode = false;
+    lastReceivedPacket = null;
+    connectionHealthCheck = null;
 
     constructor(socket, bundleId, bundleIdInteger = null) {
-        super();
         this.socket = socket;
         this.bundleId = bundleId;
         this.bundleIdInteger = bundleIdInteger || (bundleId === "trr-123" ? 0 : 1);
@@ -64,6 +64,7 @@ class BaseGameClient extends EventEmitter {
     }
 
     sendToServer (message) {
+        if (this.exiting || !this.socket.remoteAddress) return;
         this.socket.send(message, (err) => {
             if (err) {
                 this.socket?.close();
@@ -197,10 +198,16 @@ class BaseGameClient extends EventEmitter {
     }
 
     async launchMultiplayer() {
-        this.socket.on('error', async (msg) => console.error('Error from TRR Multiplayer.', msg));
+        this.socket.on('error', async (err) => {
+            console.error('Error from TRR Multiplayer.', err);
+            if (!this.connectedId) {
+                await this.handleConnectionFailure();
+            }
+        });
 
         this.socket.on('message', async (msg) => {
             if (this.exiting || !msg) return;
+            this.lastReceivedPacket = Date.now();
             try {
                 await this.handleMultiplayerNetwork(msg);
             } catch (err) {
@@ -222,11 +229,13 @@ class BaseGameClient extends EventEmitter {
         console.log(`Connecting to ${serverIp}:${serverPort}${this.launchOptions.customServer ? ' (custom)' : ' (community)'}`);
 
         this.socket.connect(serverPort, serverIp);
+        this.startConnectionHealthCheck();
     }
 
     async handleMultiplayerNetwork(msg) {
         msg = await netcode.decompress(msg);
 
+        const packetType = msg.readUInt8(0);
         const _v = msg.readInt32BE(1);
 
         const checkMajor = () => _v === config.client.major;
@@ -235,8 +244,6 @@ class BaseGameClient extends EventEmitter {
             const _t = Number(msg.readBigInt64BE(5));
             return checkMajor() && _t && !isNaN(Number(_t));
         };
-
-        const packetType = msg.readUInt8(0);
 
         switch (packetType) {
             case netcode.PACKET_TYPE_CONNECTION:
@@ -272,7 +279,10 @@ class BaseGameClient extends EventEmitter {
                 break;
 
             case netcode.PACKET_TYPE_OUTDATED:
-                this.emit("outdated");
+                await this.handleConnectionFailure("versionOutdated");
+                break;
+
+            case netcode.PACKET_TYPE_KEEPALIVE:
                 break;
 
             case netcode.PACKET_TYPE_HIGHFREQ:
@@ -594,7 +604,42 @@ class BaseGameClient extends EventEmitter {
         loop && setTimeout(() => this.tickLoop(), 10);
     }
 
+    startConnectionHealthCheck() {
+        if (this.connectionHealthCheck) return;
+
+        this.connectionHealthCheck = setInterval(() => {
+            if (this.exiting) return;
+
+            const timeout = this.connectedId ? 10000 : 5000;
+            const timeSinceLastPacket = Date.now() - this.lastReceivedPacket;
+
+            if (timeSinceLastPacket > timeout) {
+                console.error(`Connection timeout - no packets for ${timeout}ms`);
+                this.handleConnectionFailure();
+            }
+        }, 2000);
+    }
+
+    stopConnectionHealthCheck() {
+        if (this.connectionHealthCheck) {
+            clearInterval(this.connectionHealthCheck);
+            this.connectionHealthCheck = null;
+        }
+    }
+
+    async handleConnectionFailure() {
+        this.stopConnectionHealthCheck();
+        this.socket.close();
+        this.socket = dgram.createSocket('udp4');
+        this.exiting = true;
+        await this.cleanup();
+        this.exiting = false;
+        ui.sendLauncherMessage('connectionFailed');
+    }
+
     async cleanup() {
+        this.stopConnectionHealthCheck();
+
         if (this.gameScript && !this.gameScript.isDestroyed) {
             try {
                 await this.gameFunctions?.cleanup();
@@ -603,6 +648,8 @@ class BaseGameClient extends EventEmitter {
                 console.error(`Error unloading ${this.bundleId} game script:`, err);
             }
         }
+        this.gameScript = null;
+        this.connectedId = null;
 
         if (this.session) {
             try {

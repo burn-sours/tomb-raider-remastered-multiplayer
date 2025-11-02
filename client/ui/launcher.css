@@ -459,6 +459,7 @@ button svg {
 [disabled] {
     position: relative;
     cursor: not-allowed !important;
+    pointer-events: none;
 }
 [disabled]::after {
     content: "";

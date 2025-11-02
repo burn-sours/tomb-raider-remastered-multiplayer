@@ -10,6 +10,7 @@ const PLAYER_TIMEOUT_MS = 10000;
 const UPDATE_INTERVAL_MS = 33;
 const CLEANUP_INTERVAL_MS = 1000;
 const COUNT_INTERVAL_MS = 1000;
+const KEEPALIVE_INTERVAL_MS = 5000;
 const STATS_REPORT_COUNT = 5;
 const MAX_STATS_DISPLAY_PLAYERS = 10;
 const QUIZ_MESSAGE_SPLIT_DELAY_MS = 500;
@@ -34,6 +35,7 @@ class TRRServer {
         this.startCleanupLoop();
         this.startCountLoop();
         this.startBroadcastLoop();
+        this.startKeepaliveLoop();
         this.quiz.start();
     }
 
@@ -371,6 +373,15 @@ class TRRServer {
                 }
             }
         }, UPDATE_INTERVAL_MS);
+    }
+
+    startKeepaliveLoop() {
+        setInterval(async () => {
+            const keepalive = await netcode.compress(netcode.encodeKeepalive(config.majorHash, Date.now()));
+            for (const [playerId, player] of this.players) {
+                this.socket.send(keepalive, player.port, player.address);
+            }
+        }, KEEPALIVE_INTERVAL_MS);
     }
 }
 

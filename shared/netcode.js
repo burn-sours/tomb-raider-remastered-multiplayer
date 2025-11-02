@@ -10,6 +10,7 @@ const PACKET_TYPE_OUTDATED = 0x06;
 const PACKET_TYPE_CONNECTION = 0x08;
 const PACKET_TYPE_CHAT = 0x09;
 const PACKET_TYPE_PVP = 0x0a;
+const PACKET_TYPE_KEEPALIVE = 0x0b;
 
 module.exports = {
     PACKET_TYPE_HIGHFREQ,
@@ -21,6 +22,7 @@ module.exports = {
     PACKET_TYPE_CONNECTION,
     PACKET_TYPE_CHAT,
     PACKET_TYPE_PVP,
+    PACKET_TYPE_KEEPALIVE,
 
     zStd: async () => {
         if (zStdInst) return zStdInst;
@@ -411,9 +413,17 @@ module.exports = {
         return module.exports.decodeGeneric(buffer).data;
     },
 
+    encodeKeepalive: (_v, _t) => {
+        const buffer = Buffer.alloc(13);
+        buffer.writeUInt8(PACKET_TYPE_KEEPALIVE, 0);
+        buffer.writeInt32BE(_v, 1);
+        buffer.writeBigInt64BE(BigInt(_t), 5);
+        return buffer;
+    },
+
     encodeGlobal: (globalState) => {
         const buffer = Buffer.alloc(6 + (globalState.list.length * 4));
-    
+
         buffer.writeUInt8(PACKET_TYPE_GLOBAL, 0);
         buffer.writeInt32BE(globalState.major, 1);
         buffer.writeUInt8(globalState.list.length, 5);

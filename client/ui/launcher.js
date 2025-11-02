@@ -234,10 +234,14 @@ window.api.onLauncherOptions((options) => {
 
 window.api.onModAttached((options) => {
     isLaunching = false;
-    launchButton.innerHTML = options.multiplayer ? 'Connecting to Server...' : '<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px">    <path d="M43.171,10.925L24.085,33.446l-9.667-9.015l1.363-1.463l8.134,7.585L41.861,9.378C37.657,4.844,31.656,2,25,2 C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23C48,19.701,46.194,14.818,43.171,10.925z"/></svg> Attached To Game'; // 'Attached To Game';
+    launchButton.innerHTML = options.multiplayer ? 'Connecting to server...' : '<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px">    <path d="M43.171,10.925L24.085,33.446l-9.667-9.015l1.363-1.463l8.134,7.585L41.861,9.378C37.657,4.844,31.656,2,25,2 C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23C48,19.701,46.194,14.818,43.171,10.925z"/></svg> Attached to game';
 
     // Re-enable feature checkboxes only
     document.querySelectorAll('#featureOptions input').forEach(input => input.removeAttribute('disabled'));
+
+    // Re-enable lobby code fields (can be changed while playing)
+    document.getElementById('lobbyCode').removeAttribute('disabled');
+    document.getElementById('hideLobbyCode').removeAttribute('disabled');
 
     // These fields remain disabled after game attachment (can't change game type or server mid-session)
     gameSelect.setAttribute('disabled', true);
@@ -253,17 +257,43 @@ window.api.onModAttached((options) => {
 });
 
 window.api.onServerConnected((options, playerId) => {
-    launchButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px">    <path d="M43.171,10.925L24.085,33.446l-9.667-9.015l1.363-1.463l8.134,7.585L41.861,9.378C37.657,4.844,31.656,2,25,2 C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23C48,19.701,46.194,14.818,43.171,10.925z"/></svg> Attached To Game';
+    launchButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 50 50" width="50px" height="50px">    <path d="M43.171,10.925L24.085,33.446l-9.667-9.015l1.363-1.463l8.134,7.585L41.861,9.378C37.657,4.844,31.656,2,25,2 C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23C48,19.701,46.194,14.818,43.171,10.925z"/></svg> Attached to game';
+});
+
+window.api.onConnectionFailed(() => {
+    console.error('Connection failed');
+    window.api.errorBox('Connection Failed', 'Failed to connect to multiplayer server. The server may be offline or unreachable.');
+    launchButton.innerText = 'Launch Mods';
+    launchButton.removeAttribute('disabled');
+    stopModsButton.classList.add('hidden');
+    alreadyInjected = false;
+    isLaunching = false;
+    document.querySelectorAll('input, select').forEach(input => input.removeAttribute('disabled'));
+    multiplayerCheckbox.parentNode.removeAttribute('disabled');
+});
+
+window.api.onVersionOutdated(() => {
+    console.error('Version outdated');
+    window.api.errorBox('Version mismatch', 'A new version is available. To play Multiplayer, please download the updated launcher at https://www.laracrofts.com');
+    launchButton.innerText = 'Launch Mods';
+    launchButton.removeAttribute('disabled');
+    stopModsButton.classList.add('hidden');
+    alreadyInjected = false;
+    isLaunching = false;
+    document.querySelectorAll('input, select').forEach(input => input.removeAttribute('disabled'));
+    multiplayerCheckbox.parentNode.removeAttribute('disabled');
 });
 
 window.api.onRequiredInputFailed((options, input) => {
     launchButton.innerText = 'Launch Mods';
     launchButton.removeAttribute('disabled');
+    stopModsButton.classList.add('hidden');
     alreadyInjected = false;
     isLaunching = false;
     selectExeButton.classList.remove('hidden');
 
     document.querySelectorAll('input, select').forEach(input => input.removeAttribute('disabled'));
+    multiplayerCheckbox.parentNode.removeAttribute('disabled');
 
     if ('name' in input) {
         displayNameInput.classList.add('errored');
@@ -273,11 +303,13 @@ window.api.onRequiredInputFailed((options, input) => {
 window.api.onPatchDetectionFailed((patches) => {
     launchButton.innerText = 'Launch Mods';
     launchButton.removeAttribute('disabled');
+    stopModsButton.classList.add('hidden');
     alreadyInjected = false;
     isLaunching = false;
     selectExeButton.classList.remove('hidden');
 
     document.querySelectorAll('input, select').forEach(input => input.removeAttribute('disabled'));
+    multiplayerCheckbox.parentNode.removeAttribute('disabled');
 
     patchSelect.innerHTML = '';
     Object.entries(patches).forEach(([key, patch]) => {
