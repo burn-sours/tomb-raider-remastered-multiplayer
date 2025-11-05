@@ -67,7 +67,7 @@ const ANSWER_DELAY = 20000;
 const MAX_MESSAGE_LENGTH = 50;
 const INTRO_MESSAGE_DELAY = 1500;
 
-class QuizManager {
+class QuizChat {
     constructor(sendMessageFn) {
         this.sendMessage = sendMessageFn;
         this.optedOut = new Map();
@@ -142,4 +142,4 @@ class QuizManager {
     }
 }
 
-module.exports = { QuizManager, MAX_MESSAGE_LENGTH };
+module.exports = { QuizChat, MAX_MESSAGE_LENGTH };

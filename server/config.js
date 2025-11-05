@@ -13,5 +13,10 @@ module.exports = {
          * Hashed major version
          */
         majorHash: djb2Hash(MAJOR_VERSION),
+
+        /**
+         * Enable quiz system
+         */
+        quizEnabled: true,
     }
 };

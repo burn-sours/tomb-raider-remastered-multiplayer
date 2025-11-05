@@ -1,7 +1,7 @@
 const dgram = require('dgram');
 const { netcode } = require('../shared');
 const { generatePlayerId, sanitizeMessage } = require('./utils');
-const { QuizManager, MAX_MESSAGE_LENGTH } = require('./quiz');
+const { QuizChat, MAX_MESSAGE_LENGTH } = require('./quiz');
 const { server: config } = require('./config');
 
 const RATE_LIMIT_MS = 10;
@@ -25,7 +25,10 @@ class TRRServer {
         this.lastPacketAbuses = new Map();
         this.levelsInfo = { "0": { "0": [], "1": [], "2": [] }, "1": { "0": [], "1": [], "2": [] } };
         this.lastReportedStats = 0;
-        this.quiz = new QuizManager(this.sendQuizMessage.bind(this));
+
+        if (config.quizEnabled) {
+            this.quiz = new QuizChat(this.sendQuizMessage.bind(this));
+        }
 
         this.setupSocketHandlers();
     }
@@ -36,7 +39,7 @@ class TRRServer {
         this.startCountLoop();
         this.startBroadcastLoop();
         this.startKeepaliveLoop();
-        this.quiz.start();
+        this.quiz?.start();
     }
 
     setupSocketHandlers() {
@@ -194,7 +197,7 @@ class TRRServer {
         this.lastDataTimes.set(decoded.id, performance.now());
         const message = decoded.text.toLowerCase().trim();
 
-        if (message === "/quizoff") {
+        if (this.quiz && message === "/quizoff") {
             this.quiz.handleOptOut(player.id);
             await this.sendServerMessage(player, "You won't get quiz messages for this session.");
             return;
@@ -317,7 +320,7 @@ class TRRServer {
                     console.log(`[${player.id}: ${player.name}] Removed for inactivity`);
                     this.players.delete(playerId);
                     this.lastDataTimes.delete(playerId);
-                    this.quiz.cleanupPlayer(playerId);
+                    this.quiz?.cleanupPlayer(playerId);
                 }
             }
         }, CLEANUP_INTERVAL_MS);
