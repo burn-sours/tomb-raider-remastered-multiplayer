@@ -8,7 +8,8 @@
     "scripts": {
         "start-server": "node server/index.js",
         "start-client": "electron client/index.js",
-        "deploy": "node ./deploy.js"
+        "deploy": "node ./deploy.js",
+        "postinstall": "node -e \"require('fs').copyFileSync('frida_binding.node','node_modules/frida/build/frida_binding.node')\""
     },
     "dependencies": {
         "dgram": "^1.0.1",
