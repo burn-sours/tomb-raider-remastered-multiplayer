@@ -1108,12 +1108,18 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             if (decodedPosData.length === LARA_POS_SIZE) {
                                 if (playerConnection.isLoaded) {
                                     // Store last pos in 0x6c
-                                    game.runFunction(module, "Clone", otherLara.add(0x6c), otherLara.add(0x58), LARA_POS_NO_ROT_SIZE);
+                                    game.runFunction(
+                                        module,
+                                        "Clone",
+                                        otherLara.add(0x6c),
+                                        otherLara.add(moduleVariables.LaraPositions.Pointer),
+                                        LARA_POS_NO_ROT_SIZE
+                                    );
                                 }
 
                                 // Update pos
                                 game.writeByteArray(
-                                    otherLara.add(0x58),
+                                    otherLara.add(moduleVariables.LaraPositions.Pointer),
                                     decodedPosData
                                 );
                             }
@@ -1374,22 +1380,24 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         game.runFunction(module, "KeyboardInput", keycode, pressedDown);
                         return;
                     }
+                    
+                    const gameModule = game.getGameModule();
 
                     if (userData.multiplayer) {
-                        const gameScene = game.readMemoryVariable("IsInGameScene", game.getGameModule());
+                        const gameScene = game.readMemoryVariable("IsInGameScene", gameModule);
                         const isPhotoMode = game.readMemoryVariable("IsPhotoMode", manifest.executable);
 
                         if (isPhotoMode === 1 || gameScene === 0) {
                             if (isPhotoMode === 1 && pressedDown) {
                                 // Photo mode allow change pitch with keypad +/-
                                 if (keycode === 57 || keycode === 58) {
-                                    const moduleVariables = game.getModuleAddresses(module).variables;
+                                    const moduleVariables = game.getModuleAddresses(gameModule).variables;
                                     const increase = keycode === 57;
                                     let newPitch = lara.add(moduleVariables.LaraPositions.Pointer).add(0xc).readS16() + (200 * (increase ? 1 : -1));
                                     if (newPitch < -32000) newPitch = -32000;
                                     if (newPitch > 32000) newPitch = 32000;
-                                    lara.add(0x64).writeS16(newPitch);
-                                    game.runFunction(module, "UpdatePhotoMode");
+                                    lara.add(moduleVariables.LaraPositions.Pointer).add(0xc).writeS16(newPitch);
+                                    game.runFunction(gameModule, "UpdatePhotoMode");
                                 }
                             }
 
@@ -1977,12 +1985,10 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             RenderLara: {
                 after: (module, entity) => {
                     if (isRendering || exiting) return;
-
-                    const lara = game.getLara();
-                    if (!lara || lara.isNull()) return;
+                    if (!laraPointer || laraPointer.isNull()) return;
 
                     if (!userData.multiplayer) {
-                        game.runFunction(module, "RenderLara", lara);
+                        game.runFunction(module, "RenderLara", laraPointer);
                         return;
                     }
 
@@ -2010,7 +2016,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                         isRendering = laraPointer;
 
-                        game.runFunction(module, "Clone", laraBackup, lara, LARA_SIZE);
+                        game.runFunction(module, "Clone", laraBackup, laraPointer, LARA_SIZE);
                         game.runFunction(module, "Clone", appearanceBackup, appearancePointer, LARA_APPEARANCE_SIZE);
                         game.runFunction(module, "Clone", hairLeftBackup, game.getMemoryVariable("LaraHairLeftX", module), LARA_HAIR_SIZE);
                         game.runFunction(module, "Clone", gunFlagsBackup, gunFlagsPointer, LARA_GUNFLAG_SIZE);
@@ -2021,8 +2027,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     }
 
                     const cameraX = game.readMemoryVariable("CameraFixedX", module);
-                    const cameraZ = game.readMemoryVariable("CameraFixedZ", module);
                     const cameraY = game.readMemoryVariable("CameraFixedY", module);
+                    const cameraZ = game.readMemoryVariable("CameraFixedZ", module);
                     const cameraYaw = game.readMemoryVariable("CameraYaw", module);
                     const cameraPitch = game.readMemoryVariable("CameraPitch", module);
 
@@ -2055,7 +2061,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             //
                             isRendering = playerConnection.laraPointer;
 
-                            game.runFunction(module, "Clone", lara, playerConnection.laraPointer, LARA_SIZE);
+                            game.runFunction(module, "Clone", laraPointer, playerConnection.laraPointer, LARA_SIZE);
                             game.runFunction(module, "Clone", appearancePointer, playerConnection.appearance, LARA_APPEARANCE_SIZE);
 
                             const hairLeftX = game.getMemoryVariable("LaraHairLeftX", module);
@@ -2141,7 +2147,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         }
 
                         // Render
-                        game.runFunction(module, "RenderLara", lara);
+                        game.runFunction(module, "RenderLara", laraPointer);
                     } catch (err) {
                         console.warn("Cannot render lara: ", err.message);
                     }

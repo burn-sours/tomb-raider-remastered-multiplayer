@@ -156,8 +156,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             waitForGame: async () => {
                 const gameVersionInvalid = ![0, 1].includes(game.readMemoryVariable("GameVersion", manifest.executable));
                 const levelInvalid = game.readMemoryVariable("Level", manifest.executable) === -1;
-                const appearanceInvalid = String(game.readMemoryVariable("LaraAppearanceModern", manifest.executable)) === "0";
-                while (gameVersionInvalid || levelInvalid || appearanceInvalid) {
+                while (gameVersionInvalid || levelInvalid) {
                     await game.delay(500);
                 }
             },
@@ -1205,6 +1204,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     keycode = parseInt(keycode, 16);
 
+                    const gameModule = game.getGameModule();
+                    
                     const currentTime = Date.now();
                     if (!(currentTime - (lastKeyPressTime[keycode] || 0) >= 175)) {
                         return;
@@ -1215,6 +1216,17 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         const isGameMenu = game.readMemoryVariable("IsGameMenu", manifest.executable);
                         const isPhotoMode = game.readMemoryVariable("IsPhotoMode", manifest.executable);
                         if (isPhotoMode === 1 || isGameMenu === 1) {
+                            if (isPhotoMode === 1) {
+                                // Photo mode allow change pitch with keypad +/-
+                                if (keycode === 57 || keycode === 58) {
+                                    const moduleVariables = game.getModuleAddresses(gameModule).variables;
+                                    const increase = keycode === 57;
+                                    let newPitch = lara.add(moduleVariables.LaraPositions.Pointer).add(0xc).readS16() + (200 * (increase ? 1 : -1));
+                                    if (newPitch < -32000) newPitch = -32000;
+                                    if (newPitch > 32000) newPitch = 32000;
+                                    lara.add(moduleVariables.LaraPositions.Pointer).add(0xc).writeS16(newPitch);
+                                }
+                            }
                             return;
                         }
 
