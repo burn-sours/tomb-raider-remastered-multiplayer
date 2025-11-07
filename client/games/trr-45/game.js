@@ -1188,9 +1188,10 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     game.cleanupLaraSlots();
                 }
-                
+
                 game.cleanupFeatures(supportedFeatures);
                 await game.cleanupHooks();
+                console.log('TRR-45 game cleanup complete');
             }
         };
 

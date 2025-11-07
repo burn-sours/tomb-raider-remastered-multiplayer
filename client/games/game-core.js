@@ -11,6 +11,7 @@ module.exports = {
         let pvpMode = false;
         let currentLevel = null;
         let levelTrackingDisabled = false;
+        let featureLoopTimeouts = {};
 
         let chatOpened = false;
         let chatMessage = "";
@@ -353,12 +354,14 @@ module.exports = {
                         Interceptor.revert(t);
                     } catch (err) {}
                 }
+                replacedGameFunctions = [];
 
                 for (let t of attachedGameFunctions) {
                     try {
                         t?.detach();
                     } catch (err) {}
                 }
+                attachedGameFunctions = [];
 
                 Interceptor.flush();
             },
@@ -475,10 +478,10 @@ module.exports = {
                                         console.error('Feature loop error:', loopName, err.stack);
                                     }
                                 }
-                                setTimeout(loopFn, intervalNum);
+                                featureLoopTimeouts[intervalStr] = setTimeout(loopFn, intervalNum);
                             }
                         };
-                        setTimeout(loopFn, intervalNum);
+                        featureLoopTimeouts[intervalStr] = setTimeout(loopFn, intervalNum);
                     } catch (err) {
                         console.error('Feature loop error:', err.stack, loopsByInterval[interval]);
                     }
@@ -486,6 +489,11 @@ module.exports = {
             },
 
             cleanupFeatures: (supportedFeatures) => {
+                for (let timeoutId of Object.values(featureLoopTimeouts)) {
+                    clearTimeout(timeoutId);
+                }
+                featureLoopTimeouts = {};
+
                 for (let feature of supportedFeatures) {
                     const cleanup = feature.game.cleanup;
                     if (cleanup) {

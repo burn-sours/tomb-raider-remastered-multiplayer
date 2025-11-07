@@ -1369,6 +1369,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                 game.cleanupFeatures(supportedFeatures);
                 await game.cleanupHooks();
+                console.log('TRR-123 game cleanup complete');
             }
         };
 

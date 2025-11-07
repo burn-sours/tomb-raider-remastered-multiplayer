@@ -145,6 +145,7 @@ async function updateGame(launchOptions) {
 
 async function stopMods() {
     if (activeGameClient) {
+        console.log('Stopping mods...');
         activeGameClient.exiting = true;
         activeGameClient.stopConnectionHealthCheck();
         activeGameClient.socket.close();
@@ -152,7 +153,9 @@ async function stopMods() {
         await activeGameClient.cleanup();
         activeGameClient.exiting = false;
         activeGameClient = null;
+        console.log('Mods stopped and cleaned up successfully');
     }
+    ui.sendLauncherMessage('modsStopped');
 }
 
 async function setupFrida() {

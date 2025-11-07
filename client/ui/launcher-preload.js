@@ -7,6 +7,7 @@ const connectionFailedCallbacks = [];
 const versionOutdatedCallbacks = [];
 const requiredInputFailedCallbacks = [];
 const patchDetectionFailedCallbacks = [];
+const modsStoppedCallbacks = [];
 let launcherOptions = {};
 let featureManifests = null;
 
@@ -41,6 +42,10 @@ ipcRenderer.on('requiredInputFailed', (e, input) => {
 
 ipcRenderer.on('patchDetectionFailed', (e, patches) => {
     patchDetectionFailedCallbacks.forEach(callback => callback(patches));
+});
+
+ipcRenderer.on('modsStopped', (e) => {
+    modsStoppedCallbacks.forEach(callback => callback());
 });
 
 featureManifests = ipcRenderer.sendSync('getFeatureManifests');
@@ -81,6 +86,11 @@ contextBridge.exposeInMainWorld('api', {
     onPatchDetectionFailed: (callback) => {
         if (typeof callback === 'function') {
             patchDetectionFailedCallbacks.push(callback);
+        }
+    },
+    onModsStopped: (callback) => {
+        if (typeof callback === 'function') {
+            modsStoppedCallbacks.push(callback);
         }
     },
 

@@ -138,18 +138,10 @@ selectExeButton.addEventListener('click', async () => {
 });
 
 stopModsButton.addEventListener('click', () => {
+    launchButton.innerText = 'Stopping...';
+    launchButton.setAttribute('disabled', true);
+    stopModsButton.setAttribute('disabled', true);
     window.api.stopMods();
-
-    alreadyInjected = false;
-    isLaunching = false;
-    launchButton.innerText = 'Launch Mods';
-    launchButton.removeAttribute('disabled');
-    stopModsButton.classList.add('hidden');
-    selectExeButton.classList.remove('hidden');
-
-    document.querySelectorAll('input, select').forEach(input => input.removeAttribute('disabled'));
-    multiplayerCheckbox.parentNode.removeAttribute('disabled');
-    patchSection.classList.add('hidden');
 });
 
 launchButton.addEventListener('click', () => {
@@ -338,6 +330,20 @@ window.api.onPatchDetectionFailed((patches) => {
     });
     patchSection.classList.remove('hidden');
     patchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+window.api.onModsStopped(() => {
+    alreadyInjected = false;
+    isLaunching = false;
+    launchButton.innerText = 'Launch Mods';
+    launchButton.removeAttribute('disabled');
+    stopModsButton.removeAttribute('disabled');
+    stopModsButton.classList.add('hidden');
+    selectExeButton.classList.remove('hidden');
+
+    document.querySelectorAll('input, select').forEach(input => input.removeAttribute('disabled'));
+    multiplayerCheckbox.parentNode.removeAttribute('disabled');
+    patchSection.classList.add('hidden');
 });
 
 window.addEventListener('DOMContentLoaded', () => {

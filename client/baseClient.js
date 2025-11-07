@@ -33,6 +33,9 @@ class BaseGameClient {
     inPhotoMode = false;
     lastReceivedPacket = null;
     connectionHealthCheck = null;
+    updateLoopTimeout = null;
+    frameLoopTimeout = null;
+    tickLoopTimeout = null;
 
     constructor(socket, bundleId, bundleIdInteger = null) {
         this.socket = socket;
@@ -467,7 +470,9 @@ class BaseGameClient {
             );
         }
 
-        loop && setTimeout(() => this.updateLoop(), 1000);
+        if (loop) {
+            this.updateLoopTimeout = setTimeout(() => this.updateLoop(), 1000);
+        }
     }
 
     async frameLoop(loop = true, force = false) {
@@ -533,7 +538,9 @@ class BaseGameClient {
             );
         }
 
-        loop && setTimeout(() => this.frameLoop(), 33);
+        if (loop) {
+            this.frameLoopTimeout = setTimeout(() => this.frameLoop(), 33);
+        }
     }
 
     async tickLoop(loop = true, force = false) {
@@ -603,7 +610,9 @@ class BaseGameClient {
             }
         }
 
-        loop && setTimeout(() => this.tickLoop(), 10);
+        if (loop) {
+            this.tickLoopTimeout = setTimeout(() => this.tickLoop(), 10);
+        }
     }
 
     startConnectionHealthCheck() {
@@ -627,9 +636,23 @@ class BaseGameClient {
             clearInterval(this.connectionHealthCheck);
             this.connectionHealthCheck = null;
         }
+        if (this.updateLoopTimeout) {
+            clearTimeout(this.updateLoopTimeout);
+            this.updateLoopTimeout = null;
+        }
+        if (this.frameLoopTimeout) {
+            clearTimeout(this.frameLoopTimeout);
+            this.frameLoopTimeout = null;
+        }
+        if (this.tickLoopTimeout) {
+            clearTimeout(this.tickLoopTimeout);
+            this.tickLoopTimeout = null;
+        }
     }
 
     async handleConnectionFailure() {
+        if (this.exiting) return;
+
         this.stopConnectionHealthCheck();
         this.socket.close();
         this.socket = dgram.createSocket('udp4');
