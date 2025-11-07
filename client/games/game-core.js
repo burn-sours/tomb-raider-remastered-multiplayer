@@ -43,7 +43,7 @@ module.exports = {
             decodeMemoryBlock: (hexString) => {
                 const byteArray = [];
                 for (let i = 0; i < hexString.length; i += 2) {
-                    byteArray.push(parseInt(hexString.substring(i, 2), 16));
+                    byteArray.push(parseInt(hexString.substring(i, i + 2), 16));
                 }
                 return byteArray;
             },
@@ -156,11 +156,11 @@ module.exports = {
             },
 
             readByteArray: (address, size) => {
-                return Memory.readByteArray(ptr(address), size);
+                return Memory.readByteArray(address, size);
             },
 
             writeByteArray: (address, data) => {
-                return Memory.writeByteArray(ptr(address), data);
+                return Memory.writeByteArray(address, data);
             },
 
             delay: async (t) => await new Promise(resolve => setTimeout(resolve, t)),
