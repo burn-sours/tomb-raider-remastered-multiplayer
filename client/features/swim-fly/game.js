@@ -20,7 +20,7 @@ module.exports = {
                     return;
                 }
                 
-                const hydrationOffset = module === "tomb4.dll" || module === "tomb5.dll" ? 0x6c : 0x66;
+                const hydrationOffset = manifest.executable === "tomb456.exe" ? 0x6c : 0x66;
 
                 for (let roomId = 0; roomId < roomsCount; roomId++) {
                     const roomFlags = roomsPointer.add(ROOM_SIZE * roomId).add(hydrationOffset);
@@ -51,11 +51,11 @@ module.exports = {
                     return;
                 }
 
-                const flagOffset = module === "tomb4.dll" || module === "tomb5.dll" ? 0x6c : 0x66;
+                const hydrationOffset = manifest.executable === "tomb456.exe" ? 0x6c : 0x66;
 
                 for (let roomId = 0; roomId < roomsCount; roomId++) {
                     if (roomId in cachedRoomHydration) {
-                        const roomFlags = roomsPointer.add(ROOM_SIZE * roomId).add(flagOffset);
+                        const roomFlags = roomsPointer.add(ROOM_SIZE * roomId).add(hydrationOffset);
                         if ((cachedRoomHydration[roomId] & 1) > 0) {
                             roomFlags.writeS8(roomFlags.readS8() | 1);
                         } else {
@@ -80,10 +80,19 @@ module.exports = {
             before: `
                 if (!userData['swim-fly']) return;
 
-                const [keycode, pressedDown] = args;
+                let [keycode, pressedDown] = args;
+                pressedDown = manifest.executable === "tomb456.exe" ? true : pressedDown > 0;
+                keycode = manifest.executable === "tomb456.exe" ? parseInt(keycode, 16) : keycode;
+                
+                if (manifest.executable === "tomb456.exe") {
+                    // noinspection JSUnresolvedReference
+                    if (!(Date.now() - (lastKeyPressTime[keycode] || 0) >= 175)) {
+                        return;
+                    }
+                }
 
                 // keycode 72 = F11
-                if (pressedDown > 0 && keycode === 72) {
+                if (pressedDown && keycode === 72) {
                     const lara = game.getLara();
                     if (!lara || lara.isNull()) return;
 
