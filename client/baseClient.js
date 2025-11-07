@@ -188,6 +188,8 @@ class BaseGameClient {
     }
 
     async updateGame(launchOptions) {
+        this.launchOptions = {...this.launchOptions, ...launchOptions};
+
         await this.gameFunctions.setLara(false);
 
         await this.gameFunctions.updateLaunchOptions(launchOptions);
