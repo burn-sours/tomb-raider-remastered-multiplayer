@@ -14,6 +14,14 @@ module.exports = {
             Address: "0x6b6860",
             Type: "UInt64"
         },
+        OutfitsPointer: {
+            Address: "0x12c880",
+            Type: "UInt64"
+        },
+        FacesPointer: {
+            Address: "0x12cdc0",
+            Type: "UInt64"
+        },
         BinaryTick: {
             Address: "0x1bc144",
             Type: "Int8"

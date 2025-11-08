@@ -20,6 +20,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         const LARA_SHADOW_SIZE = 0xc;
         const LARA_APPEARANCE_SIZE = 0x18;
         const LARA_GUNFLAG_SIZE = 0x2;
+        const LARA_OUTFIT_SIZE = 0x38;
+        const LARA_FACE_SIZE = 0x14;
 
         let appearanceBackup = null;
         let shadowCircleBackup = null;
@@ -175,7 +177,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             getAppearanceBackup: () => {
                 const module = game.getGameModule();
-                const baseAddr = moduleBaseAddresses[module];
+                const outfitsPointer = game.getMemoryVariable("OutfitsPointer", module);
+                const facesPointer = game.getMemoryVariable("FacesPointer", module);
 
                 const translatedAppearanceBackup = game.allocMemory(LARA_APPEARANCE_SIZE);
                 game.runFunction(module, "Clone", translatedAppearanceBackup, appearanceBackup, LARA_APPEARANCE_SIZE);
@@ -184,8 +187,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     const outfitPointerAddress = translatedAppearanceBackup.add(0x0).readPointer();
                     const facePointerAddress = translatedAppearanceBackup.add(0x8).readPointer();
 
-                    translatedAppearanceBackup.add(0x0).writePointer(outfitPointerAddress.sub(baseAddr));
-                    translatedAppearanceBackup.add(0x8).writePointer(facePointerAddress.sub(baseAddr));
+                    const outfitId = parseInt(outfitPointerAddress.sub(outfitsPointer).toString()) / LARA_OUTFIT_SIZE;
+                    translatedAppearanceBackup.add(0x0).writePointer(ptr(outfitId));
+                    
+                    const faceId = parseInt(facePointerAddress.sub(facesPointer).toString()) / LARA_FACE_SIZE;
+                    translatedAppearanceBackup.add(0x8).writePointer(ptr(faceId));
 
                     return game.readByteArray(ptr(translatedAppearanceBackup), LARA_APPEARANCE_SIZE);
                 }
@@ -1020,21 +1026,26 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         }
 
                         if ("appearance" in playerData && playerData.appearance) {
-                            const baseAddr = moduleBaseAddresses[module];
-                            const originalOutfitPointerAddress = playerConnection.appearance.add(0x0).readPointer().sub(baseAddr);
+                            const originalOutfitPointerAddress = playerConnection.appearance.add(0x0).readPointer();
 
                             const decodedAppearanceData = game.decodeMemoryBlock(playerData.appearance);
                             if (decodedAppearanceData.length === LARA_APPEARANCE_SIZE) {
                                 const tempDecodedAppearance = game.allocMemory(LARA_APPEARANCE_SIZE);
                                 game.writeByteArray(tempDecodedAppearance, decodedAppearanceData);
-                                const outfitPointerAddress = tempDecodedAppearance.add(0x0).readPointer();
-                                tempDecodedAppearance.add(0x0).writePointer(outfitPointerAddress.add(baseAddr));
-                                const facePointerAddress = tempDecodedAppearance.add(0x8).readPointer();
-                                tempDecodedAppearance.add(0x8).writePointer(facePointerAddress.add(baseAddr));
+
+                                const outfitsPointer = game.getMemoryVariable("OutfitsPointer", module);
+                                const outfitId = tempDecodedAppearance.add(0x0).readU64();
+                                const outfitPointerAddress = outfitsPointer.add(outfitId * LARA_OUTFIT_SIZE);
+                                tempDecodedAppearance.add(0x0).writePointer(outfitPointerAddress);
+
+                                const facesPointer = game.getMemoryVariable("FacesPointer", module);
+                                const faceId = tempDecodedAppearance.add(0x8).readU64();
+                                const facePointerAddress = facesPointer.add(faceId * LARA_FACE_SIZE);
+                                tempDecodedAppearance.add(0x8).writePointer(facePointerAddress);
 
                                 game.writeByteArray(playerConnection.appearance, game.readByteArray(ptr(tempDecodedAppearance), LARA_APPEARANCE_SIZE));
 
-                                if (String(outfitPointerAddress).toLowerCase() !== String(originalOutfitPointerAddress).toLowerCase()) {
+                                if (!outfitPointerAddress.equals(originalOutfitPointerAddress)) {
                                     playerConnection.resetHair = true;
                                 }
                             }
