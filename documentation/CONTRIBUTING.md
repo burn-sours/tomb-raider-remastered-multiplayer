@@ -12,14 +12,19 @@ We welcome contributions from everyone, whether you're a confident developer or 
 
 **However, there are important rules:**
 
-✅ **Use AI as a tool** - AI can help draft code, find bugs, and suggest improvements
-✅ **Understand everything you submit** - You must completely understand every line of code in your PR
-✅ **Follow existing patterns** - Study the codebase first; your code should match the style and architecture
-✅ **Keep it clean** - AI-generated code must be reviewed, refined, and cleaned up before submission
-✅ **You are responsible** - You're accountable for your contributions, not the AI
+> ✅ **Use AI as a tool** - AI can help draft code, find bugs, and suggest improvements
 
-❌ **Don't submit code you don't understand** - If you can't explain how it works, don't submit it
-❌ **Don't ignore existing patterns** - Consistency matters more than "clever" solutions
+> ✅ **Understand everything you submit** - You must completely understand every line of code in your PR
+
+> ✅ **Follow existing patterns** - Study the codebase first; your code should match the style and architecture
+
+> ✅ **Keep it clean** - AI-generated code must be reviewed, refined, and cleaned up before submission
+
+> ✅ **You are responsible** - You're accountable for your contributions, not the AI
+
+> ❌ **Don't submit code you don't understand** - If you can't explain how it works, don't submit it
+
+> ❌ **Don't ignore existing patterns** - Consistency matters more than "clever" solutions
 
 **The goal:** AI should help you contribute better code, not replace your understanding.
 
@@ -38,6 +43,7 @@ Before spending significant time on a feature or major change:
 This saves everyone time and ensures your contribution aligns with the project's direction.
 
 **Small fixes?** (typos, obvious bugs, minor tweaks) - Just submit a PR directly.
+
 **New features or major changes?** - Discuss first.
 
 ---
@@ -134,7 +140,7 @@ Contributions that improve the mods are welcome! This includes:
 2. Run `npm install` to install dependencies
 3. Make your changes
 4. Test locally with `npm run start-client` or `npm run start-server`
-5. Build with `node ./deploy.js` to create executables
+5. Build with `npm run deploy` to create executables
 
 See the [README](README.md) for more details on building from source.
 

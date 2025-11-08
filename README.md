@@ -1,5 +1,7 @@
 # Burn's Mods & Multiplayer for Tomb Raider Remastered
 
+[Join Discord](https://discord.gg/DJrkR77HJD) - [Support Burn](https://ko-fi.com/burn_sours) - [Official Website](https://www.laracrofts.com/)
+
 > **Experience Classic Tomb Raider Like Never Before**
 
 This is a free, open-source launcher that brings **multiplayer** and **customizable mods** to Tomb Raider Remastered (I-V). See other players exploring in real-time, battle in PVP combat, chat in-game, and enhance your gameplay with mods — from super jump to hardcore permadeath mode.
@@ -58,12 +60,6 @@ This is a free, open-source launcher that brings **multiplayer** and **customiza
 
 This launcher uses **Frida** (a dynamic instrumentation toolkit) to modify the game **at runtime**, meaning your game files stay completely untouched. When you close the launcher, the game returns to normal. It's **safe, reversible, and non-invasive**.
 
-✅ **No File Modification**
-✅ **Mix & Match Mods** - Enable only the features you want
-✅ **Multiplayer Ready** - Join the community server in seconds
-✅ **Private Servers** - Host your own multiplayer sessions
-✅ **Open Source** - Community-driven development with full transparency
-
 ---
 
 ## Getting Started
@@ -109,7 +105,7 @@ To build the launcher and server executables yourself:
 
 ```bash
 npm install
-node ./deploy.js
+npm run deploy
 ```
 
 The built executables will be in the `releases/` folder:
@@ -124,11 +120,15 @@ This project is **100% open source** under the GPL-3.0 license. We welcome contr
 
 ### Ways to Contribute
 
-🔧 **Code Contributions** - Add new features, fix bugs, or improve performance
-💡 **Feature Ideas** - Suggest new mods or multiplayer features
-🐛 **Bug Reports** - Help us identify and fix issues
-📖 **Documentation** - Improve documentation
-🎨 **UI/UX Design** - Enhance the launcher interface
+> 🔧 **Code Contributions** - Add new features, fix bugs, or improve performance
+
+> 💡 **Feature Ideas** - Suggest new mods or multiplayer features
+
+> 🐛 **Bug Reports** - Help us identify and fix issues
+
+> 📖 **Documentation** - Improve documentation
+
+> 🎨 **UI/UX Design** - Enhance the launcher interface
 
 **All contributions that improve the mods are welcome!** Whether you're fixing a typo or implementing a major feature, we appreciate your help making this project better.
 
@@ -136,10 +136,13 @@ This project is **100% open source** under the GPL-3.0 license. We welcome contr
 
 ## Community & Support
 
-🗨️ **Discord** - [Join our community server](https://discord.gg/DJrkR77HJD) for support, updates, and multiplayer coordination
-💻 **GitHub Issues** - Report bugs or request features
-☕ **Ko-Fi** - [Support ongoing development](https://ko-fi.com/burn_sours)
-🌐 **Website** - [Official Burn's Website](https://www.laracrofts.com/)
+> 🗨️ **Discord** - [Join our community server](https://discord.gg/DJrkR77HJD) for support, updates, and multiplayer coordination
+
+> 💻 **GitHub Issues** - Report bugs or request features
+
+> ☕ **Ko-Fi** - [Support ongoing development](https://ko-fi.com/burn_sours)
+
+> 🌐 **Website** - [Burn's Website](https://www.laracrofts.com/)
 
 ---
 
@@ -155,31 +158,43 @@ Want technical details? Check out the [Contributing Guide](documentation/CONTRIB
 
 ---
 
-## Credits
+## FAQ
 
-**Created by:** burn_sours
-**License:** GPL-3.0
+```text
+Q: Does this work on Linux/Mac?
+A: Currently Windows only, though the codebase is designed for potential cross-platform support.
+```
 
-Built with contributions from the Tomb Raider modding community.
+```text
+Q: Can I use this with other mods?
+A: This launcher provides its own mod system. Compatibility with other mods varies.
+```
+
+```text
+Q: Is my saved game safe?
+A: Yes! The launcher doesn't modify save files. Your progress is completely safe.
+```
+
+```text
+Q: How do I stop the mods?
+A: Click the "Stop Mods" button in the launcher, or simply close the game.
+```
+
+```text
+Q: Can I run my own server?
+A: Absolutely! Check the releases for the standalone server executable.
+```
+
+```text
+Q: How can I get involved with the project?
+A: Check out the [Contributing Guide](documentation/CONTRIBUTING.md) to get started!
+```
 
 ---
 
-## FAQ
+## Credits
 
-**Q: Does this work on Linux/Mac?**
-A: Currently Windows only, though the codebase is designed for potential cross-platform support.
+* **Created by:** burn_sours
+* **License:** GPL-3.0
 
-**Q: Can I use this with other mods?**
-A: This launcher provides its own mod system. Compatibility with other mods varies.
-
-**Q: Is my saved game safe?**
-A: Yes! The launcher doesn't modify save files. Your progress is completely safe.
-
-**Q: How do I stop the mods?**
-A: Click the "Stop Mods" button in the launcher, or simply close the game.
-
-**Q: Can I run my own server?**
-A: Absolutely! Check the releases for the standalone server executable.
-
-**Q: How can I get involved with the project?**
-A: Check out the [Contributing Guide](documentation/CONTRIBUTING.md) to get started!
+Want your name here? Help us make this project better!
