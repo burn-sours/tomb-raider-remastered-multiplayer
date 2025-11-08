@@ -142,7 +142,7 @@ Contributions that improve the mods are welcome! This includes:
 4. Test locally with `npm run start-client` or `npm run start-server`
 5. Build with `npm run deploy` to create executables
 
-See the [README](README.md) for more details on building from source.
+See the [README](https://github.com/burn-sours/tomb-raider-remastered-multiplayer/blob/main/README.md) for more details on building from source.
 
 ---
 
