@@ -157,9 +157,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             },
 
             waitForGame: async () => {
-                const gameVersionInvalid = ![0, 1].includes(game.readMemoryVariable("GameVersion", manifest.executable));
-                const levelInvalid = game.readMemoryVariable("Level", manifest.executable) === -1;
-                while (gameVersionInvalid || levelInvalid) {
+                const invalidVer = () => ![0, 1].includes(game.readMemoryVariable("GameVersion", manifest.executable));
+                while (invalidVer() || game.readMemoryVariable("Level", manifest.executable) === -1) {
                     await game.delay(500);
                 }
             },
