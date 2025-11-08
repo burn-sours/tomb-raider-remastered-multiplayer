@@ -35,6 +35,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let topLabel = null;
         let multiplayerText = "Burn's Multiplayer v2.0";
         let modsText = "Burn's Mods v2.0";
+        let permaDamageText = "Burn's Perma-damage v2.0";
         let selectedPlayerLabel = null;
         let lastSelected = {time: null, name: null, reason: "teleport"};
         const selectTime = 3000;
@@ -310,6 +311,15 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 otherPlayers.length = 0;
 
                 laraSlots = laraSlots.map(s => ({...s, used: false}));
+            },
+
+            isOnlyPermaDamageEnabled: () => {
+                if (userData.multiplayer) return false;
+
+                const allFeatures = supportedFeatures.map(f => f.id);
+                const enabledFeatures = allFeatures.filter(f => userData[f] === true);
+
+                return enabledFeatures.length === 1 && enabledFeatures[0] === 'perma-damage';
             },
 
             setLara: (cloneBackup = true) => {
@@ -2176,8 +2186,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     if (!userData.multiplayer) {
                         game.runFunction(module, "DrawSetup", 0x39, ptr(0x0));
 
+                        const isPermaDamageOnly = game.isOnlyPermaDamageEnabled();
+                        const labelText = isPermaDamageOnly ? permaDamageText : modsText;
+
                         if (!topLabel || topLabel.isNull()) {
-                            topLabel = ptr(game.runFunction(module, "AddText", 0, 0, 0x38, game.allocString(modsText)));
+                            topLabel = ptr(game.runFunction(module, "AddText", 0, 0, 0x38, game.allocString(labelText)));
                             topLabel.writeS32(4097); // flag settings
                             topLabel.add(0x50).writeS32(15000); // font size
                             topLabel.add(0xc).writeFloat(6); // x
@@ -2185,9 +2198,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             topLabel.add(0x40).writeS32(0x0); // color
                         }
 
+                        const displayText = labelText + " (" + game.levelName(currentLevel) + ")" 
+                                + (isPermaDamageOnly ? " [" + userData.gameHash.substring(0, 8) + "]" : "");
                         game.updateString(
                             topLabel.add(0x48).readPointer(),
-                            modsText + " (" + game.levelName(currentLevel) + ")"
+                            displayText
                         );
                         return;
                     }

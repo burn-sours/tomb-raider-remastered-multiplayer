@@ -151,7 +151,7 @@ async function stopMods() {
         activeGameClient.stopConnectionHealthCheck();
         await activeGameClient.sendDisconnect(activeUserData);
 
-        await this.delay(100);
+        await delay(100);
 
         try {
             socket.removeAllListeners();

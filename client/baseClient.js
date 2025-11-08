@@ -160,7 +160,10 @@ class BaseGameClient {
             this.gameScript = await this.gameScriptModule(
                 this.session,
                 manifest,
-                launcherOptions,
+                {
+                    ...launcherOptions,
+                    gameHash: this.processHash
+                },
                 this.memoryAddresses,
                 featureSupport,
                 featureTemplates

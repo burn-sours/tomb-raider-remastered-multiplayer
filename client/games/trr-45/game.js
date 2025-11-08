@@ -39,6 +39,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let levelIsRestarting = false;
         let multiplayerText = "Burn's Multiplayer v2.0";
         let modsText = "Burn's Mods v2.0";
+        let permaDamageText = "Burn's Perma-damage v2.0";
         let lastSelected = {time: null, name: null, reason: "teleport", player: null};
         const selectTime = 3000;
         let levelsInfo = [];
@@ -312,6 +313,15 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 otherPlayers.length = 0;
 
                 laraSlots = laraSlots.map(s => ({...s, used: false}));
+            },
+
+            isOnlyPermaDamageEnabled: () => {
+                if (userData.multiplayer) return false;
+
+                const allFeatures = supportedFeatures.map(f => f.id);
+                const enabledFeatures = allFeatures.filter(f => userData[f] === true);
+
+                return enabledFeatures.length === 1 && enabledFeatures[0] === 'perma-damage';
             },
 
             receivePlayerDisconnect: (playerId) => {
@@ -1433,7 +1443,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         // Top label
                         const levelName = game.isInMenu() ? "Main Menu" : game.levelName(currentLevel);
                         if (levelName === "Unknown Level") return;
-                        game.drawTextLabel(modsText + " (" + levelName + ")", 0, true, null, 2, 5, .25, .25);
+
+                        const isPermaDamageOnly = game.isOnlyPermaDamageEnabled();
+                        const labelText = isPermaDamageOnly ? permaDamageText : modsText;
+                        const displayText = labelText + " (" + levelName + ")" + (isPermaDamageOnly ? " [" + userData.gameHash.substring(0, 8) + "]" : "");
+                        game.drawTextLabel(displayText, 0, true, null, 2, 5, .25, .25);
                         return;
                     }
 
