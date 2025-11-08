@@ -37,6 +37,10 @@ module.exports = new class {
                         label: 'Join us on Burn\'s Discord',
                         click: () => shell.openExternal('https://discord.gg/DJrkR77HJD'),
                     },
+                    {
+                        label: 'Perma Damage Speedruns',
+                        click: () => shell.openExternal('https://www.speedrun.com/tr123456_remastered_ce'),
+                    },
                 ]
             }
         ]));

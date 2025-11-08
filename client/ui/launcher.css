@@ -60,6 +60,15 @@ body {
     height: 20px;
 }
 
+.icon-link-speedrun svg {
+    filter: grayscale(100%) brightness(0.8);
+    transition: filter 0.2s ease;
+}
+
+.icon-link-speedrun:hover svg {
+    filter: grayscale(0%) brightness(1);
+}
+
 main {
     background-color: #010101;
     display: flex;
