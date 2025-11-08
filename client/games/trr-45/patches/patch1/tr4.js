@@ -200,31 +200,31 @@ module.exports = {
             Type: "Int32",
         },
         CameraFixedX: {
+            Address: "0x48d32c",
+            Type: "Int32",
+        },
+        CameraFixedY: {
+            Address: "0x48D33C",
+            Type: "Int32",
+        },
+        CameraFixedZ: {
+            Address: "0x48D34C",
+            Type: "Int32",
+        },
+        CameraX: {
             Address: "0x1afd10",
             Type: "Int32",
             Pointer: "0xc"
         },
-        CameraFixedY: {
+        CameraY: {
             Address: "0x1afd10",
             Type: "Int32",
             Pointer: "0x10"
         },
-        CameraFixedZ: {
+        CameraZ: {
             Address: "0x1afd10",
             Type: "Int32",
             Pointer: "0x14"
-        },
-        CameraX: {
-            Address: "0x48d32c",
-            Type: "Int32",
-        },
-        CameraY: {
-            Address: "0x48D33C",
-            Type: "Int32",
-        },
-        CameraZ: {
-            Address: "0x48D34C",
-            Type: "Int32",
         },
         CameraYaw: {
             Address: "0x48D28E",
