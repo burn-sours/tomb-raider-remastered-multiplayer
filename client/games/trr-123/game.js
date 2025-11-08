@@ -1375,14 +1375,14 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         game.restoreLara();
                     }
 
-                    game.deleteAllUiTexts();
-
                     for (let playerConnection of otherPlayers) {
                         game.cleanupOtherPlayer(playerConnection);
                     }
 
                     game.cleanupLaraSlots();
                 }
+
+                game.deleteAllUiTexts();
 
                 game.cleanupFeatures(supportedFeatures);
                 await game.cleanupHooks();
