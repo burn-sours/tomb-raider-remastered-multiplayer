@@ -1442,7 +1442,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     const lara = game.getLara();
                     if (exiting || !lara || lara.isNull()) return;
 
-                    const moduleVariables = game.getModuleAddresses(module).variables;
+                    const moduleAddresses = game.getModuleAddresses(module);
+                    const moduleVariables = moduleAddresses.variables;
+                    const moduleUiLayer = moduleAddresses.uiLayer;
 
                     const isPhotoMode = game.readMemoryVariable("IsPhotoMode", manifest.executable);
                     if (isPhotoMode > 0) return;
@@ -1464,7 +1466,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     if (game.isInMenu()) {
                         // Main Menu
-                        game.runFunction(module, "DrawSetup", 0x42, ptr(0x0));
+                        game.runFunction(module, "DrawSetup", moduleUiLayer, ptr(0x0));
 
                         // Top label
                         const lobbyName = (!userData.hideLobbyCode && userData.lobbyCode?.length && userData.lobbyCode !== "_" ? userData.lobbyCode + "; " : "");
@@ -1493,7 +1495,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         return;
                     }
 
-                    game.runFunction(module, "DrawSetup", 0x42, ptr(0x0));
+                    game.runFunction(module, "DrawSetup", moduleUiLayer, ptr(0x0));
 
                     //
                     const othersCount = otherPlayers.length;

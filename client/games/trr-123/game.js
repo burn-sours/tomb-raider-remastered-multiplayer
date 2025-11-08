@@ -2179,12 +2179,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     const lara = game.getLara();
                     if (exiting || !lara || lara.isNull()) return;
 
-                    const execVariables = game.getModuleAddresses(manifest.executable).variables;
-                    const moduleVariables = game.getModuleAddresses(module).variables;
-                    const moduleBase = moduleBaseAddresses[module];
+                    const moduleAddresses = game.getModuleAddresses(module);
+                    const moduleVariables = moduleAddresses.variables;
+                    const moduleUiLayer = moduleAddresses.uiLayer;
 
                     if (!userData.multiplayer) {
-                        game.runFunction(module, "DrawSetup", 0x39, ptr(0x0));
+                        game.runFunction(module, "DrawSetup", moduleUiLayer, ptr(0x0));
 
                         const isPermaDamageOnly = game.isOnlyPermaDamageEnabled();
                         const labelText = isPermaDamageOnly ? permaDamageText : modsText;
@@ -2221,7 +2221,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     if (!userData.multiplayer) return;
 
-                    game.runFunction(module, "DrawSetup", 0x39, ptr(0x0));
+                    game.runFunction(module, "DrawSetup", moduleUiLayer, ptr(0x0));
 
                     const othersCount = otherPlayers.length;
                     if (playerNamesMode > 0) {

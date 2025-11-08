@@ -1,5 +1,8 @@
 /** tomb4.dll */
 module.exports = {
+    /** tomb4.dll draw/graphics */
+    uiLayer: 0x42,
+
     /** tomb4.dll variables */
     variables: {
         OutfitsLaraHairYoung: {

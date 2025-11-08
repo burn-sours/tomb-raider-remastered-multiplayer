@@ -1,5 +1,8 @@
 /** tomb5.dll */
 module.exports = {
+    /** tomb5.dll draw/graphics */
+    uiLayer: 0x42,
+
     /** tomb5.dll variables */
     variables: {
         OutfitsLaraHairYoung: {

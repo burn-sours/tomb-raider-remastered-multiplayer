@@ -1,5 +1,8 @@
 /** tomb1.dll */
 module.exports = {
+    /** tomb1.dll draw/graphics */
+    uiLayer: 0x39,
+
     /** tomb1.dll variables */
     variables: {
         BinaryTick: {

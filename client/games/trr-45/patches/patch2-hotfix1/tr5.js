@@ -4,6 +4,9 @@
 const patch2 = require("../patch2/tr5");
 
 module.exports = {
+    /** tomb5.dll draw/graphics */
+    uiLayer: 0x42,
+
     /** tomb5.dll variables - imported from patch2 */
     variables: patch2.variables,
 
