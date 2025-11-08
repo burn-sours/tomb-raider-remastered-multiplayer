@@ -92,6 +92,9 @@ class TRRServer {
                 case netcode.PACKET_TYPE_GLOBAL_REQ:
                     await this.handleGlobalRequest(netcode.decodeGlobalReq(msg), rinfo);
                     break;
+                case netcode.PACKET_TYPE_DISCONNECT:
+                    await this.handleDisconnect(netcode.decodeDisconnect(msg), rinfo);
+                    break;
                 default:
                     console.error(`Unknown packet type: ${packetType}`);
             }
@@ -231,6 +234,28 @@ class TRRServer {
         this.socket.send(await netcode.compress(globalState), rinfo.port, rinfo.address);
     }
 
+    async handleDisconnect(decoded, rinfo) {
+        const player = this.players.get(decoded.id);
+        if (!decoded.id || !player) return;
+
+        console.log(`[${player.id}: ${player.name}] Disconnected`);
+
+        const encodedDisconnect = await netcode.compress(netcode.encodeDisconnect(decoded));
+        for (const [otherId, otherPlayer] of this.players) {
+            if (otherId !== decoded.id && this.arePlayersInSameSession(otherPlayer, decoded)) {
+                this.socket.send(encodedDisconnect, otherPlayer.port, otherPlayer.address);
+            }
+        }
+
+        this.removePlayer(decoded.id);
+    }
+
+    removePlayer(playerId) {
+        this.players.delete(playerId);
+        this.lastDataTimes.delete(playerId);
+        this.quiz?.cleanupPlayer(playerId);
+    }
+
     async sendServerMessage(player, text) {
         await this.sendChatMessage("Server", player, text);
     }
@@ -317,10 +342,8 @@ class TRRServer {
             for (const [playerId, player] of this.players) {
                 const lastDataTime = this.lastDataTimes.get(playerId);
                 if (!lastDataTime || (now - lastDataTime > PLAYER_TIMEOUT_MS)) {
-                    console.log(`[${player.id}: ${player.name}] Removed for inactivity`);
-                    this.players.delete(playerId);
-                    this.lastDataTimes.delete(playerId);
-                    this.quiz?.cleanupPlayer(playerId);
+                    console.log(`[${player.id}: ${player.name}] Timed out`);
+                    this.removePlayer(playerId);
                 }
             }
         }, CLEANUP_INTERVAL_MS);

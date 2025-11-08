@@ -314,6 +314,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 laraSlots = laraSlots.map(s => ({...s, used: false}));
             },
 
+            receivePlayerDisconnect: (playerId) => {
+                const playerConnection = otherPlayers.find(p => p.id === playerId);
+                if (playerConnection) {
+                    game.cleanupOtherPlayer(playerConnection);
+                }
+            },
+
             cleanupOtherPlayer: (connection) => {
                 if (!connection) return;
 

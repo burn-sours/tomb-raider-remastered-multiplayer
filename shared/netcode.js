@@ -11,6 +11,7 @@ const PACKET_TYPE_CONNECTION = 0x08;
 const PACKET_TYPE_CHAT = 0x09;
 const PACKET_TYPE_PVP = 0x0a;
 const PACKET_TYPE_KEEPALIVE = 0x0b;
+const PACKET_TYPE_DISCONNECT = 0x0c;
 
 module.exports = {
     PACKET_TYPE_HIGHFREQ,
@@ -23,6 +24,7 @@ module.exports = {
     PACKET_TYPE_CHAT,
     PACKET_TYPE_PVP,
     PACKET_TYPE_KEEPALIVE,
+    PACKET_TYPE_DISCONNECT,
 
     zStd: async () => {
         if (zStdInst) return zStdInst;
@@ -419,6 +421,14 @@ module.exports = {
         buffer.writeInt32BE(_v, 1);
         buffer.writeBigInt64BE(BigInt(_t), 5);
         return buffer;
+    },
+
+    encodeDisconnect: (disconnectState) => {
+        return module.exports.encodeGeneric(disconnectState, PACKET_TYPE_DISCONNECT);
+    },
+
+    decodeDisconnect: (buffer) => {
+        return module.exports.decodeGeneric(buffer).data;
     },
 
     encodeGlobal: (globalState) => {

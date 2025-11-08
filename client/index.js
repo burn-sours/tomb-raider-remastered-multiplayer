@@ -146,17 +146,26 @@ async function updateGame(launchOptions) {
 async function stopMods() {
     if (activeGameClient) {
         console.log('Stopping mods...');
+
         activeGameClient.exiting = true;
         activeGameClient.stopConnectionHealthCheck();
+        await activeGameClient.sendDisconnect(activeUserData);
+
+        await this.delay(100);
+
         try {
             socket.removeAllListeners();
             socket.close();
         } catch (err) { /**/ }
+
         socket = dgram.createSocket('udp4');
         gameClients.forEach(gc => gc.client.socket = socket);
+
         await delay(2000);
+
         await activeGameClient.cleanup();
         activeGameClient = null;
+
         console.log('Mods stopped and cleaned up successfully');
     }
     ui.sendLauncherMessage('modsStopped');

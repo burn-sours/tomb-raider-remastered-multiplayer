@@ -1325,13 +1325,20 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 userData = {...userData, ...options};
             },
 
+            receivePlayerDisconnect: (playerId) => {
+                const playerConnection = otherPlayers.find(p => p.id === playerId);
+                if (playerConnection) {
+                    game.cleanupOtherPlayer(playerConnection);
+                }
+            },
+
             cleanupOtherPlayer: (connection) => {
                 if (!connection) return;
 
                 if (pvpMode) {
                     const gameDll = game.getGameModule();
                     const aimingEnemy = game.readMemoryVariable("LaraAimingEnemy", gameDll);
-                    
+
                     if (String(aimingEnemy) === String(connection.laraPointer)) {
                         game.writeMemoryVariable("LaraAimingEnemy", 0x0, gameDll);
                         game.writeMemoryVariable("LaraAimingYaw", 0x0, gameDll);

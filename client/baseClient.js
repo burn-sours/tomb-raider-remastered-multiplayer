@@ -385,6 +385,18 @@ class BaseGameClient {
                 }
                 break;
 
+            case netcode.PACKET_TYPE_DISCONNECT:
+                if (!checkKeys()) return;
+                const disconnectEvent = netcode.decodeDisconnect(msg);
+                try {
+                    if (await this.gameFunctions.isInGame()) {
+                        await this.gameFunctions.receivePlayerDisconnect(disconnectEvent.id);
+                    }
+                } catch (err) {
+                    if (!this.exiting) console.error('Error in disconnect gamescript: ', err);
+                }
+                break;
+
             default:
                 console.error(`Unknown: ${packetType}`);
         }
@@ -666,6 +678,38 @@ class BaseGameClient {
         if (this.exiting) return;
         ui.sendLauncherMessage('connectionFailed');
         ipcMain.emit('stopMods');
+    }
+
+    async sendDisconnect(userData) {
+        if (!userData.multiplayer || !this.connectedId || !this.socket.remoteAddress) {
+            return;
+        }
+
+        try {
+            const gameVersion = await this.gameFunctions.readMemoryVariable("GameVersion", this.manifest.executable);
+            const levelId = await this.gameFunctions.readMemoryVariable("Level", this.manifest.executable);
+
+            const disconnectPacket = await netcode.compress(netcode.encodeDisconnect({
+                _v: config.client.major,
+                _t: Date.now(),
+                id: this.connectedId,
+                name: userData.name,
+                lobby: userData.lobbyCode,
+                version: gameVersion,
+                bundleId: this.bundleIdInteger,
+                level: levelId,
+            }));
+
+            this.socket.send(disconnectPacket, (err) => {
+                if (err && !this.exiting) {
+                    console.error('Failed to send disconnect packet:', err);
+                }
+            });
+        } catch (err) {
+            if (!this.exiting) {
+                console.error('Error sending disconnect packet:', err);
+            }
+        }
     }
 
     async cleanup() {
