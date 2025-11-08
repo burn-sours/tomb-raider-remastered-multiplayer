@@ -975,7 +975,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 const laraRoom = lara.add(0x1c).readS16();
 
                 let directionX = targetX - cameraX;
-                let directionY = (targetY) - cameraY;
+                let directionY = targetY - cameraY;
                 let directionZ = targetZ - cameraZ;
 
                 // Check Line of sight

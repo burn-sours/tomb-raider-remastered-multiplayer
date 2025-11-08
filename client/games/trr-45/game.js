@@ -691,14 +691,14 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 const resolutionWidth = game.readMemoryVariable("UiResWidth", module);
                 const resolutionHeight = game.readMemoryVariable("UiResHeight", module);
                 const cameraX = game.readMemoryVariable("CameraFixedX", module);
-                const cameraZ = game.readMemoryVariable("CameraFixedZ", module);
                 const cameraY = game.readMemoryVariable("CameraFixedY", module);
+                const cameraZ = game.readMemoryVariable("CameraFixedZ", module);
                 const cameraYaw = game.readMemoryVariable("CameraYaw", module);
                 const cameraPitch = game.readMemoryVariable("CameraPitch", module);
                 const laraRoom = lara.add(moduleVariables.LaraRoomId.Pointer).readS16();
 
                 let directionX = targetX - cameraX;
-                let directionY = (targetY) - cameraY;
+                let directionY = targetY - cameraY;
                 let directionZ = targetZ - cameraZ;
 
                 // Check Line of sight
@@ -747,16 +747,17 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 const cameraForwardX = game.readMemoryVariable("CameraForwardX", module);
                 const cameraForwardY = game.readMemoryVariable("CameraForwardY", module);
                 const cameraForwardZ = game.readMemoryVariable("CameraForwardZ", module);
+                
                 const cameraSpaceX = directionZ * cameraRightZ + directionY * cameraRightY + directionX * cameraRightX;
-                const cameraSpaceZ = directionX * cameraForwardX + directionZ * cameraForwardZ + directionY * cameraForwardY;
                 const cameraSpaceY = directionX * cameraUpX + directionZ * cameraUpZ + directionY * cameraUpY;
-
-                const fovScaled = game.readMemoryVariable("CameraFOV", module);
+                const cameraSpaceZ = directionX * cameraForwardX + directionZ * cameraForwardZ + directionY * cameraForwardY;
+                
+                const fovScaled = game.readMemoryVariable("CameraFov", module);
                 let fovResolution = game.readMemoryVariable("ResolutionH", manifest.executable);
 
                 const screenX = (screenHeight * (cameraSpaceX / (cameraSpaceZ / fovScaled) + resolutionWidth)) / fovResolution;
                 const screenY = (screenHeight * (cameraSpaceY / (cameraSpaceZ / fovScaled) + resolutionHeight)) / fovResolution;
-
+                
                 return {x: screenX, y: screenY};
             },
 
