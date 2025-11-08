@@ -148,10 +148,14 @@ async function stopMods() {
         console.log('Stopping mods...');
         activeGameClient.exiting = true;
         activeGameClient.stopConnectionHealthCheck();
-        activeGameClient.socket.close();
-        activeGameClient.socket = dgram.createSocket('udp4');
+        try {
+            socket.removeAllListeners();
+            socket.close();
+        } catch (err) { /**/ }
+        socket = dgram.createSocket('udp4');
+        gameClients.forEach(gc => gc.client.socket = socket);
+        await delay(2000);
         await activeGameClient.cleanup();
-        activeGameClient.exiting = false;
         activeGameClient = null;
         console.log('Mods stopped and cleaned up successfully');
     }
@@ -165,17 +169,26 @@ async function setupFrida() {
             console.error("Invalid game client for:", activeUserData.game);
             return false;
         }
+        activeGameClient.exiting = false;
     }
 
     const customExePath = activeUserData.customExePath || null;
     if (customExePath && !activeGameClient?.session) {
-        spawn(customExePath, [], {
-            detached: false,
-            stdio: 'inherit',
-            cwd: path.dirname(customExePath)
-        });
-        await delay(2000);
+        const isRunning = await activeGameClient.isProcessRunning(customExePath);
+        if (!isRunning) {
+            console.log(`Launching ${path.basename(customExePath)}...`);
+
+            spawn(customExePath, [], {
+                detached: false,
+                stdio: 'inherit',
+                cwd: path.dirname(customExePath)
+            });
+
+            await delay(2000);
+        }
     }
+
+    console.log('Attach to game process...');
 
     while (!activeGameClient.session) {
         try {
@@ -194,6 +207,8 @@ async function setupFrida() {
         }
     }
 
+    console.log('Setting up game script...');
+
     await activeGameClient.setupGameScript(activeUserData);
 
     await activeGameClient.setupGame();
@@ -201,6 +216,12 @@ async function setupFrida() {
 
 async function cleanup() {
     exiting = true;
+
+    try {
+        socket.removeAllListeners();
+        socket.disconnect();
+    } catch (err) { /**/ }
+
     if (activeGameClient) {
         activeGameClient.exiting = true;
         await activeGameClient.cleanup();

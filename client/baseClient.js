@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const frida = require('frida');
-const dgram = require('dgram');
 const crypto = require('crypto');
+const { ipcMain } = require('electron');
 const { netcode } = require('../shared');
 const gameManifests = require("./games/manifest");
 const featureManifests = require("./features/manifest");
@@ -69,11 +69,22 @@ class BaseGameClient {
     sendToServer (message) {
         if (this.exiting || !this.socket.remoteAddress) return;
         this.socket.send(message, (err) => {
-            if (err) {
-                this.socket?.close();
-                this.socket = dgram.createSocket('udp4');
+            if (err && !this.exiting) {
+                console.error('Socket send error:', err);
             }
         });
+    }
+
+    async isProcessRunning(customExePath = null) {
+        const target = customExePath ? path.basename(customExePath) : this.manifest.executable;
+        try {
+            const device = await frida.getLocalDevice();
+            const processes = await device.enumerateProcesses();
+            return processes.some(p => p.name === target);
+        } catch (err) {
+            console.error('Error checking if game is running:', err);
+            return false;
+        }
     }
 
     async setupSession(manualPatch = null, customExePath = null) {
@@ -159,6 +170,7 @@ class BaseGameClient {
         } catch (err) {
             console.error('Error loading game script:', err);
             this.gameScript = null;
+            throw err;
         }
     }
 
@@ -470,7 +482,7 @@ class BaseGameClient {
             );
         }
 
-        if (loop) {
+        if (loop && !this.exiting) {
             this.updateLoopTimeout = setTimeout(() => this.updateLoop(), 1000);
         }
     }
@@ -538,7 +550,7 @@ class BaseGameClient {
             );
         }
 
-        if (loop) {
+        if (loop && !this.exiting) {
             this.frameLoopTimeout = setTimeout(() => this.frameLoop(), 33);
         }
     }
@@ -610,7 +622,7 @@ class BaseGameClient {
             }
         }
 
-        if (loop) {
+        if (loop && !this.exiting) {
             this.tickLoopTimeout = setTimeout(() => this.tickLoop(), 10);
         }
     }
@@ -652,14 +664,8 @@ class BaseGameClient {
 
     async handleConnectionFailure() {
         if (this.exiting) return;
-
-        this.stopConnectionHealthCheck();
-        this.socket.close();
-        this.socket = dgram.createSocket('udp4');
-        this.exiting = true;
-        await this.cleanup();
-        this.exiting = false;
         ui.sendLauncherMessage('connectionFailed');
+        ipcMain.emit('stopMods');
     }
 
     async cleanup() {
@@ -675,6 +681,17 @@ class BaseGameClient {
         }
         this.gameScript = null;
         this.connectedId = null;
+        this.lastReceivedPacket = null;
+        this.memoryAddresses = null;
+        this.lastFiredLeft = 0;
+        this.lastFiringLeft = 0;
+        this.lastFiredRight = 0;
+        this.lastFiringRight = 0;
+        this.lastFiredFlare = 0;
+        this.lastFiringFlare = 0;
+        this.pvpDamage = [null, 0, 0];
+        this.pvpMode = false;
+        this.inPhotoMode = false;
 
         if (this.session) {
             try {
