@@ -59,10 +59,6 @@ const buildServer = async () => {
     const outputDir = path.join(__dirname, 'releases');
     const outputExe = path.join(outputDir, `Burn's Multiplayer Server ${version}.exe`);
 
-    if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, {recursive: true});
-    }
-
     await pkg([
         'server/index.js',
         '--target', 'node18-win-x64',
@@ -83,8 +79,14 @@ const buildServer = async () => {
 
 (async () => {
     try {
+        const outputDir = path.join(__dirname, 'releases');
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, {recursive: true});
+        }
+
         await buildClient();
         await buildServer();
+
         console.log('\nAll builds completed successfully!');
     } catch (error) {
         console.error('\nBuild failed:', error);
