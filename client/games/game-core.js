@@ -338,10 +338,12 @@ module.exports = {
                 for (let module of [manifest.executable, ...Object.keys(manifest.modules)]) {
                     const moduleAddresses = game.getModuleAddresses(module);
                     for (let fnName of Object.keys(moduleAddresses.hooks)) {
-                        const fn = moduleAddresses.hooks[fnName];
-                        game.hookFunction(
-                            module, fnName, fn.Address, fn.Return, fn.Params, fn.Disable
-                        );
+                        if (fnName in hooksExecution) {
+                            const fn = moduleAddresses.hooks[fnName];
+                            game.hookFunction(
+                                module, fnName, fn.Address, fn.Return, fn.Params, fn.Disable
+                            );
+                        }
                     }
                 }
 
