@@ -170,12 +170,6 @@ module.exports = {
             Params: [],
             Return: 'void',
             Disable: false
-        },
-        ProcessLaraState: {
-            Address: "0x60ce0",
-            Params: ['int'],
-            Return: 'void',
-            Disable: false
         }
     },
 

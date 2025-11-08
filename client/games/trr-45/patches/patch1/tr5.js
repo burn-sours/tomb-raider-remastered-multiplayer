@@ -437,13 +437,7 @@ module.exports = {
             Params: [],
             Return: 'void',
             Disable: false
-        },
-        ProcessLaraState: {
-            Address: "0x5c490",
-            Params: ['int'],
-            Return: 'void',
-            Disable: false
-        },
+        }
     },
 
     /** tomb5.dll sounds */
