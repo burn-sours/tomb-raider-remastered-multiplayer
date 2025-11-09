@@ -648,12 +648,12 @@ class BaseGameClient {
         this.connectionHealthCheck = setInterval(() => {
             if (this.exiting) return;
 
-            const timeout = this.connectedId ? 10000 : 5000;
+            const timeout = this.connectedId ? 30000 : 5000;
             const timeSinceLastPacket = Date.now() - this.lastReceivedPacket;
 
             if (timeSinceLastPacket > timeout) {
                 console.error(`Connection timeout - no packets for ${timeout}ms`);
-                this.handleConnectionFailure();
+                this.handleConnectionFailure().then(() => { /**/ });
             }
         }, 2000);
     }
