@@ -318,14 +318,10 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             isOnlyPermaDamageEnabled: () => {
                 if (userData.multiplayer) return false;
-
                 if (userData.standaloneFeatureId !== null) return false;
 
-                const enabledFeatures = supportedFeatures
-                    .filter(f => f.standalone !== true)
-                    .map(f => f.id)
-                    .filter(f => userData[f] === true);
-
+                const enabledFeatures = supportedFeatures.filter(f => !f.standalone && userData[f.id]).map(f => f.id);
+                
                 return enabledFeatures.length === 1 && enabledFeatures[0] === 'perma-damage';
             },
 
@@ -871,18 +867,20 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 if (topLabel) return;
                 
                 const module = game.getGameModule();
-                
                 const enabledMulti = userData.multiplayer;
 
                 const lobbyName = enabledMulti ? (!userData.hideLobbyCode && userData.lobbyCode?.length && userData.lobbyCode !== "_" ? userData.lobbyCode + "; " : "") : "";
 
+                const labelText = (game.isOnlyPermaDamageEnabled() ? permaDamageText : (enabledMulti ? multiplayerText : modsText) ) 
+                                        + " (" + lobbyName + "Main Menu)";
+                
                 topLabel = ptr(game.runFunction(
                     module, 
                     "AddText", 
                     0, 
                     0, 
                     0x38, 
-                    game.allocString((enabledMulti ? multiplayerText : modsText) + " (" + lobbyName + "Main Menu)")
+                    game.allocString(labelText)
                 ));
                 topLabel.writeS32(4097); // full settings
                 topLabel.add(0x50).writeS32(15000); // font size
@@ -1340,12 +1338,14 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             updateLaunchOptions(options) {
                 playerNamesMode = isNaN(parseInt(options.playerNamesMode)) ? 1 : parseInt(options.playerNamesMode);
 
-                if (game.isInGame()) {
-                    game.deleteUiText(topLabel);
-                    topLabel = null;
-                }
-
                 userData = {...userData, ...options};
+
+                game.deleteUiText(topLabel);
+                topLabel = null;
+
+                if (game.isInMenu()) {
+                    game.setupMenuText();
+                }
             },
 
             receivePlayerDisconnect: (playerId) => {
@@ -2212,8 +2212,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             topLabel.add(0x40).writeS32(0x0); // color
                         }
 
-                        const displayText = labelText + " (" + game.levelName(currentLevel) + ")" 
-                                + (isPermaDamageOnly ? " [" + userData.gameHash.substring(0, 8) + "]" : "");
+                        let displayText = labelText + " (" + game.levelName(currentLevel) + ")";
+                        if (isPermaDamageOnly) {
+                            const health = Math.max(0, lara.add(moduleVariables.LaraHealth.Pointer).readS16());
+                            displayText += " - " + userData.gameHash.substring(0, 8) + " - HP: " + health;
+                        }
                         game.updateString(
                             topLabel.add(0x48).readPointer(),
                             displayText

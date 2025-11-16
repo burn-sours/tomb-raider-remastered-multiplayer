@@ -322,13 +322,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             isOnlyPermaDamageEnabled: () => {
                 if (userData.multiplayer) return false;
-
                 if (userData.standaloneFeatureId !== null) return false;
 
-                const enabledFeatures = supportedFeatures
-                    .filter(f => f.standalone !== true)
-                    .map(f => f.id)
-                    .filter(f => userData[f] === true);
+                const enabledFeatures = supportedFeatures.filter(f => !f.standalone && userData[f.id]).map(f => f.id);
 
                 return enabledFeatures.length === 1 && enabledFeatures[0] === 'perma-damage';
             },
@@ -1453,7 +1449,14 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                         const isPermaDamageOnly = game.isOnlyPermaDamageEnabled();
                         const labelText = isPermaDamageOnly ? permaDamageText : modsText;
-                        const displayText = labelText + " (" + levelName + ")" + (isPermaDamageOnly ? " [" + userData.gameHash.substring(0, 8) + "]" : "");
+                        let displayText = labelText + " (" + levelName + ")";
+                        if (isPermaDamageOnly) {
+                            displayText += " - " + userData.gameHash.substring(0, 8);
+                            if (game.isInGame()) {
+                                const health = Math.max(0, lara.add(moduleVariables.LaraHealth.Pointer).readS16());
+                                displayText += " - HP: " + health;
+                            }
+                        }
                         game.drawTextLabel(displayText, 0, true, null, 2, 5, .25, .25);
                         return;
                     }
