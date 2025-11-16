@@ -493,8 +493,6 @@ class BaseGameClient {
         const eventType = message.payload?.event;
         if (!eventType || !eventType.startsWith("standalone:")) return;
 
-        console.log(eventType.replace("standalone:", ""));
-
         ui.broadcast(eventType.replace("standalone:", ""), message.payload.args);
     }
 

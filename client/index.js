@@ -243,6 +243,11 @@ async function setupFrida() {
 }
 
 async function openStandaloneFeature(featureId) {
+    if (ui.standaloneFeatureId === featureId) {
+        ui.standaloneWindow?.focus();
+        return;
+    }
+
     const feature = featureManifests.features.find(f => f.id === featureId);
     if (!feature) {
         console.error('Feature not found:', featureId);

@@ -103,11 +103,6 @@ function updateCurrentLevel(levelId) {
     });
 }
 
-window.api.on('levelSelectOpened', () => {
-    isAttached = true;
-    window.api.callFeatureAction('level-select', 'refreshData', {});
-});
-
 window.api.on('levelSelectData', (data) => {
     currentLevel = data.currentLevel;
     levels = data.levels;
@@ -149,3 +144,8 @@ window.api.on('modStopped', () => {
     loopLevelToggle.checked = false;
     restartButton.classList.add('hidden');
 });
+
+window.document.addEventListener("DOMContentLoaded", () => {
+    isAttached = true;
+    window.api.callFeatureAction('level-select', 'refreshData', {});
+})

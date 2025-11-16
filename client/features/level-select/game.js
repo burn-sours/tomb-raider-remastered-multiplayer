@@ -66,11 +66,9 @@ module.exports = {
             if (userData.standaloneFeatureId !== 'level-select') return;
             
             try {
-
                 if (!levelSelectInitialized) {
                     initializeLevelSelect();
                 }
-
                 if (!levelSelectInitialized) return;
 
                 const module = game.getGameModule();

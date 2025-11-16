@@ -169,6 +169,12 @@
     display: block;
 }
 
+#restartButton svg {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+}
+
 .hidden {
     display: none !important;
 }
