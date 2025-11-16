@@ -24,16 +24,20 @@ module.exports = {
             after: `
                 if (!userData['perma-damage']) return;
 
-                // Define 1st levels to engage permadamage (skip tutorial/home levels) and first expansion levels
+                // Define 1st levels to engage permadamage
                 const firstLevel = {'tomb1.dll': 2, 'tomb2.dll': 2, 'tomb3.dll': 2, 'tomb4.dll': 2, 'tomb5.dll': 2};
                 const firstExpansionLevel = {'tomb1.dll': 18, 'tomb2.dll': 19, 'tomb3.dll': 21, 'tomb4.dll': 40, 'tomb5.dll': 0};
                 const moduleAddresses = game.getModuleAddresses(module);
                 const lara = game.getLara();
+                const healthPointer = moduleAddresses.variables.LaraHealth.Pointer;
                 
                 if (lara && !lara.isNull() && game.isLevelSupported(currentLevel)) {
-                    // Only restore health after first level
+                    if (lara.add(healthPointer).readS16() > 1000) {
+                        lara.add(healthPointer).writeS16(1000);
+                    }
+                    
                     if ((currentLevel >= firstLevel[module] && currentLevel !== firstExpansionLevel[module]) && permaDamageHealth > 0) {
-                        lara.add(moduleAddresses.variables.LaraHealth.Pointer).writeS16(permaDamageHealth);
+                        lara.add(healthPointer).writeS16(Math.min(1000, permaDamageHealth));
                     }
                 }
             `
