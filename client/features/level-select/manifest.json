@@ -1,0 +1,11 @@
+{
+  "id": "level-select",
+  "type": "feature",
+  "standalone": true,
+  "name": "Level Select",
+  "ui": {
+    "label": "Quick level navigation and control",
+    "windowTitle": "Level Select"
+  },
+  "supportedGames": ["trr-123", "trr-45"]
+}

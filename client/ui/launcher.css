@@ -20,9 +20,8 @@ body {
     flex-shrink: 0;
     height: 60px;
     align-items: center;
-    justify-content: space-between;
     display: flex;
-    gap: 20px;
+    gap: 10px;
 }
 
 .header .logo {
@@ -37,6 +36,7 @@ body {
     display: flex;
     gap: 12px;
     align-items: center;
+    margin-left: auto;
 }
 
 .icon-link {
@@ -67,6 +67,77 @@ body {
 
 .icon-link-speedrun:hover svg {
     filter: grayscale(0%) brightness(1);
+}
+
+.features-menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.features-menu-button svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.features-menu-button:hover {
+    color: #fb6010;
+    background-color: rgba(251, 96, 16, 0.1);
+}
+
+.features-menu-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.features-menu-button:disabled:hover {
+    color: inherit;
+    background-color: transparent;
+}
+
+.features-dropdown {
+    display: none;
+    position: absolute;
+    top: 60px;
+    left: 60px;
+    background: #1a1816;
+    min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.features-dropdown.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.features-dropdown-item {
+    background: transparent;
+    border: none;
+    color: #f5f3f0;
+    padding: 12px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: system-ui;
+    transition: background 0.15s ease;
+    border-radius: 0;
+}
+
+.features-dropdown-item:hover {
+    background: #2a2522;
 }
 
 main {

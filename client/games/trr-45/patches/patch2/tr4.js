@@ -33,6 +33,14 @@ module.exports = {
             Address: "0x661004",
             Type: "Int32"
         },
+        ReturnToMainMenu: {
+            Address: "0x1bc0f0",
+            Type: "Int8",
+        },
+        NewGamePlus: {
+            Address: "0x68f178",
+            Type: "UInt8"
+        },
         LaraId: {
             Address: "0x4f3d80",
             Type: "Int16"
@@ -319,7 +327,7 @@ module.exports = {
             Address: "0x1005c0",
             Params: ['pointer'],
             Return: 'void',
-            Disable: false
+            Disable: true
         },
         LaraInLevel: {
             Address: "0x87e70",

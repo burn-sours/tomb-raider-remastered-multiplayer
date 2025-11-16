@@ -43,6 +43,9 @@ ui.setupEvents({
     "log": (e, m) => console.log(...m),
     "errorBox": (e, m) => dialog.showErrorBox(...m),
     "openMultiplayerTool": () => ui.createMultiplayerWindow(activeUserData),
+    "openStandaloneFeature": (e, featureId) => openStandaloneFeature(featureId),
+    "standaloneWindowClosed": (closedFeatureId) => onStandaloneWindowClosed(closedFeatureId),
+    "featureAction": (e, {feature, action, data}) => activeGameClient?.gameFunctions?.callFeatureAction(feature, action, data),
     "getFeatureManifests": () => featureManifests,
     "openExternal": (e, url) => shell.openExternal(url)
 });
@@ -97,8 +100,10 @@ process.on('unhandledRejection', async (err) => {
 async function launchGame(launchOptions) {
     activeUserData = {...activeUserData, ...launchOptions};
 
+    ui.broadcast('modInjecting', {customExePath: launchOptions.customExePath});
+
     if (activeUserData.multiplayer && (!activeUserData.name || activeUserData.name.trim().length < 1)) {
-        ui.sendLauncherMessage('requiredInputFailed', {name: activeUserData.name});
+        ui.broadcast('requiredInputFailed', {name: activeUserData.name});
         return;
     }
 
@@ -106,7 +111,7 @@ async function launchGame(launchOptions) {
         const gameManifest = gameManifests.games.find(g => g.id === activeUserData.game);
         const selectedExe = path.basename(activeUserData.customExePath);
         if (gameManifest && selectedExe.toLowerCase() !== gameManifest.executable.toLowerCase()) {
-            ui.sendLauncherMessage('requiredInputFailed', {customExePath: activeUserData.customExePath});
+            ui.broadcast('requiredInputFailed', {customExePath: activeUserData.customExePath});
             dialog.showErrorBox('Invalid Executable', `Selected game is ${gameManifest.name} which requires ${gameManifest.executable}, but you selected ${selectedExe}`);
             return;
         }
@@ -120,9 +125,12 @@ async function launchGame(launchOptions) {
     if (setupSuccess === false) return;
 
     try {
-        ui.sendLauncherMessage('modInjected');
+        ui.broadcast('modInjected');
 
-        await activeGameClient.launchGame(activeUserData);
+        await activeGameClient.launchGame({
+            ...activeUserData,
+            standaloneFeatureId: ui.standaloneFeatureId
+        });
     } catch (err) {}
 }
 
@@ -130,7 +138,7 @@ async function updateGame(launchOptions) {
     activeUserData = {...activeUserData, ...launchOptions};
 
     if (activeUserData.multiplayer && (!activeUserData.name || activeUserData.name.trim().length < 1)) {
-        ui.sendLauncherMessage('requiredInputFailed', {name: activeUserData.name});
+        ui.broadcast('requiredInputFailed', {name: activeUserData.name});
         return;
     }
 
@@ -138,14 +146,21 @@ async function updateGame(launchOptions) {
     delete optionsToSave.manualPatch;
     userdata.writeOptions(optionsToSave);
 
-    ui.sendLauncherMessage('modInjected');
+    ui.broadcast('modInjected');
 
-    await activeGameClient.updateGame(activeUserData);
+    await activeGameClient.updateGame({
+        ...activeUserData,
+        standaloneFeatureId: ui.standaloneFeatureId
+    });
 }
 
 async function stopMods() {
+    ui.broadcast('modStopping');
+
     if (activeGameClient) {
         console.log('Stopping mods...');
+
+        ui.standaloneWindow?.close();
 
         activeGameClient.exiting = true;
         activeGameClient.stopConnectionHealthCheck();
@@ -168,7 +183,8 @@ async function stopMods() {
 
         console.log('Mods stopped and cleaned up successfully');
     }
-    ui.sendLauncherMessage('modsStopped');
+
+    ui.broadcast('modStopped');
 }
 
 async function setupFrida() {
@@ -206,7 +222,7 @@ async function setupFrida() {
                 customExePath
             );
             if (!supported) {
-                ui.sendLauncherMessage('patchDetectionFailed', activeGameClient.getPatches());
+                ui.broadcast('patchDetectionFailed', activeGameClient.getPatches());
                 activeGameClient.resetSession();
                 return false;
             }
@@ -218,9 +234,41 @@ async function setupFrida() {
 
     console.log('Setting up game script...');
 
-    await activeGameClient.setupGameScript(activeUserData);
+    await activeGameClient.setupGameScript({
+        ...activeUserData,
+        standaloneFeatureId: ui.standaloneFeatureId
+    });
 
     await activeGameClient.setupGame();
+}
+
+async function openStandaloneFeature(featureId) {
+    const feature = featureManifests.features.find(f => f.id === featureId);
+    if (!feature) {
+        console.error('Feature not found:', featureId);
+        return;
+    }
+
+    await ui.createStandaloneWindow(featureId, feature, activeUserData);
+
+    if (activeGameClient?.session) {
+        await activeGameClient.updateGame({
+            ...activeUserData,
+            standaloneFeatureId: ui.standaloneFeatureId
+        });
+    }
+}
+
+async function onStandaloneWindowClosed(closedFeatureId) {
+    if (activeGameClient?.session) {
+        if (closedFeatureId) {
+            await activeGameClient.cleanupStandaloneFeature(closedFeatureId);
+        }
+        await activeGameClient.updateGame({
+            ...activeUserData,
+            standaloneFeatureId: ui.standaloneFeatureId
+        });
+    }
 }
 
 async function cleanup() {

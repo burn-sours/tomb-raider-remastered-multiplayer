@@ -1,10 +1,12 @@
 const path = require('path');
-const {Menu, shell, ipcMain, BrowserWindow} = require("electron");
+const {Menu, shell, ipcMain, BrowserWindow, app} = require("electron");
 
 module.exports = new class {
     constructor() {
         this.welcomeWindow = null;
         this.launcherWindow = null;
+        this.standaloneWindow = null;
+        this.standaloneFeatureId = null;
     }
 
     /**
@@ -12,12 +14,6 @@ module.exports = new class {
      */
     setupApplicationMenu() {
         Menu.setApplicationMenu(Menu.buildFromTemplate([
-            {
-                label: 'File',
-                submenu: [
-                    { label: 'Close Mod', role: 'quit' }
-                ]
-            },
             {
                 label: 'Links',
                 submenu: [
@@ -104,14 +100,6 @@ module.exports = new class {
         this.welcomeWindow = newWindow;
     }
 
-    /**
-     * Send an event to the welcome interface
-     * @param msg
-     * @param data
-     */
-    sendWelcomeMessage(msg, data = {}) {
-        this.welcomeWindow?.webContents.send(msg, data);
-    }
 
     /**
      * Create the mod launcher interface
@@ -140,6 +128,15 @@ module.exports = new class {
 
         newWindow.on('closed', () => {
             this.launcherWindow = null;
+
+            if (this.welcomeWindow) {
+                this.welcomeWindow.close();
+            }
+            if (this.standaloneWindow) {
+                this.standaloneWindow.close();
+            }
+
+            app.quit();
         });
 
         await newWindow.loadFile(path.join(__dirname, 'ui/launcher.html'));
@@ -147,7 +144,7 @@ module.exports = new class {
         this.launcherWindow = newWindow;
 
         if (this.launcherWindow) {
-            this.sendLauncherMessage("launcherOptions", activeUserData);
+            this.broadcast("launcherOptions", activeUserData);
         }
 
         if (this.welcomeWindow) {
@@ -156,11 +153,65 @@ module.exports = new class {
     }
 
     /**
-     * Send an event to the launcher interface
+     * Broadcast an event to all windows (welcome, launcher, standalone)
      * @param msg
      * @param data
      */
-    sendLauncherMessage(msg, data = {}) {
+    broadcast(msg, data = {}) {
+        this.welcomeWindow?.webContents.send(msg, data);
         this.launcherWindow?.webContents.send(msg, data);
+        this.standaloneWindow?.webContents.send(msg, data);
     }
+
+    /**
+     * Create a standalone feature window
+     * @param featureId
+     * @param featureManifest
+     * @param activeUserData
+     * @returns {Promise<void>}
+     */
+    async createStandaloneWindow(featureId, featureManifest, activeUserData) {
+        if (this.standaloneWindow) {
+            this.standaloneWindow.close();
+        }
+
+        this.standaloneFeatureId = featureId;
+
+        const windowTitle = featureManifest.ui?.windowTitle || featureManifest.name;
+
+        const newWindow = new BrowserWindow({
+            width: 400,
+            height: 600,
+            x: this.launcherWindow?.getPosition()[0] || undefined,
+            y: this.launcherWindow?.getPosition()[1] || undefined,
+            resizable: false,
+            icon: path.join(__dirname, 'ui/images/burn.ico'),
+            title: windowTitle,
+            webPreferences: {
+                preload: path.join(__dirname, 'ui/standalone-preload.js'),
+                contextIsolation: true,
+                devTools: true,
+            }
+        });
+
+        newWindow.on('closed', () => {
+            const closedFeatureId = this.standaloneFeatureId;
+            this.standaloneWindow = null;
+            this.standaloneFeatureId = null;
+            ipcMain.emit('standaloneWindowClosed', closedFeatureId);
+        });
+
+        await newWindow.loadFile(path.join(__dirname, 'features', featureId, 'ui.html'));
+
+        this.standaloneWindow = newWindow;
+
+        if (this.standaloneWindow) {
+            this.broadcast("launcherOptions", activeUserData);
+        }
+
+        if (this.welcomeWindow) {
+            this.welcomeWindow.close();
+        }
+    }
+
 };

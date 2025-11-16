@@ -86,7 +86,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     "16": "Egypt",
                     "17": "Temple of Cat",
                     "18": "Stronghold",
-                    "19": "Hive"
+                    "19": "Hive",
+                    "24": "Main Menu"
                 },
                 "tomb2.dll": {
                     "0": "Lara's Home - TR2",
@@ -112,7 +113,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     "20": "Fool's Gold",
                     "21": "Furnace of Gods",
                     "22": "Kingdom",
-                    "23": "Vegas"
+                    "23": "Vegas",
+                    "63": "Main Menu"
                 },
                 "tomb3.dll": {
                     "0": "Lara's Home - TR3",
@@ -141,7 +143,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     "23": "Shakespeare Cliff",
                     "24": "Fishes",
                     "25": "Madhouse",
-                    "26": "Reunion"
+                    "26": "Reunion",
+                    "63": "Main Menu"
                 }
             },
 
@@ -316,8 +319,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             isOnlyPermaDamageEnabled: () => {
                 if (userData.multiplayer) return false;
 
-                const allFeatures = supportedFeatures.map(f => f.id);
-                const enabledFeatures = allFeatures.filter(f => userData[f] === true);
+                if (userData.standaloneFeatureId !== null) return false;
+
+                const enabledFeatures = supportedFeatures
+                    .filter(f => f.standalone !== true)
+                    .map(f => f.id)
+                    .filter(f => userData[f] === true);
 
                 return enabledFeatures.length === 1 && enabledFeatures[0] === 'perma-damage';
             },
@@ -779,7 +786,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             }
 
                             send({
-                                event: "sendChat",
+                                event: "multiplayer:sendChat",
                                 args: {text: userData.name + " teleported to " + playerConnection.name, chatAction: true}
                             });
                         } else if (lastSelected.reason === "levelskip") {
@@ -795,11 +802,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     playerConnection.uiText = null;
                                 }
                             }
-                            send({event: "playerNamesMode", args: {mode: playerNamesMode}});
+                            send({event: "multiplayer:playerNamesMode", args: {mode: playerNamesMode}});
                         } else if (lastSelected.reason === "toggle_pvp") {
                             // Toggle PVP
                             pvpMode = !pvpMode;
-                            send({event: "sendPVPMode", args: {pvpMode}});
+                            send({event: "multiplayer:sendPVPMode", args: {pvpMode}});
                         }
                         break;
 
@@ -1276,7 +1283,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                         if (newHealth <= 0) {
                             send({
-                                event: "sendChat",
+                                event: "multiplayer:sendChat",
                                 args: {text: playerConnection.name + " killed " + userData.name, chatAction: true}
                             });
                         }
@@ -1332,6 +1339,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             
             updateLaunchOptions(options) {
                 playerNamesMode = isNaN(parseInt(options.playerNamesMode)) ? 1 : parseInt(options.playerNamesMode);
+
+                if (game.isInGame()) {
+                    game.deleteUiText(topLabel);
+                    topLabel = null;
+                }
+
                 userData = {...userData, ...options};
             },
 
@@ -1536,7 +1549,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     return;
                                 } else if (key === "enter") {
                                     if (chatMessage.length > 0) {
-                                        send({event: "sendChat", args: {text: chatMessage}});
+                                        send({event: "multiplayer:sendChat", args: {text: chatMessage}});
                                         chatMessage = "";
                                     }
                                     game.closeChat(false);
@@ -1699,7 +1712,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         const cacheKey = String(type);
                         if (!lastCapturedSFX[cacheKey] || (Date.now() - lastCapturedSFX[cacheKey] >= 30)) {
                             send({
-                                event: "sendSound", 
+                                event: "multiplayer:sendSound", 
                                 args: {
                                     sound: String(type),
                                     soundFactor: String(f)
@@ -1723,7 +1736,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     if (!player?.health || player.health <= 0) return;
 
                     send({
-                        event: "sendDmg", 
+                        event: "multiplayer:sendDmg", 
                         args: {
                             dealDmg: parseInt(dmg, 16),
                             dealWpn: parseInt(weapon, 16),
@@ -1745,28 +1758,29 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         game.deleteUiText(selectedPlayerLabel);
                         selectedPlayerLabel = null;
                     }
+                    
+                    game.deleteAllUiTexts();
 
                     // Main Menu?
+                    currentLevel = game.readMemoryVariable("Level", manifest.executable);
                     if (game.isLevelMenu(currentLevel)) {
-                        game.deleteAllUiTexts();
                         game.setupMenuText();
                     }
                 }
             },
 
             LoadedLevel: {
-                before: (module, p1, p2, p3, p4) => {
+                after: (module, p1, p2, p3, p4) => {
+                    game.deleteUiText(topLabel);
                     topLabel = null;
 
-                    if (module === 'tomb1.dll') {
-                        levelTrackingDisabled = true;
-                        levelIsRestarting = levelLastLoadedId === p1.toInt32();
-                        levelLastLoadedId = p1.toInt32();
-                    } else {
-                        levelTrackingDisabled = true;
-                        levelIsRestarting = (levelLastLoadedId === p2.toInt32());
-                        levelLastLoadedId = p2.toInt32();
-                    }
+                    levelTrackingDisabled = true;
+                    levelIsRestarting = levelLastLoadedId === p1;
+                    levelLastLoadedId = p1;
+
+                    console.log("LoadedLevel", module, p1);
+                    
+                    return game.runFunction(module, "LoadedLevel", p1, p2, p3, p4);
                 }
             },
 
@@ -2550,7 +2564,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         
         game.registerFeatureHooks(supportedFeatures, hooksExecution);
         game.registerHooks(hooksExecution);
-        game.startFeatureLoops(supportedFeatures);
 
         // Export
         rpc.exports = game;

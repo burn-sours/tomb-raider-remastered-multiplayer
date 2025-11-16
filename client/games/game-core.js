@@ -253,8 +253,8 @@ module.exports = {
 
                         if (name in hookActions) {
                             if (logArgs.length) {
-                                hookActions[name].before(...logArgs);
-                                return hookActions[name].after(...logArgs);
+                                hookActions[name].before(logArgs);
+                                return hookActions[name].after(logArgs);
                             }
 
                             hookActions[name].before();
@@ -273,7 +273,7 @@ module.exports = {
                             if (name in hookActions) {
                                 try {
                                     if (this.logArgs.length) {
-                                        hookActions[name].before(...this.logArgs);
+                                        hookActions[name].before(this.logArgs);
                                     } else {
                                         hookActions[name].before();
                                     }
@@ -286,13 +286,13 @@ module.exports = {
                             if (name in hookActions && hookActions[name].after) {
                                 try {
                                     const result = this.logArgs.length
-                                        ? hookActions[name].after(...this.logArgs)
+                                        ? hookActions[name].after(this.logArgs)
                                         : hookActions[name].after();
 
                                     if (result !== undefined && retval) {
                                         if (typeof result === 'object' && result !== null && 'handle' in result) {
                                             retval.replace(result);
-                                        } else if (typeof result === 'number' || typeof result === 'bigint') {
+                                        } else if (typeof result === 'bigint' || typeof result === 'number') {
                                             retval.replace(ptr(result));
                                         }
                                     }
@@ -348,6 +348,8 @@ module.exports = {
                 }
 
                 game.writeMemoryVariable("DevMode", 0, manifest.executable);
+
+                game.startFeatureLoops(supportedFeatures);
             },
             
             cleanupHooks: async () => {
@@ -380,18 +382,18 @@ module.exports = {
                         hooks[module] = {};
                         for (let fnName of Object.keys(moduleAddresses.hooks)) {
                             hooks[module][fnName] = ((fnName) => ({
-                                before(...args) {
-                                    if (!hooksExecution[fnName]?.before) return;
+                                before(argsArray) {
+                                    if (typeof hooksExecution[fnName]?.before !== 'function') return;
                                     try {
-                                        return hooksExecution[fnName].before(module, ...args);
+                                        return hooksExecution[fnName].before(module, argsArray);
                                     } catch (err) {
                                         console.error("Error in hook '" + fnName + "' (" + module + ") before:", err.message, err.stack);
                                     }
                                 },
-                                after(...args) {
-                                    if (!hooksExecution[fnName]?.after) return ptr(0x0);
+                                after(argsArray) {
+                                    if (typeof hooksExecution[fnName]?.after !== 'function') return ptr(0x0);
                                     try {
-                                        return hooksExecution[fnName].after(module, ...args);
+                                        return hooksExecution[fnName].after(module, argsArray);
                                     } catch (err) {
                                         console.error("Error in hook '" + fnName + "' (" + module + ") after:", err.message, err.stack);
                                         return ptr(0x0);
@@ -406,51 +408,79 @@ module.exports = {
             },
 
             registerFeatureHooks: (supportedFeatures, hooksExecution) => {
+                const wrappedHooks = {};
+
+                for (let hookName in hooksExecution) {
+                    const patchHook = hooksExecution[hookName];
+                    wrappedHooks[hookName] = {
+                        before: patchHook.before ? (module, argsArray) => {
+                            return patchHook.before(module, ...(argsArray || []));
+                        } : undefined,
+                        after: patchHook.after ? (module, argsArray) => {
+                            return patchHook.after(module, ...(argsArray || []));
+                        } : undefined
+                    };
+                }
+
                 for (let feature of supportedFeatures) {
                     const featureHooks = feature.game.hooks || {};
                     for (let hookName in featureHooks) {
                         const featureHook = featureHooks[hookName];
-                        const existingHook = hooksExecution[hookName] || {};
+                        const existingHook = wrappedHooks[hookName] || {};
 
                         let featureHookBefore = null;
                         if (featureHook.before) {
                             try {
-                                featureHookBefore = eval('(module, game, userData, ...args) => { ' + featureHook.before + ' }');
+                                featureHookBefore = eval('(module, game, userData, args) => { ' + featureHook.before + ' }');
                             } catch (err) {
                                 console.error('Feature hook compile error [' + feature.id + '.' + hookName + '.before]:', err);
                             }
                         }
-                        
+
                         let featureHookAfter = null;
                         if (featureHook.after) {
                             try {
-                                featureHookAfter = eval('(module, game, userData, ...args) => { ' + featureHook.after + ' }');
+                                featureHookAfter = eval('(module, game, userData, args) => { ' + featureHook.after + ' }');
                             } catch (err) {
                                 console.error('Feature hook compile error [' + feature.id + '.' + hookName + '.after]:', err);
                             }
                         }
 
-                        hooksExecution[hookName] = {
-                            before: (module, ...args) => {
+                        const newHook = {};
+
+                        if (featureHookBefore || typeof existingHook.before === 'function') {
+                            newHook.before = (module, argsArray) => {
                                 if (featureHookBefore) {
-                                    featureHookBefore(module, game, userData, ...args);
+                                    featureHookBefore(module, game, userData, argsArray);
                                 }
-                                if (existingHook.before) {
-                                    return existingHook.before(module, ...args);
+                                if (typeof existingHook.before === 'function') {
+                                    return existingHook.before(module, argsArray);
                                 }
-                            },
-                            after: (module, ...args) => {
+                            };
+                        }
+
+                        if (featureHookAfter || typeof existingHook.after === 'function') {
+                            newHook.after = (module, argsArray) => {
                                 let result = ptr(0x0);
-                                if (existingHook.after) {
-                                    result = existingHook.after(module, ...args);
+                                if (typeof existingHook.after === 'function') {
+                                    result = existingHook.after(module, argsArray);
                                 }
                                 if (featureHookAfter) {
-                                    featureHookAfter(module, game, userData, ...args);
+                                    const featureResult = featureHookAfter(module, game, userData, argsArray);
+                                    if (featureResult !== undefined) {
+                                        result = featureResult;
+                                    }
                                 }
                                 return result;
-                            }
-                        };
+                            };
+                        }
+
+                        wrappedHooks[hookName] = newHook;
                     }
+                }
+
+                for (let hookName in wrappedHooks) {
+                    hooksExecution[hookName] = wrappedHooks[hookName];
                 }
             },
 
@@ -490,6 +520,45 @@ module.exports = {
                 }
             },
 
+            callFeatureAction: (featureId, action, data) => {
+                try {
+                    const feature = supportedFeatures.find(f => f.id === featureId);
+                    if (!feature) {
+                        console.error('Feature not found:', featureId);
+                        return;
+                    }
+
+                    const actionHandler = feature.game.actions?.[action];
+                    if (!actionHandler) {
+                        if (action !== 'cleanup') {
+                            console.warn('Action not found:', action, 'for feature:', featureId);
+                        }
+                        return;
+                    }
+                    
+                    const handlerFn = eval(actionHandler);
+                    if (typeof handlerFn === 'function') {
+                        handlerFn(data);
+                    } else {
+                        console.error('Action handler is not a function:', actionHandler);
+                    }
+                } catch (err) {
+                    console.error('Feature action error:', err);
+                }
+            },
+
+            cleanupStandaloneFeature: (featureId) => {
+                try {
+                    if (featureLoopTimeouts[featureId]) {
+                        clearTimeout(featureLoopTimeouts[featureId]);
+                        delete featureLoopTimeouts[featureId];
+                    }
+                    game.callFeatureAction(featureId, 'cleanup', {});
+                } catch (err) {
+                    console.error('Error cleaning up standalone feature:', err);
+                }
+            },
+
             cleanupFeatures: (supportedFeatures) => {
                 for (let timeoutId of Object.values(featureLoopTimeouts)) {
                     clearTimeout(timeoutId);
@@ -497,14 +566,7 @@ module.exports = {
                 featureLoopTimeouts = {};
 
                 for (let feature of supportedFeatures) {
-                    const cleanup = feature.game.cleanup;
-                    if (cleanup) {
-                        try {
-                            eval(cleanup);
-                        } catch (err) {
-                            console.error('Feature cleanup error:', err);
-                        }
-                    }
+                    game.callFeatureAction(feature.id, 'cleanup', {});
                 }
             }
         };

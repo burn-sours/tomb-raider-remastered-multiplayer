@@ -323,8 +323,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             isOnlyPermaDamageEnabled: () => {
                 if (userData.multiplayer) return false;
 
-                const allFeatures = supportedFeatures.map(f => f.id);
-                const enabledFeatures = allFeatures.filter(f => userData[f] === true);
+                if (userData.standaloneFeatureId !== null) return false;
+
+                const enabledFeatures = supportedFeatures
+                    .filter(f => f.standalone !== true)
+                    .map(f => f.id)
+                    .filter(f => userData[f] === true);
 
                 return enabledFeatures.length === 1 && enabledFeatures[0] === 'perma-damage';
             },
@@ -848,7 +852,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             }
 
                             send({
-                                event: "sendChat",
+                                event: "multiplayer:sendChat",
                                 args: {
                                     text: userData.name + " teleported to " + playerConnection.name,
                                     chatAction: true
@@ -861,11 +865,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         } else if (lastSelected.reason === "toggle_ui") {
                             // Toggle player names display
                             playerNamesMode = playerNamesMode === 3 ? 0 : playerNamesMode + 1;
-                            send({event: "playerNamesMode", args: {mode: playerNamesMode}});
+                            send({event: "multiplayer:playerNamesMode", args: {mode: playerNamesMode}});
                         } else if (lastSelected.reason === "toggle_pvp") {
                             // Toggle PVP
                             pvpMode = !pvpMode;
-                            send({event: "sendPVPMode", args: {pvpMode}});
+                            send({event: "multiplayer:sendPVPMode", args: {pvpMode}});
                         }
                         break;
 
@@ -1145,7 +1149,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                         if (newHealth <= 0) {
                             send({
-                                event: "sendChat",
+                                event: "multiplayer:sendChat",
                                 args: {text: playerConnection.name + " killed " + userData.name, chatAction: true}
                             });
                         }
@@ -1354,7 +1358,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     game.closeChat();
                                 } else if (key === "enter") {
                                     if (chatMessage.length > 0) {
-                                        send({event: "sendChat", args: {text: chatMessage}});
+                                        send({event: "multiplayer:sendChat", args: {text: chatMessage}});
                                         chatMessage = "";
                                     }
                                     game.closeChat();
@@ -1381,7 +1385,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             },
 
             LoadedLevel: {
-                before: (module, p1) => {
+                after: (module, p1) => {
                     levelTrackingDisabled = true;
                     levelIsRestarting = (levelLastLoadedId === currentLevel);
                     levelLastLoadedId = currentLevel;
@@ -1391,6 +1395,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     if (userData.multiplayer) {
                         game.cleanupLaraSlots();
                     }
+
+                    return game.runFunction(module, "LoadedLevel", p1);
                 }
             },
 
@@ -1929,7 +1935,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         const cacheKey = String(type);
                         if (!lastCapturedSFX[cacheKey] || (Date.now() - lastCapturedSFX[cacheKey] >= 30)) {
                             send({
-                                event: "sendSound", args: {
+                                event: "multiplayer:sendSound", args: {
                                     sound: String(type),
                                     soundFactor: String(f)
                                 }
@@ -2077,7 +2083,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     }
 
                     send({
-                        event: "sendDmg", args: {
+                        event: "multiplayer:sendDmg", args: {
                             dealDmg: parseInt(dmg, 16),
                             dealWpn: parseInt(weapon, 16),
                             dealPlayer: String(player.id)
@@ -2234,7 +2240,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             if (hit) {
                                 send({
-                                    event: "sendDmg", args: {
+                                    event: "multiplayer:sendDmg", args: {
                                         dealDmg: dmg,
                                         dealWpn: gunType,
                                         dealPlayer: String(playerConnection.id)
@@ -2250,7 +2256,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
         game.registerFeatureHooks(supportedFeatures, hooksExecution);
         game.registerHooks(hooksExecution);
-        game.startFeatureLoops(supportedFeatures);
 
         rpc.exports = game;
     `);

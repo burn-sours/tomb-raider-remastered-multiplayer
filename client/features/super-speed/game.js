@@ -140,5 +140,7 @@ module.exports = {
         { interval: 100, name: 'superSpeedLoop' }
     ],
 
-    cleanup: `resetTimeSpeed();`
+    actions: {
+        'cleanup': 'resetTimeSpeed'
+    }
 };

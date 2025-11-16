@@ -114,5 +114,7 @@ module.exports = {
         }
     },
 
-    cleanup: `unfloodLevel();`
+    actions: {
+        'cleanup': 'unfloodLevel'
+    }
 };

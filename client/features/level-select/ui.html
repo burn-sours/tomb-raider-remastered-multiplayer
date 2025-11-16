@@ -2,18 +2,13 @@
 <html lang="en-GB">
 <head>
     <meta charset="UTF-8" />
-    <title>Burn's Mods v2.0</title>
-    <link rel="stylesheet" href="launcher.css">
+    <title>Burn's Level Select v2.1</title>
+    <link rel="stylesheet" href="../../ui/launcher.css">
+    <link rel="stylesheet" href="ui.css">
 </head>
 <body>
 <div class="header">
-    <img src="images/logo.png" alt="Burn's Mods" class="logo">
-    <button id="features-menu-button" class="features-menu-button" title="Features">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-        </svg>
-    </button>
-    <div id="features-dropdown" class="features-dropdown"></div>
+    <img src="../../ui/images/logo.png" alt="Burn's Mods" class="logo">
     <div class="header-links">
         <a id="discord" class="icon-link" href="https://discord.gg/CKVbetzTKw" target="_blank" title="Discord">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -39,80 +34,35 @@
 </div>
 
 <main>
-    <h2 class="hidden">Select Game Version</h2>
-    <div class="section game">
-        <label for="gameSelect">Game Version:</label>
-        <select id="gameSelect" name="game">
-            <option value="trr-123">Tomb Raider Remastered I-III</option>
-            <option value="trr-45">Tomb Raider Remastered IV-V</option>
-        </select>
-    </div>
-
-    <div class="section patch hidden" id="patchSection">
-        <label for="patchSelect">Patch Version:</label>
-        <p class="patch-error-msg">⚠️ Automatic patch detection failed. Please select your game's patch version manually:</p>
-        <select id="patchSelect" name="patch"></select>
-    </div>
-
-    <div class="section multi">
-        <div class="heading">
-            <h3 class="subtitle">Multiplayer</h3>
-            <label class="switch">
-                <input type="checkbox" id="multiplayer">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div id="mpOptions" class="conditional hidden">
-            <label class="field">
-                Server Address:
-                <select id="serverSelect" name="server">
-                    <option value="community">Burn's community server</option>
-                    <option value="custom">Custom</option>
-                </select>
-            </label>
-            <div id="customServerOptions" class="conditional hidden" style="display: flex; gap: 10px;">
-                <label class="field" style="flex: 2; margin-top: 0;">
-                    <input type="text" id="serverIp" placeholder="IP Address">
+    <div class="levels-section">
+        <div class="levels-header">
+            <h2 class="levels-title">Levels</h2>
+            <div class="header-controls">
+                <label class="custom-checkbox hidden" id="ngPlusLabel">
+                    NG+
+                    <input type="checkbox" id="ngPlusToggle">
+                    <span class="checkmark" style="margin-left: 5px; margin-right: 0"></span>
                 </label>
-                <label class="field" style="flex: 1; margin-top: 0;">
-                    <input type="number" id="serverPort" placeholder="Port" min="1" max="65535">
+                <label class="custom-checkbox hidden" id="loopLevelLabel">
+                    Loop Level
+                    <input type="checkbox" id="loopLevelToggle">
+                    <span class="checkmark" style="margin-left: 5px; margin-right: 0"></span>
                 </label>
+                <button id="restartButton" class="control-button hidden" title="Restart Level">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                </button>
             </div>
-            <label class="field">Display Name: <input type="text" id="displayName"></label>
-            <label class="field">
-                <div>
-                    <span>Lobby Code:</span>
-                    <span>
-                        <label class="custom-checkbox" style="text-transform: capitalize;">
-                            Hide
-                            <input type="checkbox" id="hideLobbyCode">
-                            <span class="checkmark" style="margin-left: 5px; margin-right: 0"></span>
-                        </label>
-                    </span>
-                </div>
-                <input type="text" id="lobbyCode" placeholder="Public"></label>
         </div>
-    </div>
-
-    <div class="section featuresOptions">
-        <div id="featureOptions" class="options" style="margin-bottom: 10px"></div>
+        <div id="levelGrid" class="level-grid">
+            <div class="placeholder-content">
+                <p>Launch the game to load available levels</p>
+            </div>
+        </div>
     </div>
 </main>
 
-<div class="footer">
-    <button id="launchGameButton">Launch Mods</button>
-    <button id="stopModsButton" class="icon-button stop-button hidden" title="Stop mods">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-        </svg>
-    </button>
-    <button id="selectExeButton" class="icon-button" title="Select game executable (for custom setups)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4 4h16v2H4V4zm0 4h16v12H4V8zm2 2v8h12v-8H6z"/>
-        </svg>
-    </button>
-</div>
-
-<script src="launcher.js"></script>
+<script src="ui.js"></script>
 </body>
 </html>

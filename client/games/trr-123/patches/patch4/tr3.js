@@ -13,6 +13,26 @@ module.exports = {
             Address: "0x18A4E8",
             Type: "Int32"
         },
+        LevelId: {
+            Address: "0x189fcc",
+            Type: "Int32"
+        },
+        MenuSelection: {
+            Address: "0x1640b4",
+            Type: "UInt16"
+        },
+        MenuState: {
+            Address: "0x55de22",
+            Type: "UInt16"
+        },
+        UseSaveSlot: {
+            Address: "0x559c00",
+            Type: "UInt64"
+        },
+        NewGamePlus: {
+            Address: "0x55a4d4",
+            Type: "UInt8"
+        },
         LaraId: {
             Address: "0x39dce0",
             Type: "Int16"
@@ -260,10 +280,10 @@ module.exports = {
             Disable: true
         },
         LoadedLevel: {
-            Address: "0x1036b0",
-            Params: ['pointer', 'int', 'pointer', 'pointer'],
-            Return: 'void',
-            Disable: false
+            Address: "0x3b1e0",
+            Params: ['int', 'int', 'pointer', 'pointer'],
+            Return: 'pointer',
+            Disable: true
         },
         LaraInLevel: {
             Address: "0x74cb0",

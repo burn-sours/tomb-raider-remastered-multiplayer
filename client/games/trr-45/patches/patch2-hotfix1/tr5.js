@@ -28,7 +28,7 @@ module.exports = {
             Address: "0xfc370",
             Params: ['pointer'],
             Return: 'void',
-            Disable: false
+            Disable: true
         },
         LaraInLevel: {
             Address: "0x84d70",

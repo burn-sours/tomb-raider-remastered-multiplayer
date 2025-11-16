@@ -140,6 +140,7 @@ class BaseGameClient {
             .filter(f => f.supportedGames.includes(manifest.id))
             .map(f => ({
                 id: f.id,
+                standalone: f.standalone,
                 game: require(`./features/${f.id}/game`)
             }));
 
@@ -149,10 +150,11 @@ class BaseGameClient {
 
         const featureSupport = supportedFeatures.map(f => ({
             id: f.id,
+            standalone: f.standalone,
             game: {
                 hooks: f.game.hooks || {},
                 loops: f.game.loops || [],
-                cleanup: f.game.cleanup || null
+                actions: f.game.actions || {}
             }
         }));
 
@@ -193,7 +195,17 @@ class BaseGameClient {
         this.gameScript.message.connect(async event => {
             if (event.type === 'send') {
                 if (this.launchOptions.multiplayer) {
-                    await this.handleMultiplayerEvent(event);
+                    try {
+                        await this.handleMultiplayerEvent(event);
+                    } catch (err) {
+                        if (!this.exiting) console.error('Error handling multiplayer event:', err, err.stack);
+                    }
+                }
+
+                try {
+                    await this.handleStandaloneEvent(event);
+                } catch (err) {
+                    if (!this.exiting) console.error('Error handling standalone event:', err, err.stack);
                 }
             } else if (event.type === 'error') {
                 if (!this.exiting) console.error('Error from game script:', event);
@@ -213,8 +225,12 @@ class BaseGameClient {
         await this.gameFunctions.updateLaunchOptions(launchOptions);
 
         if (launchOptions.multiplayer && this.connectedId) {
-            ui.sendLauncherMessage("serverConnected", this.connectedId);
+            ui.broadcast("serverConnected", this.connectedId);
         }
+    }
+
+    async cleanupStandaloneFeature(featureId) {
+        await this.gameFunctions.cleanupStandaloneFeature(featureId);
     }
 
     async launchMultiplayer() {
@@ -275,7 +291,7 @@ class BaseGameClient {
                 if (!connectedId?.length) return;
                 console.log('Connected to server. Player Id', connectedId);
 
-                ui.sendLauncherMessage("serverConnected", connectedId);
+                ui.broadcast("serverConnected", connectedId);
 
                 const reconnected = !!this.connectedId;
                 this.connectedId = connectedId;
@@ -409,7 +425,10 @@ class BaseGameClient {
         const gameVersion = await this.gameFunctions.readMemoryVariable("GameVersion", this.manifest.executable);
         const levelId = await this.gameFunctions.readMemoryVariable("Level", this.manifest.executable);
 
-        switch (message.payload?.event) {
+        const eventType = message.payload?.event;
+        if (!eventType || !eventType.startsWith("multiplayer:")) return;
+
+        switch (eventType.replace("multiplayer:", "")) {
             case "sendSound":
                 this.sendToServer(
                     await netcode.compress(netcode.encodeSound({
@@ -434,7 +453,7 @@ class BaseGameClient {
                 }
 
                 userdata.writeOptions(this.launchOptions);
-                ui.sendLauncherMessage("launcherOptions", this.launchOptions);
+                ui.broadcast("launcherOptions", this.launchOptions);
                 break;
 
             case "sendChat":
@@ -468,6 +487,15 @@ class BaseGameClient {
                 this.pvpMode = message.payload.args.pvpMode;
                 break;
         }
+    }
+
+    async handleStandaloneEvent(message) {
+        const eventType = message.payload?.event;
+        if (!eventType || !eventType.startsWith("standalone:")) return;
+
+        console.log(eventType.replace("standalone:", ""));
+
+        ui.broadcast(eventType.replace("standalone:", ""), message.payload.args);
     }
 
     async updateLoop(loop = true, force = false) {
@@ -679,7 +707,7 @@ class BaseGameClient {
 
     async handleConnectionFailure() {
         if (this.exiting) return;
-        ui.sendLauncherMessage('connectionFailed');
+        ui.broadcast('connectionFailed');
         ipcMain.emit('stopMods');
     }
 

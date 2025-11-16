@@ -165,6 +165,7 @@ export interface GameFunctions {
     getGameModule: () => "tomb1.dll" | "tomb2.dll" | "tomb3.dll" | "tomb4.dll" | "tomb5.dll";
     getEntityPointer: (entityId: number) => NativePointer;
     levelName: (levelId: number) => string;
+    levelNames: Record<"tomb1.dll" | "tomb2.dll" | "tomb3.dll" | "tomb4.dll" | "tomb5.dll", Record<string, string>>;
     isLevelSupported: (levelId: number) => boolean;
     isLevelMenu: (levelId: number) => boolean;
     isInGame: () => boolean; // player is in playable game level?
@@ -174,7 +175,7 @@ export interface GameFunctions {
     openChat: () => void;
     closeChat: () => void;
     toggleChat: () => void;
-    
+
     allocLaraBackups: () => void;
     setupLaraSlots: () => void;
 }
