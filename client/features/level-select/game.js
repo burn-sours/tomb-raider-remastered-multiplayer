@@ -1,14 +1,14 @@
 module.exports = {
     // language=JavaScript
     template: `
-        let levelSelectInitialized = false;
-        let lastSentLevel = null;
-        let lastGameModule = null;
-        let targetLevel = null;
-        let targetNewGamePlus = false;
-        let targetLoop = false;
+        let levelSelect_initialized = false;
+        let levelSelect_lastSentLevel = null;
+        let levelSelect_lastGameModule = null;
+        let levelSelect_targetLevel = null;
+        let levelSelect_targetNewGamePlus = false;
+        let levelSelect_targetLoop = false;
 
-        const buildLevelList = (module) => {
+        const levelSelect_buildLevelList = (module) => {
             /** @type {{ id: number, name: string, isMenu: boolean }[]} */
             const levels = [];
             const levelNames = game.levelNames[module] || {};
@@ -31,8 +31,8 @@ module.exports = {
             return levels;
         };
 
-        const sendLevelData = (module) => {
-            const levels = buildLevelList(module);
+        const levelSelect_sendLevelData = (module) => {
+            const levels = levelSelect_buildLevelList(module);
             const currentLevel = game.readMemoryVariable("Level", manifest.executable);
             const levelNames = game.levelNames[module] || {};
 
@@ -46,57 +46,57 @@ module.exports = {
                 }
             });
 
-            lastSentLevel = currentLevel;
-            lastGameModule = module;
+            levelSelect_lastSentLevel = currentLevel;
+            levelSelect_lastGameModule = module;
         };
 
-        const initializeLevelSelect = () => {
-            if (levelSelectInitialized) return;
+        const levelSelect_initialize = () => {
+            if (levelSelect_initialized) return;
 
             try {
                 const module = game.getGameModule();
-                sendLevelData(module);
-                levelSelectInitialized = true;
+                levelSelect_sendLevelData(module);
+                levelSelect_initialized = true;
             } catch (err) {
                 console.error("Level select initialization error:", err);
             }
         };
 
-        const levelSelectLoop = () => {
+        const levelSelect_loop = () => {
             if (userData.standaloneFeatureId !== 'level-select') return;
-            
+
             try {
-                if (!levelSelectInitialized) {
-                    initializeLevelSelect();
+                if (!levelSelect_initialized) {
+                    levelSelect_initialize();
                 }
-                if (!levelSelectInitialized) return;
+                if (!levelSelect_initialized) return;
 
                 const module = game.getGameModule();
 
-                if (module !== lastGameModule) {
-                    sendLevelData(module);
+                if (module !== levelSelect_lastGameModule) {
+                    levelSelect_sendLevelData(module);
                 }
 
-                if (currentLevel !== lastSentLevel && currentLevel !== null) {
+                if (currentLevel !== levelSelect_lastSentLevel && currentLevel !== null) {
                     send({
                         event: "standalone:levelChanged",
                         args: {level: currentLevel}
                     });
-                    lastSentLevel = currentLevel;
+                    levelSelect_lastSentLevel = currentLevel;
                 }
 
                 if (manifest.executable === "tomb123.exe") {
-                    if (targetLoop && targetLevel === null && game.isInGame() && currentLevel !== null) {
-                        targetLevel = currentLevel;
+                    if (levelSelect_targetLoop && levelSelect_targetLevel === null && game.isInGame() && currentLevel !== null) {
+                        levelSelect_targetLevel = currentLevel;
                     }
-                    
-                    if (game.isInMenu() && targetLevel !== null) {
+
+                    if (game.isInMenu() && levelSelect_targetLevel !== null) {
                         const menuSelectionValue = {
                             "tomb1.dll": 0x49,
                             "tomb2.dll": 0x7a,
                             "tomb3.dll": 0x93
                         }[module];
-                        game.writeMemoryVariable("NewGamePlus", targetNewGamePlus ? 1 : 0, module);
+                        game.writeMemoryVariable("NewGamePlus", levelSelect_targetNewGamePlus ? 1 : 0, module);
                         game.writeMemoryVariable("UseSaveSlot", 0, module);
                         game.writeMemoryVariable("MenuSelection", menuSelectionValue, module);
                         game.writeMemoryVariable("MenuState", 0xd, module);
@@ -107,16 +107,16 @@ module.exports = {
             }
         };
 
-        const changeLevelAction = (data) => {
+        const levelSelect_changeLevelAction = (levelChangeData) => {
             if (userData.standaloneFeatureId !== 'level-select') return;
-            
+
             try {
                 const module = game.getGameModule();
-                const levelId = parseInt(data.levelId);
+                const levelId = parseInt(levelChangeData.levelId);
                 const returnToMainMenu = game.isLevelMenu(levelId);
 
-                targetLevel = returnToMainMenu ? null : levelId;
-                
+                levelSelect_targetLevel = returnToMainMenu ? null : levelId;
+
                 if (manifest.executable === "tomb123.exe") {
                     const isPauseMenu = game.readMemoryVariable("IsInGameScene", module) < 1;
                     if (isPauseMenu) {
@@ -128,7 +128,7 @@ module.exports = {
                 } else if (manifest.executable === "tomb456.exe") {
                     const isPauseMenu = game.readMemoryVariable("IsGameMenu", manifest.executable);
 
-                    game.writeMemoryVariable("NewGamePlus", targetNewGamePlus ? 1 : 0, module);
+                    game.writeMemoryVariable("NewGamePlus", levelSelect_targetNewGamePlus ? 1 : 0, module);
                     game.writeMemoryVariable("LevelChange", levelId, module);
 
                     if (isPauseMenu) {
@@ -140,10 +140,10 @@ module.exports = {
             }
         };
 
-        const restartLevelAction = (data) => {
+        const levelSelect_restartLevelAction = (restartData) => {
             if (userData.standaloneFeatureId !== 'level-select') return;
             if (manifest.executable === "tomb456.exe") return;
-            
+
             try {
                 if (game.isInGame()) {
                     const module = game.getGameModule();
@@ -153,7 +153,7 @@ module.exports = {
                         game.writeMemoryVariable("MenuState", 0xd, module);
                     }
 
-                    targetLevel = currentLevel;
+                    levelSelect_targetLevel = currentLevel;
 
                     game.writeMemoryVariable("LevelId", 0, module);
                     game.writeMemoryVariable("LevelCompleted", 1, module);
@@ -165,47 +165,35 @@ module.exports = {
             }
         };
 
-        const setLoopLevelAction = (data) => {
+        const levelSelect_setLoopLevelAction = (loopData) => {
             if (userData.standaloneFeatureId !== 'level-select') return;
             if (manifest.executable === "tomb456.exe") return;
             try {
-                targetLoop = data.enabled || false;
-                if (!targetLoop) {
-                    targetLevel = null;
+                levelSelect_targetLoop = loopData.enabled || false;
+                if (!levelSelect_targetLoop) {
+                    levelSelect_targetLevel = null;
                 }
             } catch (err) {
                 console.error("Level select setLoopLevel error:", err);
             }
         };
 
-        const setNewGamePlusAction = (data) => {
+        const levelSelect_setNewGamePlusAction = (ngPlusData) => {
             if (userData.standaloneFeatureId !== 'level-select') return;
             try {
-                targetNewGamePlus = data.enabled || false;
+                levelSelect_targetNewGamePlus = ngPlusData.enabled || false;
             } catch (err) {
                 console.error("Level select setNewGamePlus error:", err);
             }
         };
 
-        const refreshDataAction = () => {
-            if (userData.standaloneFeatureId !== 'level-select') return;
-            try {
-                if (levelSelectInitialized) {
-                    const module = game.getGameModule();
-                    sendLevelData(module);
-                }
-            } catch (err) {
-                console.error("Level select refresh error:", err);
-            }
-        };
-
-        const cleanupLevelSelect = () => {
-            targetLoop = false;
-            targetLevel = null;
-            targetNewGamePlus = false;
-            levelSelectInitialized = false;
-            lastSentLevel = null;
-            lastGameModule = null;
+        const levelSelect_cleanup = () => {
+            levelSelect_targetLoop = false;
+            levelSelect_targetLevel = null;
+            levelSelect_targetNewGamePlus = false;
+            levelSelect_initialized = false;
+            levelSelect_lastSentLevel = null;
+            levelSelect_lastGameModule = null;
         };
     `,
 
@@ -214,25 +202,24 @@ module.exports = {
             // language=JavaScript
             before: `
                 if (userData.standaloneFeatureId === 'level-select') {
-                    if (manifest.executable === "tomb123.exe" && targetLevel !== null) {
-                        args[0] = targetLevel;
+                    if (manifest.executable === "tomb123.exe" && levelSelect_targetLevel !== null) {
+                        args[0] = levelSelect_targetLevel;
                     }
-                    targetLevel = null;
+                    levelSelect_targetLevel = null;
                 }
             `
         }
     },
 
     loops: [
-        { interval: 100, name: 'levelSelectLoop' }
+        { interval: 100, name: 'levelSelect_loop' }
     ],
 
     actions: {
-        'changeLevel': 'changeLevelAction',
-        'restartLevel': 'restartLevelAction',
-        'setLoopLevel': 'setLoopLevelAction',
-        'setNewGamePlus': 'setNewGamePlusAction',
-        'refreshData': 'refreshDataAction',
-        'cleanup': 'cleanupLevelSelect'
+        'changeLevel': 'levelSelect_changeLevelAction',
+        'restartLevel': 'levelSelect_restartLevelAction',
+        'setLoopLevel': 'levelSelect_setLoopLevelAction',
+        'setNewGamePlus': 'levelSelect_setNewGamePlusAction',
+        'cleanup': 'levelSelect_cleanup'
     }
 };

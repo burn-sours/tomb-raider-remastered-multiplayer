@@ -1,4 +1,3 @@
-let isAttached = false;
 let currentLevel = null;
 let levels = [];
 let levelNames = {};
@@ -12,19 +11,17 @@ const loopLevelLabel = document.getElementById('loopLevelLabel');
 const loopLevelToggle = document.getElementById('loopLevelToggle');
 
 function onLevelClick(levelId) {
-    if (!isAttached || targetLevel !== null || levelId === currentLevel) return;
+    if (targetLevel !== null || levelId === currentLevel) return;
 
     targetLevel = levelId;
     window.api.callFeatureAction('level-select', 'changeLevel', { levelId });
 }
 
 restartButton.addEventListener('click', () => {
-    if (!isAttached) return;
     window.api.callFeatureAction('level-select', 'restartLevel');
 });
 
 loopLevelToggle.addEventListener('change', () => {
-    if (!isAttached) return;
     window.api.callFeatureAction('level-select', 'setLoopLevel', { enabled: loopLevelToggle.checked });
 
     const currentBtn = document.querySelector(`.level-button[data-level-id="${currentLevel}"]`);
@@ -42,7 +39,6 @@ loopLevelToggle.addEventListener('change', () => {
 });
 
 ngPlusToggle.addEventListener('change', () => {
-    if (!isAttached) return;
     window.api.callFeatureAction('level-select', 'setNewGamePlus', { enabled: ngPlusToggle.checked });
 });
 
@@ -131,7 +127,6 @@ window.api.on('actionFailed', () => {
 });
 
 window.api.on('modStopped', () => {
-    isAttached = false;
     currentLevel = null;
     levels = [];
     levelNames = {};
@@ -145,7 +140,11 @@ window.api.on('modStopped', () => {
     restartButton.classList.add('hidden');
 });
 
-window.document.addEventListener("DOMContentLoaded", () => {
-    isAttached = true;
-    window.api.callFeatureAction('level-select', 'refreshData', {});
-})
+// Send all links to external browser
+document.addEventListener("click", (e) => {
+    const link = e.target.closest("a[target='_blank']");
+    if (link && link.href) {
+        e.preventDefault();
+        window.api.openExternal(link.href);
+    }
+});
