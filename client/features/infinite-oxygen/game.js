@@ -2,8 +2,16 @@ module.exports = {
     // language=JavaScript
     template: `
         let infiniteOxygenTrackingDisabled = true;
+        let infiniteOxygenInitialized = false;
 
         const infiniteOxygenLoop = () => {
+            if (!infiniteOxygenInitialized) {
+                infiniteOxygenInitialized = true;
+                if (game.getLara()) {
+                    infiniteOxygenTrackingDisabled = false;
+                }
+            }
+
             if (!userData['infinite-oxygen']) return;
 
             const lara = game.getLara();

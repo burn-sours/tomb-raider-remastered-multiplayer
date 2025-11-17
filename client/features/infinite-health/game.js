@@ -2,8 +2,16 @@ module.exports = {
     // language=JavaScript
     template: `
         let infiniteHealthTrackingDisabled = true;
+        let infiniteHealthInitialized = false;
 
         const infiniteHealthLoop = () => {
+            if (!infiniteHealthInitialized) {
+                infiniteHealthInitialized = true;
+                if (game.getLara()) {
+                    infiniteHealthTrackingDisabled = false;
+                }
+            }
+
             if (!userData['infinite-health']) return;
 
             const lara = game.getLara();

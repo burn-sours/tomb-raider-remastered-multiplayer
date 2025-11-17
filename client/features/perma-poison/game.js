@@ -2,8 +2,16 @@ module.exports = {
     // language=JavaScript
     template: `
         let permaPoisonTrackingDisabled = true;
+        let permaPoisonInitialized = false;
 
         const permaPoisonLoop = () => {
+            if (!permaPoisonInitialized) {
+                permaPoisonInitialized = true;
+                if (game.getLara()) {
+                    permaPoisonTrackingDisabled = false;
+                }
+            }
+
             if (!userData['perma-poison']) return;
 
             const lara = game.getLara();

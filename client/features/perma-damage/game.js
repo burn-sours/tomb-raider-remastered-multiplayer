@@ -3,8 +3,16 @@ module.exports = {
     template: `
         let permaDamageHealth = 1000;
         let permaDamageTrackingDisabled = true;
+        let permaDamageInitialized = false;
 
         const trackPermaDamageHealthLoop = () => {
+            if (!permaDamageInitialized) {
+                permaDamageInitialized = true;
+                if (game.getLara()) {
+                    permaDamageTrackingDisabled = false;
+                }
+            }
+
             if (!userData['perma-damage'] || permaDamageTrackingDisabled) return;
             if (!game.isLevelSupported(game.readMemoryVariable("Level", manifest.executable))) return;
 
