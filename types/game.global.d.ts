@@ -22,8 +22,6 @@ declare global {
     let pvpMode: boolean;
     /** Current level id */
     let currentLevel: number;
-    /** Is level tracking disabled? DO NOT rely on Lara's values when this is disabled. */
-    let levelTrackingDisabled: boolean;
     /** Is chat box opened? */
     let chatOpened: boolean;
     /** Chat messages */

@@ -10,7 +10,6 @@ module.exports = {
         let exiting = false;
         let pvpMode = false;
         let currentLevel = null;
-        let levelTrackingDisabled = false;
         let featureLoopTimeouts = {};
 
         let chatOpened = false;

@@ -2,13 +2,15 @@ module.exports = {
     // language=JavaScript
     template: `
         let permaDamageHealth = 1000;
+        let permaDamageTrackingDisabled = true;
 
         const trackPermaDamageHealthLoop = () => {
-            if (!userData['perma-damage'] || levelTrackingDisabled) return;
+            if (!userData['perma-damage'] || permaDamageTrackingDisabled) return;
+            if (!game.isLevelSupported(game.readMemoryVariable("Level", manifest.executable))) return;
+
             const lara = game.getLara();
             if (!lara || lara.isNull()) return;
-            if (!game.isLevelSupported(currentLevel)) return;
-
+            
             try {
                 const moduleAddresses = game.getModuleAddresses(game.getGameModule());
                 permaDamageHealth = lara.add(moduleAddresses.variables.LaraHealth.Pointer).readS16();
@@ -19,6 +21,14 @@ module.exports = {
     `,
 
     hooks: {
+        LoadedLevel: {
+            // language=JavaScript
+            before: `
+                if (!userData['perma-damage']) return;
+                permaDamageTrackingDisabled = true;
+            `
+        },
+
         LaraInLevel: {
             // language=JavaScript
             after: `
@@ -30,16 +40,18 @@ module.exports = {
                 const moduleAddresses = game.getModuleAddresses(module);
                 const lara = game.getLara();
                 const healthPointer = moduleAddresses.variables.LaraHealth.Pointer;
-                
+
                 if (lara && !lara.isNull() && game.isLevelSupported(currentLevel)) {
                     if (lara.add(healthPointer).readS16() > 1000) {
                         lara.add(healthPointer).writeS16(1000);
                     }
-                    
+
                     if ((currentLevel >= firstLevel[module] && currentLevel !== firstExpansionLevel[module]) && permaDamageHealth > 0) {
                         lara.add(healthPointer).writeS16(Math.min(1000, permaDamageHealth));
                     }
                 }
+
+                permaDamageTrackingDisabled = false;
             `
         },
 

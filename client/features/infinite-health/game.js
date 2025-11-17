@@ -1,11 +1,13 @@
 module.exports = {
     // language=JavaScript
     template: `
+        let infiniteHealthTrackingDisabled = true;
+
         const infiniteHealthLoop = () => {
             if (!userData['infinite-health']) return;
 
             const lara = game.getLara();
-            if (levelTrackingDisabled || !lara || lara.isNull()) return;
+            if (infiniteHealthTrackingDisabled || !lara || lara.isNull()) return;
 
             try {
                 const module = game.getGameModule();
@@ -20,6 +22,24 @@ module.exports = {
             }
         };
     `,
+
+    hooks: {
+        LoadedLevel: {
+            // language=JavaScript
+            before: `
+                if (!userData['infinite-health']) return;
+                infiniteHealthTrackingDisabled = true;
+            `
+        },
+
+        LaraInLevel: {
+            // language=JavaScript
+            after: `
+                if (!userData['infinite-health']) return;
+                infiniteHealthTrackingDisabled = false;
+            `
+        }
+    },
 
     loops: [
         { interval: 10, name: 'infiniteHealthLoop' }

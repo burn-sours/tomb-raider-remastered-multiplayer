@@ -1,11 +1,13 @@
 module.exports = {
     // language=JavaScript
     template: `
+        let permaPoisonTrackingDisabled = true;
+
         const permaPoisonLoop = () => {
             if (!userData['perma-poison']) return;
 
             const lara = game.getLara();
-            if (levelTrackingDisabled || !lara || lara.isNull()) return;
+            if (permaPoisonTrackingDisabled || !lara || lara.isNull()) return;
 
             try {
                 const module = game.getGameModule();
@@ -24,6 +26,24 @@ module.exports = {
             }
         };
     `,
+
+    hooks: {
+        LoadedLevel: {
+            // language=JavaScript
+            before: `
+                if (!userData['perma-poison']) return;
+                permaPoisonTrackingDisabled = true;
+            `
+        },
+
+        LaraInLevel: {
+            // language=JavaScript
+            after: `
+                if (!userData['perma-poison']) return;
+                permaPoisonTrackingDisabled = false;
+            `
+        }
+    },
 
     loops: [
         { interval: 100, name: 'permaPoisonLoop' }

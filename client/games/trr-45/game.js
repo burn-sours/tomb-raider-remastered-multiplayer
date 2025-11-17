@@ -378,8 +378,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     console.log("Lara =", laraPointer);
 
-                    levelTrackingDisabled = false;
-
                     return laraPointer;
                 } catch (err) {
                     console.error("Unable to detect Lara", err);
@@ -858,7 +856,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             });
                         } else if (lastSelected.reason === "levelskip") {
                             // Skip Level
-                            levelTrackingDisabled = true;
                             game.writeMemoryVariable("LevelChange", currentLevel + 1, module);
                         } else if (lastSelected.reason === "toggle_ui") {
                             // Toggle player names display
@@ -1384,7 +1381,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             LoadedLevel: {
                 after: (module, p1) => {
-                    levelTrackingDisabled = true;
                     levelIsRestarting = (levelLastLoadedId === currentLevel);
                     levelLastLoadedId = currentLevel;
                     laraPointer = null;
