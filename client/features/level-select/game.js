@@ -33,14 +33,13 @@ module.exports = {
 
         const levelSelect_sendLevelData = (module) => {
             const levels = levelSelect_buildLevelList(module);
-            const currentLevel = game.readMemoryVariable("Level", manifest.executable);
             const levelNames = game.levelNames[module] || {};
 
             send({
                 event: "standalone:levelSelectData",
                 args: {
                     levels: levels,
-                    currentLevel: currentLevel,
+                    currentLevel,
                     gameModule: module,
                     levelNames: levelNames
                 }
