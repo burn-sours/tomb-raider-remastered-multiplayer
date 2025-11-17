@@ -1421,19 +1421,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         const isPhotoMode = game.readMemoryVariable("IsPhotoMode", manifest.executable);
 
                         if (isPhotoMode === 1 || gameScene === 0) {
-                            if (isPhotoMode === 1 && pressedDown) {
-                                // Photo mode allow change pitch with keypad +/-
-                                if (keycode === 57 || keycode === 58) {
-                                    const moduleVariables = game.getModuleAddresses(gameModule).variables;
-                                    const increase = keycode === 57;
-                                    let newPitch = lara.add(moduleVariables.LaraPositions.Pointer).add(0xc).readS16() + (200 * (increase ? 1 : -1));
-                                    if (newPitch < -32000) newPitch = -32000;
-                                    if (newPitch > 32000) newPitch = 32000;
-                                    lara.add(moduleVariables.LaraPositions.Pointer).add(0xc).writeS16(newPitch);
-                                    game.runFunction(gameModule, "UpdatePhotoMode");
-                                }
-                            }
-
                             game.runFunction(module, "KeyboardInput", keycode, pressedDown);
                             return;
                         }
