@@ -149,7 +149,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             },
 
             levelName: (level) => {
-                return game.levelNames[game.getGameModule()][String(level)] || "Unknown Level";
+                const name = game.levelNames[game.getGameModule()][String(level)] || "Unknown Level";
+                const newGamePlus = game.readMemoryVariable("NewGamePlus", game.getGameModule());
+                return name + (newGamePlus ? "+" : "");
             },
 
             isLevelSupported: (level) => {
