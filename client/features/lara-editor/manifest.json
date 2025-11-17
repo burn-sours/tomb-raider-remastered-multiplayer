@@ -1,0 +1,11 @@
+{
+  "id": "lara-editor",
+  "type": "feature",
+  "standalone": true,
+  "name": "Lara Editor",
+  "ui": {
+    "label": "Edit Lara's properties",
+    "windowTitle": "Lara Editor"
+  },
+  "supportedGames": ["trr-123", "trr-45"]
+}

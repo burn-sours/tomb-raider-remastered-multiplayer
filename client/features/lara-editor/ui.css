@@ -1,0 +1,100 @@
+.editor-section {
+    margin-bottom: 20px;
+    max-width: 100%;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.section-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.section-title {
+    font-size: 1.1em;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    font-weight: normal;
+}
+
+.section-arrow {
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.2s ease;
+    font-size: 0.8em;
+}
+
+.section-header.collapsed .section-arrow {
+    transform: rotate(-90deg);
+}
+
+.section-content {
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.section-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+}
+
+.field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    max-width: 100%;
+    margin-bottom: 16px;
+}
+
+.field-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    max-width: 100%;
+    margin-bottom: 16px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.field label {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.field-input {
+    padding: 8px 12px;
+    background: rgba(30, 30, 30, 0.5);
+    border: 1px solid rgba(60, 60, 60, 0.3);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95em;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s ease;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.field-input:focus {
+    outline: none;
+    background: rgba(40, 40, 40, 0.7);
+    border-color: rgba(100, 200, 100, 0.5);
+}
+
+.field-input:hover:not(:focus) {
+    background: rgba(35, 35, 35, 0.6);
+}

@@ -266,13 +266,14 @@ async function openStandaloneFeature(featureId) {
 
 async function onStandaloneWindowClosed(closedFeatureId) {
     if (activeGameClient?.session) {
-        if (closedFeatureId) {
-            await activeGameClient.cleanupStandaloneFeature(closedFeatureId);
-        }
         await activeGameClient.updateGame({
             ...activeUserData,
             standaloneFeatureId: ui.standaloneFeatureId
         });
+
+        if (closedFeatureId) {
+            await activeGameClient.cleanupStandaloneFeature(closedFeatureId);
+        }
     }
 }
 

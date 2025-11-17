@@ -13,6 +13,7 @@ module.exports = {
         require("./infinite-oxygen/manifest"),
         require("./infinite-health/manifest"),
         require("./level-select/manifest"),
+        require("./lara-editor/manifest"),
     ],
     categories: [
         {
