@@ -549,10 +549,6 @@ module.exports = {
 
             cleanupStandaloneFeature: (featureId) => {
                 try {
-                    if (featureLoopTimeouts[featureId]) {
-                        clearTimeout(featureLoopTimeouts[featureId]);
-                        delete featureLoopTimeouts[featureId];
-                    }
                     game.callFeatureAction(featureId, 'cleanup', {});
                 } catch (err) {
                     console.error('Error cleaning up standalone feature:', err);

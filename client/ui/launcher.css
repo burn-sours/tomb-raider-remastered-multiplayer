@@ -140,6 +140,17 @@ body {
     background: #2a2522;
 }
 
+.features-dropdown-item.disabled,
+.features-dropdown-item:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.features-dropdown-item.disabled:hover,
+.features-dropdown-item:disabled:hover {
+    background: transparent;
+}
+
 main {
     background-color: #010101;
     display: flex;

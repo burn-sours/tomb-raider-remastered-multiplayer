@@ -172,7 +172,10 @@ module.exports = new class {
      */
     async createStandaloneWindow(featureId, featureManifest, activeUserData) {
         if (this.standaloneWindow) {
-            this.standaloneWindow.close();
+            await new Promise((resolve) => {
+                this.standaloneWindow.once('closed', resolve);
+                this.standaloneWindow.close();
+            });
         }
 
         this.standaloneFeatureId = featureId;

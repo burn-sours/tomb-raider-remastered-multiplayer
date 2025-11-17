@@ -198,12 +198,17 @@ gameSelect.addEventListener("change", enableSaveButton);
 
 // Generate initial layout
 generateFeatureUI();
-gameSelect.addEventListener("change", generateFeatureUI);
+gameSelect.addEventListener("change", () => {
+    generateFeatureUI();
+    populateFeaturesDropdown();
+});
 
 const featuresMenuButton = document.getElementById("features-menu-button");
 const featuresDropdown = document.getElementById("features-dropdown");
 
 function populateFeaturesDropdown() {
+    const gameSelect = document.getElementById("gameSelect");
+    const currentGame = gameSelect.value;
     const { features } = window.api.featureManifests;
     const standaloneFeatures = features.filter(f => f.standalone === true);
     featuresDropdown.innerHTML = "";
@@ -211,10 +216,19 @@ function populateFeaturesDropdown() {
         const item = document.createElement("button");
         item.className = "features-dropdown-item";
         item.textContent = feature.name;
-        item.addEventListener("click", () => {
-            window.api.openStandaloneFeature(feature.id);
-            featuresDropdown.classList.remove("active");
-        });
+
+        const isSupported = feature.supportedGames.includes(currentGame);
+
+        if (!isSupported) {
+            item.classList.add("disabled");
+            item.setAttribute("disabled", "true");
+        } else {
+            item.addEventListener("click", () => {
+                window.api.openStandaloneFeature(feature.id);
+                featuresDropdown.classList.remove("active");
+            });
+        }
+
         featuresDropdown.appendChild(item);
     });
 }
