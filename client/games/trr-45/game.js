@@ -1830,7 +1830,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 }
                             }
 
-                            let otherLaraOutfitId = executableBase.add(execVariables.LaraAppearanceModern.Address).readPointer().add(0x34).readS16();
+                            const outfitsPointer = game.getMemoryVariable("OutfitsPointer", module);
+                            const appearancePointer = executableBase.add(execVariables.LaraAppearanceModern.Address).readPointer();
+                            let otherLaraOutfitId = parseInt(appearancePointer.sub(outfitsPointer).toString()) / LARA_OUTFIT_SIZE;
                             let isYoungLara = otherLaraOutfitId === 2 || otherLaraOutfitId === 3;
 
                             game.runFunction(
@@ -1897,7 +1899,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             game.updateGunModelsOG();
                         }
 
-                        const outfitId = executableBase.add(execVariables.LaraAppearanceModern.Address).readPointer().add(0x34).readS16();
+                        const outfitsPointer = game.getMemoryVariable("OutfitsPointer", module);
+                        const appearancePointer = executableBase.add(execVariables.LaraAppearanceModern.Address).readPointer();
+                        const outfitId = parseInt(appearancePointer.sub(outfitsPointer).toString()) / LARA_OUTFIT_SIZE;
                         const isYoungLara = outfitId === 2 || outfitId === 3;
                         game.runFunction(
                             module,
