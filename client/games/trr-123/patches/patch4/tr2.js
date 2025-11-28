@@ -25,9 +25,10 @@ module.exports = {
             Address: "0x4fad62",
             Type: "UInt16"
         },
-        UseSaveSlot: {
+        WorldStateBackupPointer: {
             Address: "0x4f6e40",
-            Type: "UInt64"
+            Type: "Block",
+            Size: "0x3800"
         },
         NewGamePlus: {
             Address: "0x4f7466",

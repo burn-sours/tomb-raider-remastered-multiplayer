@@ -96,7 +96,7 @@ module.exports = {
                             "tomb3.dll": 0x93
                         }[module];
                         game.writeMemoryVariable("NewGamePlus", levelSelect_targetNewGamePlus ? 1 : 0, module);
-                        game.writeMemoryVariable("UseSaveSlot", 0, module);
+                        game.getMemoryVariable("WorldStateBackupPointer", module).writePointer(ptr(0x0)); // no weapons
                         game.writeMemoryVariable("MenuSelection", menuSelectionValue, module);
                         game.writeMemoryVariable("MenuState", 0xd, module);
                     }
