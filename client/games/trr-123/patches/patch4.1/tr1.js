@@ -34,6 +34,10 @@ module.exports = {
             Address: "0x3f1e74",
             Type: "UInt32"
         },
+        InterpolationFactor: {
+            Address: "0x29e290",
+            Type: "UInt32"
+        },
         NewGamePlus: {
             Address: "0x4c542a",
             Type: "UInt8"

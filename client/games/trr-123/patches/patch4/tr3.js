@@ -30,6 +30,14 @@ module.exports = {
             Type: "Block",
             Size: "0x3800"
         },
+        ActionKeys: {
+            Address: "0x45ca90",
+            Type: "UInt32"
+        },
+        InterpolationFactor: {
+            Address: "0x32b0bc",
+            Type: "UInt32"
+        },
         NewGamePlus: {
             Address: "0x55a4d4",
             Type: "UInt8"
@@ -430,11 +438,28 @@ module.exports = {
             Return: 'pointer',
             Disable: false
         },
-        GetTileData: {
-            Address: "0x21d30",
-            Params: ['int', 'int', 'int', 'pointer'],
-            Return: 'pointer',
+        RecordWorldState: {
+            Address: "0x9c340",
+            Params: ['int'],
+            Return: 'void',
             Disable: false
+        },
+        RestoreWorldState: {
+            Address: "0x9ce10",
+            Params: ['int'],
+            Return: 'void',
+            Disable: false
+        },
+        WorldStateRecordReplay: {
+            Address: "0xc1ed0",
+            Params: [],
+            Return: 'void',
+        },
+        CanInterpolateCamera: {
+            Address: "0xe51a0",
+            Params: [],
+            Return: 'int',
+            Disable: true,
         }
     },
 

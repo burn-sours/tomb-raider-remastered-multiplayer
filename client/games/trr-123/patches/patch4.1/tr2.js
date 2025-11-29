@@ -30,6 +30,14 @@ module.exports = {
             Type: "Block",
             Size: "0x3800"
         },
+        ActionKeys: {
+            Address: "0x3fd320",
+            Type: "UInt32"
+        },
+        InterpolationFactor: {
+            Address: "0x2d3418",
+            Type: "UInt32"
+        },
         NewGamePlus: {
             Address: "0x4fa606",
             Type: "UInt8"
@@ -446,6 +454,29 @@ module.exports = {
             Return: 'pointer',
             Disable: false
         },
+        RecordWorldState: {
+            Address: "0x61270",
+            Params: ['int'],
+            Return: 'void',
+            Disable: false
+        },
+        RestoreWorldState: {
+            Address: "0x61b90",
+            Params: ['int'],
+            Return: 'void',
+            Disable: false
+        },
+        WorldStateRecordReplay: {
+            Address: "0x79aa0",
+            Params: [],
+            Return: 'void',
+        },
+        CanInterpolateCamera: {
+            Address: "0x99a10",
+            Params: [],
+            Return: 'int',
+            Disable: true,
+        }
     },
 
     /** tomb2.dll sounds */

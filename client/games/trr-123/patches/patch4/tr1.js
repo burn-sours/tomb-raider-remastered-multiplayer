@@ -34,6 +34,10 @@ module.exports = {
             Address: "0x3edc94",
             Type: "UInt32"
         },
+        InterpolationFactor: {
+            Address: "0x29a0b0",
+            Type: "UInt32"
+        },
         NewGamePlus: {
             Address: "0x4c124a",
             Type: "UInt8"
@@ -362,18 +366,6 @@ module.exports = {
         DealDmg: {
             Address: "0x436e0",
             Params: ['pointer', 'int', 'int'],
-            Return: 'void',
-            Disable: false
-        },
-        GetTileData: {
-            Address: "0x9470",
-            Params: ['int', 'int', 'int', 'pointer'],
-            Return: 'pointer',
-            Disable: false
-        },
-        ActivateEntity: {
-            Address: "0x2d0c0",
-            Params: ['int','int'],
             Return: 'void',
             Disable: false
         },
