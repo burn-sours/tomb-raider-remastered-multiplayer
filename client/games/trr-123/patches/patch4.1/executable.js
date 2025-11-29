@@ -35,6 +35,10 @@ module.exports = {
             Address: "0x263D08",
             Type: "Int32"
         },
+        ProcessingMode: {
+            Address: "0x263D0C",
+            Type: "Int32"
+        },
         GameSettings: {
             Address: "0x2641C4",
             Type: "UInt8"

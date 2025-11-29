@@ -1,0 +1,12 @@
+{
+  "id": "rewind-lara",
+  "type": "feature",
+  "category": "super-lara",
+  "name": "Rewind Lara",
+  "ui": {
+    "label": "Rewind Time [F11]?"
+  },
+  "supportedGames": [
+    "trr-123"
+  ]
+}

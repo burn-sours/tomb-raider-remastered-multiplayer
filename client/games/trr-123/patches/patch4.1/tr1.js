@@ -30,6 +30,10 @@ module.exports = {
             Type: "Block",
             Size: "0x3800"
         },
+        ActionKeys: {
+            Address: "0x3f1e74",
+            Type: "UInt32"
+        },
         NewGamePlus: {
             Address: "0x4c542a",
             Type: "UInt8"
@@ -165,11 +169,11 @@ module.exports = {
             Address: "0x29e2c8",
             Type: "Int32",
         },
-        CameraFixedX: { 
+        CameraFixedX: {
             Address: "0x29e240",
             Type: "Int32",
         },
-        CameraFixedY: { 
+        CameraFixedY: {
             Address: "0x29E244",
             Type: "Int32",
         },
@@ -390,6 +394,29 @@ module.exports = {
             Params: ['int', 'int'],
             Return: 'void',
             Disable: false
+        },
+        RecordWorldState: {
+            Address: "0x38780",
+            Params: ['int'],
+            Return: 'void',
+            Disable: false
+        },
+        RestoreWorldState: {
+            Address: "0x38f00",
+            Params: ['int'],
+            Return: 'void',
+            Disable: false
+        },
+        WorldStateRecordReplay: {
+            Address: "0x4ac00",
+            Params: [],
+            Return: 'void',
+        },
+        CanInterpolateCamera: {
+            Address: "0x68ba0",
+            Params: [],
+            Return: 'int',
+            Disable: true,
         }
     },
 
