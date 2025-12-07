@@ -41,6 +41,10 @@ module.exports = {
             Address: "0x6522b8",
             Type: "UInt8"
         },
+        InterpolationFactor: {
+            Address: "0x4e6388",
+            Type: "UInt32"
+        },
         LaraId: {
             Address: "0x4e5140",
             Type: "Int16"

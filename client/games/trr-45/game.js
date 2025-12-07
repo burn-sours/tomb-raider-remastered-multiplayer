@@ -837,9 +837,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 )
                             );
 
-                            game.runFunction(module, "Clone", lara.add(0x1840), lara.add(0x60), 0x14);
-                            game.runFunction(module, "Clone", lara.add(0x1868), lara.add(0x1e98), LARA_DATA_SIZE);
-
                             const roomId = otherLara.add(moduleVariables.LaraRoomId.Pointer).readS16();
                             if (!isRendering || isRendering === lara) {
                                 game.runFunction(module, "RoomChange", game.readMemoryVariable("LaraId", module), roomId);
@@ -955,12 +952,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         health: 0,
                         roomType: 0,
                         vehicleId: null,
-                        vehicleBones: null,
+                        vehicle: null,
                         distance: 999999999,
                         withinFOV: true,
                         timeLastData: Date.now(),
                         timeConnected: Date.now(),
                         isLoaded: false,
+                        vehicleLoaded: false,
                         pvpMode: false
                     };
                     otherPlayers.push(playerConnection);
@@ -973,7 +971,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     playerConnection.appearance = cloned.appearance;
                     playerConnection.shadowCircle = cloned.shadowCircle;
                     playerConnection.laraPointer = cloned.pointer;
-                    playerConnection.vehicleBones = cloned.vehicle;
+                    playerConnection.vehicle = cloned.vehicle;
                     playerConnection.hairLeftPointer = cloned.hairLeftPointer;
                     playerConnection.hairRightPointer = cloned.hairRightPointer;
                 } else {
@@ -1002,13 +1000,74 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         if ("positions" in playerData && playerData.positions) {
                             const decodedPosData = game.decodeMemoryBlock(playerData.positions);
                             if (decodedPosData.length === LARA_POS_SIZE) {
-                                game.writeByteArray(otherLara.add(moduleVariables.LaraPositions.Pointer), decodedPosData);
+                                if (!playerConnection.isLoaded) {
+                                    game.writeByteArray(
+                                        otherLara.add(0x1840),
+                                        decodedPosData
+                                    );
+
+                                    if (playerConnection.vehicle && !playerConnection.vehicle.isNull()) {
+                                        game.writeByteArray(
+                                            playerConnection.vehicle.add(0x1840),
+                                            decodedPosData
+                                        );
+                                    }
+                                } else {
+                                    // Store last pos in 0x1840
+                                    game.runFunction(
+                                        module,
+                                        "Clone",
+                                        otherLara.add(0x1840),
+                                        otherLara.add(moduleVariables.LaraPositions.Pointer),
+                                        LARA_POS_NO_ROT_SIZE
+                                    );
+
+                                    if (playerConnection.vehicle && !playerConnection.vehicle.isNull()) {
+                                        game.runFunction(
+                                            module,
+                                            "Clone",
+                                            playerConnection.vehicle.add(0x1840),
+                                            playerConnection.vehicle.add(moduleVariables.LaraPositions.Pointer),
+                                            LARA_POS_NO_ROT_SIZE
+                                        );
+                                    }
+                                }
+                                
+                                // Update pos
+                                game.writeByteArray(
+                                    otherLara.add(moduleVariables.LaraPositions.Pointer), 
+                                    decodedPosData
+                                );
+
+                                if (playerConnection.vehicle && !playerConnection.vehicle.isNull()) {
+                                    // Update vehicle pos
+                                    game.writeByteArray(
+                                        playerConnection.vehicle.add(moduleVariables.LaraPositions.Pointer),
+                                        decodedPosData
+                                    );
+                                }
                             }
                         }
 
                         if ("bones" in playerData && playerData.bones) {
                             const decodedBonesData = game.decodeMemoryBlock(playerData.bones);
                             if (decodedBonesData.length === LARA_BONES_SIZE) {
+                                if (!playerConnection.isLoaded) {
+                                    game.writeByteArray(
+                                        otherLara.add(0x1868),
+                                        decodedBonesData
+                                    );
+                                } else {
+                                    // Store last bones in 0x1868
+                                    game.runFunction(
+                                        module,
+                                        "Clone",
+                                        otherLara.add(0x1868),
+                                        otherLara.add(moduleVariables.LaraBones.Pointer),
+                                        LARA_BONES_SIZE
+                                    );
+                                }
+                                
                                 game.writeByteArray(
                                     otherLara.add(moduleVariables.LaraBones.Pointer),
                                     decodedBonesData
@@ -1060,17 +1119,55 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 const vehiclePointer = game.getEntityPointer(playerConnection.vehicleId);
                                 if (vehiclePointer && !vehiclePointer.isNull()) {
                                     try {
-                                        game.runFunction(module, "Clone", playerConnection.vehicleBones, vehiclePointer, LARA_SIZE);
+                                        game.runFunction(
+                                            module, 
+                                            "Clone", 
+                                            playerConnection.vehicle, 
+                                            vehiclePointer, 
+                                            LARA_SIZE
+                                        );
+                                        game.runFunction(
+                                            module,
+                                            "Clone",
+                                            playerConnection.vehicle.add(moduleVariables.LaraPositions.Pointer),
+                                            otherLara.add(moduleVariables.LaraPositions.Pointer),
+                                            LARA_POS_NO_ROT_SIZE
+                                        );
+                                        game.runFunction(
+                                            module,
+                                            "Clone",
+                                            playerConnection.vehicle.add(0x1840),
+                                            otherLara.add(0x1840),
+                                            LARA_POS_NO_ROT_SIZE
+                                        );
                                     } catch (err) { }
                                 }
+                            } else if (playerConnection.vehicleId === null) {
+                                playerConnection.vehicleLoaded = false;
                             }
                         }
 
                         if (module === "tomb4.dll" && "vehicleBones" in playerData && playerData.vehicleBones) {
                             const decodedVehicleBonesData = game.decodeMemoryBlock(playerData.vehicleBones);
                             if (decodedVehicleBonesData.length === LARA_BONES_SIZE) {
+                                if (!playerConnection.vehicleLoaded) {
+                                    game.writeByteArray(
+                                        playerConnection.vehicle.add(0x1868),
+                                        decodedVehicleBonesData
+                                    );
+                                } else {
+                                    // Store last bones in 0x1868
+                                    game.runFunction(
+                                        module,
+                                        "Clone",
+                                        playerConnection.vehicle.add(0x1868),
+                                        playerConnection.vehicle.add(moduleVariables.LaraBones.Pointer),
+                                        LARA_BONES_SIZE
+                                    );
+                                }
+                                
                                 game.writeByteArray(
-                                    playerConnection.vehicleBones.add(moduleVariables.LaraBones.Pointer),
+                                    playerConnection.vehicle.add(moduleVariables.LaraBones.Pointer),
                                     decodedVehicleBonesData
                                 );
                             }
@@ -1111,6 +1208,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             playerConnection.pvpMode = false;
                         }
 
+                        playerConnection.vehicleLoaded = playerConnection.vehicleLoaded || "vehicleBones" in playerData && playerData.vehicleBones;
                         playerConnection.isLoaded = playerConnection.isLoaded || "positions" in playerData && playerData.positions;
                     }
                 }
@@ -1509,15 +1607,27 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             if (playerNamesMode > 1) {
                                 // Above head
                                 const yOffset = (playerConnection.roomType === 1 || playerConnection.roomType === 2 ? -400 : -850);
+                                const interpolate = Math.min(1, (Date.now() - playerConnection.timeLastData) / 33);
+                                const lerp = (oldVal, newVal) => oldVal + (newVal - oldVal) * interpolate;
+
+                                const currPos = playerConnection.laraPointer.add(moduleVariables.LaraPositions.Pointer);
+                                const oldPos = playerConnection.laraPointer.add(0x1840);
+
+                                const smoothX = lerp(oldPos.readS32(), currPos.readS32());
+                                const smoothY = lerp(oldPos.add(4).readS32(), currPos.add(4).readS32());
+                                const smoothZ = lerp(oldPos.add(8).readS32(), currPos.add(8).readS32());
+                                
                                 isFacing = game.worldToScreenPos(
-                                    playerConnection.laraPointer.add(moduleVariables.LaraPositions.Pointer).readS32(),
-                                    playerConnection.laraPointer.add(moduleVariables.LaraPositions.Pointer).add(0x4).readS32() + yOffset,
-                                    playerConnection.laraPointer.add(moduleVariables.LaraPositions.Pointer).add(0x8).readS32(),
+                                    smoothX,
+                                    smoothY + yOffset,
+                                    smoothZ,
                                     playerConnection.laraPointer.add(moduleVariables.LaraRoomId.Pointer).readS16()
                                 );
+                                
                                 if (!isFacing || !("x" in isFacing && "y" in isFacing)) {
                                     continue;
                                 }
+                                
                                 x = Math.floor(x + isFacing.x) - 10;
                                 y = Math.floor(isFacing.y - 10);
                             } else {
@@ -1729,9 +1839,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     const moduleVariables = game.getModuleAddresses(module).variables;
                     const pos = moduleVariables.LaraPositions.Pointer;
                     const bones = moduleVariables.LaraBones.Pointer;
+                    const room = moduleVariables.LaraRoomId.Pointer;
 
                     const gameSettings = executableBase.add(execVariables.GameSettings.Address);
                     const isRenderingModern = gameSettings.readU8() & 1;
+
+                    const originalInterpolationFactor = game.readMemoryVariable("InterpolationFactor", module);
 
                     try {
                         isRendering = laraPointer;
@@ -1775,7 +1888,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         if (playerConnection.distance > 50000 ** 2) continue;
                         if (!playerConnection.isLoaded) continue;
 
-                        const hasFreshRenderState = playerConnection.hasFreshRenderState;
+                        const shouldUpdateHair = playerConnection.hasFreshRenderState;
                         playerConnection.hasFreshRenderState = false;
 
                         try {
@@ -1813,16 +1926,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             }
 
                             // Vehicles?
-                            if (module === "tomb4.dll" && playerConnection.vehicleId != null && playerConnection.vehicleBones && !playerConnection.vehicleBones.isNull()) {
-                                game.runFunction(module, "Clone", playerConnection.vehicleBones.add(pos), playerConnection.laraPointer.add(pos), LARA_POS_NO_ROT_SIZE);
-                                game.runFunction(module, "Clone", playerConnection.vehicleBones.add(bones), playerConnection.vehicleBones.add(pos), 0x14);
-                                game.runFunction(module, "Clone", playerConnection.vehicleBones.add(0x1c), playerConnection.laraPointer.add(0x1c), 0x4);
-                                game.runFunction(module, "Clone", playerConnection.vehicleBones.add(0x1868), playerConnection.vehicleBones.add(bones), LARA_DATA_SIZE);
+                            if (module === "tomb4.dll" && playerConnection.vehicleId != null && playerConnection.vehicle && !playerConnection.vehicle.isNull()) {
+                                game.runFunction(module, "Clone", playerConnection.vehicle.add(room), playerConnection.laraPointer.add(room), 0x4);
 
-                                const modelId = playerConnection.vehicleBones.add(0x10).readS16();
+                                const modelId = playerConnection.vehicle.add(0x10).readS16();
 
-                                if ([31, 32].includes(modelId)) {
-                                    game.runFunction(module, "RenderEntity", playerConnection.vehicleBones);
+                                if ([31, 32].includes(modelId) && playerConnection.vehicleLoaded) {
+                                    game.runFunction(module, "RenderEntity", playerConnection.vehicle);
                                 }
                             }
 
@@ -1843,7 +1953,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 playerConnection.resetHair = false;
                                 game.runFunction(module, "ResetLaraHair");
                             }
-                            if (hasFreshRenderState) {
+                            if (shouldUpdateHair) {
                                 game.runFunction(module, "AttachLaraHair", 0, 0);
                                 if (!isRenderingModern || isYoungLara) {
                                     game.runFunction(module, "AttachLaraHair", 0, 1);
@@ -1876,6 +1986,10 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             // force visibility
                             lara.add(0xc).writeS32(-1);
 
+                            // Set smoothness based on other player's network speed
+                            const interpolate = Math.min(256, ((Date.now() - playerConnection.timeLastData) / 33) * 256);
+                            game.writeMemoryVariable("InterpolationFactor", interpolate, module);
+                            
                             // Render her
                             game.runFunction(module, "RenderLara", playerConnection.laraPointer);
                         } catch (err) {
@@ -1886,6 +2000,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     try {
                         // Main Lara; restore
                         isRendering = "restoring";
+                        game.writeMemoryVariable("InterpolationFactor", originalInterpolationFactor, module);
                         game.restoreLara();
                         isRendering = laraPointer;
 
