@@ -1905,8 +1905,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 playerConnection.shadowCircle,
                                 LARA_SHADOW_SIZE
                             );
-                            game.runFunction(module, "Clone", playerConnection.laraPointer.add(0x1840), playerConnection.laraPointer.add(pos), 0x14);
-                            game.runFunction(module, "Clone", playerConnection.laraPointer.add(0x1868), playerConnection.laraPointer.add(bones), LARA_DATA_SIZE);
                             game.runFunction(module, "Clone",
                                 game.getMemoryVariable("LaraHairLeftX", module),
                                 playerConnection.hairLeftPointer,
