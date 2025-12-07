@@ -1,6 +1,6 @@
 const { djb2Hash } = require('./utils');
 
-const MAJOR_VERSION = "2.1";
+const MAJOR_VERSION = "2.2";
 
 module.exports = {
     server: {
