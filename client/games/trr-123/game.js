@@ -2205,12 +2205,14 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                                 const modelId = playerConnection.vehicle.add(0x10).readS16();
                                 
-                                if ([14].includes(modelId) && game.hasFunction(module, "RenderBoat")) {
-                                    game.runFunction(module, "RenderBoat", playerConnection.vehicle);
-                                } else if ([51, 13].includes(modelId) && game.hasFunction(module, "RenderSkidoo")) {
-                                    game.runFunction(module, "RenderSkidoo", playerConnection.vehicle);
-                                } else if ([14, 15, 16, 17, 19].includes(modelId) && game.hasFunction(module, "RenderEntity")) {
-                                    game.runFunction(module, "RenderEntity", playerConnection.vehicle);
+                                if (playerConnection.vehicleLoaded) {
+                                    if ([14].includes(modelId) && game.hasFunction(module, "RenderBoat")) {
+                                        game.runFunction(module, "RenderBoat", playerConnection.vehicle);
+                                    } else if ([51, 13].includes(modelId) && game.hasFunction(module, "RenderSkidoo")) {
+                                        game.runFunction(module, "RenderSkidoo", playerConnection.vehicle);
+                                    } else if ([14, 15, 16, 17, 19].includes(modelId) && game.hasFunction(module, "RenderEntity")) {
+                                        game.runFunction(module, "RenderEntity", playerConnection.vehicle);
+                                    }
                                 }
                             }
 
