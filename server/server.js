@@ -3,6 +3,7 @@ const { netcode } = require('../shared');
 const { generatePlayerId, sanitizeMessage } = require('./utils');
 const { QuizChat, MAX_MESSAGE_LENGTH } = require('./quiz');
 const { server: config } = require('./config');
+const fs = require('fs');
 
 const RATE_LIMIT_MS = 10;
 const RATE_LIMIT_MAX = 100;
@@ -11,8 +12,6 @@ const UPDATE_INTERVAL_MS = 33;
 const CLEANUP_INTERVAL_MS = 1000;
 const COUNT_INTERVAL_MS = 1000;
 const KEEPALIVE_INTERVAL_MS = 5000;
-const STATS_REPORT_COUNT = 5;
-const MAX_STATS_DISPLAY_PLAYERS = 10;
 const QUIZ_MESSAGE_SPLIT_DELAY_MS = 500;
 
 class TRRServer {
@@ -24,7 +23,6 @@ class TRRServer {
         this.lastPacketTimes = new Map();
         this.lastPacketAbuses = new Map();
         this.levelsInfo = { "0": { "0": [], "1": [], "2": [] }, "1": { "0": [], "1": [], "2": [] } };
-        this.lastReportedStats = 0;
 
         if (config.quizEnabled) {
             this.quiz = new QuizChat(this.sendQuizMessage.bind(this));
@@ -369,19 +367,21 @@ class TRRServer {
 
             this.levelsInfo = newLevelsInfo;
 
-            this.lastReportedStats++;
-            if (this.lastReportedStats > STATS_REPORT_COUNT) {
-                this.lastReportedStats = 0;
-                console.log('Players online:', this.players.size);
-                let count = 0;
-                for (const [playerId, player] of this.players) {
-                    if (count++ >= MAX_STATS_DISPLAY_PLAYERS) break;
-                    const trVersion = (player.bundleId !== undefined && player.version !== undefined)
-                        ? (3 * player.bundleId) + player.version + 1
-                        : '?';
-                    console.log(`  > ${player.name} - in TR${trVersion} LVL ${player.level}`);
-                }
-            }
+            // Write player stats for external integrations (discord bot, etc.)
+            // Only include players in public lobby ("" or "_")
+            const publicPlayers = Array.from(this.players.values())
+                .filter(p => p.lobby === '' || p.lobby === '_');
+            const stats = {
+                timestamp: Date.now(),
+                totalPlayers: publicPlayers.length,
+                players: publicPlayers.map(p => ({
+                    name: p.name,
+                    level: p.level,
+                    version: p.version,
+                    bundleId: p.bundleId
+                }))
+            };
+            fs.writeFile('./player-stats.json', JSON.stringify(stats), () => {});
         }, COUNT_INTERVAL_MS);
     }
 

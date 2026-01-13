@@ -20,3 +20,5 @@ temp/
 .idea/
 .claude/
 /releases/
+server/discord-bot.js
+player-stats.json

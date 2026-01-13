@@ -7,12 +7,15 @@
     "main": "client/index.js",
     "scripts": {
         "start-server": "node server/index.js",
+        "start-discord": "node server/discord-bot.js",
+        "init-discord": "node server/discord-bot.js --init",
         "start-client": "electron client/index.js",
         "deploy": "node ./deploy.js",
         "postinstall": "node -e \"const fs=require('fs');if(fs.existsSync('frida_binding.node'))fs.copyFileSync('frida_binding.node','node_modules/frida/build/frida_binding.node')\""
     },
     "dependencies": {
         "dgram": "^1.0.1",
+        "discord.js": "^14.25.1",
         "frida": "16.4.10",
         "zstd-codec": "^0.1.5"
     },
