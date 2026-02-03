@@ -160,35 +160,23 @@ Want technical details? Check out the [Contributing Guide](documentation/CONTRIB
 
 ## FAQ
 
-```text
-Q: Does this work on Linux/Mac?
-A: Currently Windows only, though the codebase is designed for potential cross-platform support.
-```
+### Does this work on Linux?
+Currently Windows only, though Linux is coming soon...
 
-```text
-Q: Can I use this with other mods?
-A: This launcher provides its own mod system. Compatibility with other mods varies.
-```
+### Can I use this with other mods?
+This launcher provides its own mod system. Compatibility with other mods varies.
 
-```text
-Q: Is my saved game safe?
-A: Yes! The launcher doesn't modify save files. Your progress is completely safe.
-```
+### Is my saved game safe?
+Yes! The launcher doesn't modify save files. Your progress is completely safe.
 
-```text
-Q: How do I stop the mods?
-A: Click the "Stop Mods" button in the launcher, or simply close the game.
-```
+### How do I stop the mods?
+Click the "Stop Mods" button in the launcher, or simply close the game.
 
-```text
-Q: Can I run my own server?
-A: Absolutely! Check the releases for the standalone server executable.
-```
+### Can I run my own server?
+Absolutely! Check the releases for the standalone server executable.
 
-```text
-Q: How can I get involved with the project?
-A: Check out the [Contributing Guide](documentation/CONTRIBUTING.md) to get started!
-```
+### How can I get involved with the project?
+Check out the [Contributing Guide](documentation/CONTRIBUTING.md) to get started!
 
 ---
 
