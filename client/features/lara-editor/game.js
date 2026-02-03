@@ -120,7 +120,7 @@ module.exports = {
                 if (orientationChanged && manifest.executable !== "tomb456.exe") {
                     const isPhotoMode = game.readMemoryVariable("IsPhotoMode", manifest.executable);
                     if (isPhotoMode === 1) {
-                        game.runFunction(module, "UpdatePhotoMode");
+                        game.runFunction(module, "UpdateLaraAppearance");
                     }
                 }
 

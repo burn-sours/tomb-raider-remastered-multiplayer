@@ -276,7 +276,7 @@ module.exports = {
             Return: 'void',
             Disable: true
         },
-        UpdatePhotoMode: {
+        UpdateLaraAppearance: {
             Address: "0xf82e0",
             Params: [],
             Return: 'void',
