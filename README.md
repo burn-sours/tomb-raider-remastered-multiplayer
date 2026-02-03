@@ -154,7 +154,7 @@ This project is **100% open source** under the GPL-3.0 license. We welcome contr
 - **Protocol:** Binary UDP packets with zstd compression
 - **Injection:** Runtime memory modification via Frida (no file patching)
 
-Want technical details? Check out the [Contributing Guide](documentation/CONTRIBUTING.md).
+Want technical details? Check out the [Contributing Guide](docs/CONTRIBUTING.md).
 
 ---
 
@@ -176,7 +176,7 @@ Click the "Stop Mods" button in the launcher, or simply close the game.
 Absolutely! Check the releases for the standalone server executable.
 
 ### How can I get involved with the project?
-Check out the [Contributing Guide](documentation/CONTRIBUTING.md) to get started!
+Check out the [Contributing Guide](docs/CONTRIBUTING.md) to get started!
 
 ---
 
