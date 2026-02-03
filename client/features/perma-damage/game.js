@@ -37,7 +37,7 @@ module.exports = {
             `
         },
 
-        LaraInLevel: {
+        InitializeLevelAI: {
             // language=JavaScript
             after: `
                 if (!userData['perma-damage']) return;

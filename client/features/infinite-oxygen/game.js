@@ -34,7 +34,7 @@ module.exports = {
             `
         },
 
-        LaraInLevel: {
+        InitializeLevelAI: {
             // language=JavaScript
             after: `
                 if (!userData['infinite-oxygen']) return;

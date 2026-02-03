@@ -329,7 +329,7 @@ module.exports = {
             Return: 'void',
             Disable: true
         },
-        LaraInLevel: {
+        InitializeLevelAI: {
             Address: "0x84d70",
             Params: ['int'],
             Return: 'void',

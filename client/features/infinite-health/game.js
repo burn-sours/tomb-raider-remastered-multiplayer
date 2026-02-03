@@ -40,7 +40,7 @@ module.exports = {
             `
         },
 
-        LaraInLevel: {
+        InitializeLevelAI: {
             // language=JavaScript
             after: `
                 if (!userData['infinite-health']) return;

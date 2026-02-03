@@ -104,7 +104,7 @@ module.exports = {
                 }
             `
         },
-        LaraInLevel: {
+        InitializeLevelAI: {
             // language=JavaScript
             after: `
                 floodedLevelRooms = false;

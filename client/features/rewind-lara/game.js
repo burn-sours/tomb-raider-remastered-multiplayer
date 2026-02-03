@@ -62,7 +62,7 @@ module.exports = {
                 }
             `
         },
-        LaraInLevel: {
+        InitializeLevelAI: {
             // language=JavaScript
             after: `
                 if (!userData['rewind-lara']) return;

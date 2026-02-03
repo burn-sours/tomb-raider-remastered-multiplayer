@@ -1844,7 +1844,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
             },
 
-            LaraInLevel: {
+            InitializeLevelAI: {
                 after: (module) => {
                     game.setLara();
                     
