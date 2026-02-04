@@ -2196,7 +2196,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             // Update hair positioning
                             if (shouldUpdateHair) {
                                 const hairFlag = module === "tomb1.dll" ? 0xbd : 2;
-                                game.runFunction(module, "AttachLaraHair", 0, hairFlag);
+                                game.runFunction(module, "SimulateLaraHair", 0, hairFlag);
                             }
 
                             // Vehicles?

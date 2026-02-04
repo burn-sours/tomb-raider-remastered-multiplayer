@@ -1952,9 +1952,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 game.runFunction(module, "ResetLaraHair");
                             }
                             if (shouldUpdateHair) {
-                                game.runFunction(module, "AttachLaraHair", 0, 0);
+                                game.runFunction(module, "SimulateLaraHair", 0, 0);
                                 if (!isRenderingModern || isYoungLara) {
-                                    game.runFunction(module, "AttachLaraHair", 0, 1);
+                                    game.runFunction(module, "SimulateLaraHair", 0, 1);
                                 }
                             }
 

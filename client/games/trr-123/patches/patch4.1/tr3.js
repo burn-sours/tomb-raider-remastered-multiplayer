@@ -416,7 +416,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        AttachLaraHair: {
+        SimulateLaraHair: {
             Address: "0xc5830",
             Params: ['int', 'int'],
             Return: 'void',
