@@ -375,7 +375,7 @@ module.exports = {
             Return: 'int',
             Disable: false
         },
-        GetRangeV: {
+        TraceRangeZ: {
             Address: "0x50d60",
             Params: ['pointer', 'pointer'],
             Return: 'int',

@@ -738,9 +738,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 let inRangeV;
                 if (((targetX - cameraX ^ directionX) - directionX) < ((targetY - cameraY ^ directionY) - directionY)) {
                     inRangeH = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
-                    inRangeV = game.runFunction(module, "GetRangeV", fromPos, targetPos);
+                    inRangeV = game.runFunction(module, "TraceRangeZ", fromPos, targetPos);
                 } else {
-                    inRangeH = game.runFunction(module, "GetRangeV", fromPos, targetPos);
+                    inRangeH = game.runFunction(module, "TraceRangeZ", fromPos, targetPos);
                     inRangeV = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
                 }
                 if (inRangeH !== 1 || inRangeV !== 1) return null;
@@ -2133,9 +2133,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         let inRangeV = false;
                         if (((targetX - laraX ^ directionX) - directionX) < ((targetY - laraY ^ directionY) - directionY)) {
                             inRangeH = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
-                            inRangeV = game.runFunction(module, "GetRangeV", fromPos, targetPos);
+                            inRangeV = game.runFunction(module, "TraceRangeZ", fromPos, targetPos);
                         } else {
-                            inRangeH = game.runFunction(module, "GetRangeV", fromPos, targetPos);
+                            inRangeH = game.runFunction(module, "TraceRangeZ", fromPos, targetPos);
                             inRangeV = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
                         }
                         if (inRangeH !== 1 || inRangeV !== 1) continue;
