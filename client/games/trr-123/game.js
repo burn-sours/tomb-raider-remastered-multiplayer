@@ -1785,7 +1785,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
             },
 
-            DealDmg: {
+            OnDamage: {
                 before: (module, enemy, weapon, dmg) => {
                     if (exiting || !pvpMode) return;
                     if (!userData.multiplayer) return;
@@ -1929,7 +1929,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             // DMG
                             const isTR2 = module === "tomb2.dll";
-                            game.runFunction(module, "DealDmg", playerConnection.laraPointer, isTR2 ? 0x6 : 0x7, isTR2 ? 0x1e : 0x14);
+                            game.runFunction(module, "OnDamage", playerConnection.laraPointer, isTR2 ? 0x6 : 0x7, isTR2 ? 0x1e : 0x14);
                             break;
                         }
                     }
@@ -1983,7 +1983,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             game.playExplosionGraphic(projectileX, projectileY, projectileZ, projectileRoomId);
 
                             // DMG
-                            game.runFunction(module, "DealDmg", playerConnection.laraPointer, 0x6, 0x1e);
+                            game.runFunction(module, "OnDamage", playerConnection.laraPointer, 0x6, 0x1e);
                             break;
                         }
                     }
@@ -2033,7 +2033,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             // DMG
                             const weaponId = module === "tomb2.dll" ? 0x7 : 0x8;
                             const weaponDmg = module === "tomb2.dll" ? 0x4 : 0x6;
-                            game.runFunction(module, "DealDmg", playerConnection.laraPointer, weaponId, weaponDmg);
+                            game.runFunction(module, "OnDamage", playerConnection.laraPointer, weaponId, weaponDmg);
                             break;
                         }
                     }

@@ -363,7 +363,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        DealDmg: {
+        OnDamage: {
             Address: "0x436e0",
             Params: ['pointer', 'int', 'int'],
             Return: 'void',

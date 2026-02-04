@@ -2185,7 +2185,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
             },
 
-            DealDmg: {
+            OnDamage: {
                 before: (module, enemy, weapon, dmg, extraParam) => {
                     if (exiting || !pvpMode) return;
                     if (!userData.multiplayer) return;
@@ -2258,9 +2258,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             // DMG
                             if (module === "tomb5.dll") {
-                                game.runFunction(module, "DealDmg", playerConnection.laraPointer, 0x12, 0x14, 0x0);
+                                game.runFunction(module, "OnDamage", playerConnection.laraPointer, 0x12, 0x14, 0x0);
                             } else {
-                                game.runFunction(module, "DealDmg", playerConnection.laraPointer, 0x12, 0x14);
+                                game.runFunction(module, "OnDamage", playerConnection.laraPointer, 0x12, 0x14);
                             }
                             break;
                         }
@@ -2312,9 +2312,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             // DMG
                             if (module === "tomb5.dll") {
-                                game.runFunction(module, "DealDmg", playerConnection.laraPointer, 0x13, 0x6, 0x0);
+                                game.runFunction(module, "OnDamage", playerConnection.laraPointer, 0x13, 0x6, 0x0);
                             } else {
-                                game.runFunction(module, "DealDmg", playerConnection.laraPointer, 0x13, 0x6);
+                                game.runFunction(module, "OnDamage", playerConnection.laraPointer, 0x13, 0x6);
                             }
                             break;
                         }
