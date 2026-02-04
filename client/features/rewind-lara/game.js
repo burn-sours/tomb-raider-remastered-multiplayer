@@ -72,7 +72,7 @@ module.exports = {
                 rewind_init(true);
             `
         },
-        WorldStateRecordReplay: {
+        ProcessDemo: {
             // language=JavaScript
             before: `
                 if (!userData['rewind-lara']) return;

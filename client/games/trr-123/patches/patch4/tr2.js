@@ -442,7 +442,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        WorldStateRecordReplay: {
+        ProcessDemo: {
             Address: "0x79c80",
             Params: [],
             Return: 'void',
