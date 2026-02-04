@@ -737,11 +737,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 let inRangeH;
                 let inRangeV;
                 if (((targetX - cameraX ^ directionX) - directionX) < ((targetY - cameraY ^ directionY) - directionY)) {
-                    inRangeH = game.runFunction(module, "GetRangeH", fromPos, targetPos);
+                    inRangeH = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
                     inRangeV = game.runFunction(module, "GetRangeV", fromPos, targetPos);
                 } else {
                     inRangeH = game.runFunction(module, "GetRangeV", fromPos, targetPos);
-                    inRangeV = game.runFunction(module, "GetRangeH", fromPos, targetPos);
+                    inRangeV = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
                 }
                 if (inRangeH !== 1 || inRangeV !== 1) return null;
                 const inLOS = game.runFunction(module, "GetLOS", fromPos, targetPos);
@@ -2132,11 +2132,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         let inRangeH = false;
                         let inRangeV = false;
                         if (((targetX - laraX ^ directionX) - directionX) < ((targetY - laraY ^ directionY) - directionY)) {
-                            inRangeH = game.runFunction(module, "GetRangeH", fromPos, targetPos);
+                            inRangeH = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
                             inRangeV = game.runFunction(module, "GetRangeV", fromPos, targetPos);
                         } else {
                             inRangeH = game.runFunction(module, "GetRangeV", fromPos, targetPos);
-                            inRangeV = game.runFunction(module, "GetRangeH", fromPos, targetPos);
+                            inRangeV = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
                         }
                         if (inRangeH !== 1 || inRangeV !== 1) continue;
                         if (game.runFunction(module, "GetLOS", fromPos, targetPos) === 0) continue;
