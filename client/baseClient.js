@@ -31,8 +31,9 @@ class BaseGameClient {
     pvpDamage = [null, 0, 0]; // player, damage, weapon
     pvpMode = false;
     inPhotoMode = false;
+    seq = 0;
     lastReceivedPacket = null;
-    connectionHealthCheck = null;
+    connectionHealthCheckTimeout = null;
     updateLoopTimeout = null;
     frameLoopTimeout = null;
     tickLoopTimeout = null;
@@ -140,7 +141,6 @@ class BaseGameClient {
             .filter(f => f.supportedGames.includes(manifest.id))
             .map(f => ({
                 id: f.id,
-                standalone: f.standalone,
                 game: require(`./features/${f.id}/game`)
             }));
 
@@ -150,7 +150,6 @@ class BaseGameClient {
 
         const featureSupport = supportedFeatures.map(f => ({
             id: f.id,
-            standalone: f.standalone,
             game: {
                 hooks: f.game.hooks || {},
                 loops: f.game.loops || [],
@@ -202,11 +201,6 @@ class BaseGameClient {
                     }
                 }
 
-                try {
-                    await this.handleStandaloneEvent(event);
-                } catch (err) {
-                    if (!this.exiting) console.error('Error handling standalone event:', err, err.stack);
-                }
             } else if (event.type === 'error') {
                 if (!this.exiting) console.error('Error from game script:', event);
             }
@@ -227,10 +221,6 @@ class BaseGameClient {
         if (launchOptions.multiplayer && this.connectedId) {
             ui.broadcast("serverConnected", this.connectedId);
         }
-    }
-
-    async cleanupStandaloneFeature(featureId) {
-        await this.gameFunctions.cleanupStandaloneFeature(featureId);
     }
 
     async launchMultiplayer() {
@@ -277,8 +267,8 @@ class BaseGameClient {
         const checkMajor = () => _v === config.client.major;
 
         const checkKeys = () => {
-            const _t = Number(msg.readBigInt64BE(5));
-            return checkMajor() && _t && !isNaN(Number(_t));
+            const _seq = msg.readUInt8(5);
+            return checkMajor() && !isNaN(_seq);
         };
 
         switch (packetType) {
@@ -323,8 +313,8 @@ class BaseGameClient {
 
             case netcode.PACKET_TYPE_HIGHFREQ:
                 if (!checkKeys()) return;
-                const playerData = netcode.decodeHighFreq(msg);
                 try {
+                    const playerData = netcode.decodeHighFreq(msg);
                     if (await this.gameFunctions.isInGame()) {
                         await this.gameFunctions.receivePlayerData(
                             playerData.id,
@@ -338,8 +328,8 @@ class BaseGameClient {
 
             case netcode.PACKET_TYPE_SOUND:
                 if (!checkKeys()) return;
-                const soundEvent = netcode.decodeSound(msg);
                 try {
+                    const soundEvent = netcode.decodeSound(msg);
                     if (await this.gameFunctions.isInGame()) {
                         await this.gameFunctions.receiveAudio(
                             soundEvent.sound,
@@ -354,8 +344,8 @@ class BaseGameClient {
 
             case netcode.PACKET_TYPE_PVP:
                 if (!checkKeys()) return;
-                const pvpEvent = netcode.decodePVP(msg);
                 try {
+                    const pvpEvent = netcode.decodePVP(msg);
                     if (await this.gameFunctions.isInGame()) {
                         if (this.connectedId === pvpEvent.pvpPlayer) {
                             await this.gameFunctions.receivePVP(
@@ -372,8 +362,8 @@ class BaseGameClient {
 
             case netcode.PACKET_TYPE_CHAT:
                 if (!checkKeys()) return;
-                const chatEvent = netcode.decodeChat(msg);
                 try {
+                    const chatEvent = netcode.decodeChat(msg);
                     if (await this.gameFunctions.isInGame()) {
                         await this.gameFunctions.receiveChat(
                             chatEvent.name,
@@ -389,8 +379,8 @@ class BaseGameClient {
 
             case netcode.PACKET_TYPE_GLOBAL:
                 if (!checkMajor()) return;
-                const globalData = netcode.decodeGlobal(msg);
                 try {
+                    const globalData = netcode.decodeGlobal(msg);
                     if (await this.gameFunctions.isInMenu()) {
                         globalData.sort((a, b) => {
                             if (a.lvl === 0) return -1;
@@ -406,8 +396,8 @@ class BaseGameClient {
 
             case netcode.PACKET_TYPE_DISCONNECT:
                 if (!checkKeys()) return;
-                const disconnectEvent = netcode.decodeDisconnect(msg);
                 try {
+                    const disconnectEvent = netcode.decodeDisconnect(msg);
                     if (await this.gameFunctions.isInGame()) {
                         await this.gameFunctions.receivePlayerDisconnect(disconnectEvent.id);
                     }
@@ -433,7 +423,7 @@ class BaseGameClient {
                 this.sendToServer(
                     await netcode.compress(netcode.encodeSound({
                         _v: config.client.major,
-                        _t: Date.now(),
+                        _seq: this.seq,
                         id: this.connectedId,
                         name: this.launchOptions.name,
                         lobby: this.launchOptions.lobbyCode,
@@ -453,16 +443,15 @@ class BaseGameClient {
                 }
 
                 userdata.writeOptions(this.launchOptions);
-                ui.broadcast("launcherOptions", this.launchOptions);
                 break;
 
             case "sendChat":
                 this.sendToServer(
                     await netcode.compress(netcode.encodeChat({
                         _v: config.client.major,
-                        _t: Date.now(),
+                        _seq: this.seq,
                         id: this.connectedId,
-                        name: this.launchOptions.name,
+                        name: message.payload.args.asQuiz ? "Quiz" : this.launchOptions.name,
                         lobby: this.launchOptions.lobbyCode,
                         version: gameVersion,
                         bundleId: this.bundleIdInteger,
@@ -489,13 +478,6 @@ class BaseGameClient {
         }
     }
 
-    async handleStandaloneEvent(message) {
-        const eventType = message.payload?.event;
-        if (!eventType || !eventType.startsWith("standalone:")) return;
-
-        ui.broadcast(eventType.replace("standalone:", ""), message.payload.args);
-    }
-
     async updateLoop(loop = true, force = false) {
         if (this.exiting) return;
 
@@ -509,16 +491,28 @@ class BaseGameClient {
                 if (!this.exiting) console.error('Error in updateLoop gamescript: ', err);
             }
         } else if (await this.gameFunctions.isInMenu()) {
+            // In menu - send global request to get player lists
             this.sendToServer(
                 await netcode.compress(netcode.encodeGlobalReq({
                     _v: config.client.major,
-                    _t: Date.now(),
+                    _seq: this.seq,
                     id: this.connectedId,
                     name: this.launchOptions.name,
                     lobby: this.launchOptions.lobbyCode,
                     version: gameVersion,
                     bundleId: this.bundleIdInteger,
                     level: levelId,
+                }))
+            );
+        } else {
+            // Not in game or menu (end level screen, cutscenes, etc.) - send simple keepalive
+            this.sendToServer(
+                await netcode.compress(netcode.encodeKeepalive({
+                    _v: config.client.major,
+                    _seq: this.seq,
+                    id: this.connectedId,
+                    name: this.launchOptions.name,
+                    lobby: this.launchOptions.lobbyCode,
                 }))
             );
         }
@@ -566,7 +560,7 @@ class BaseGameClient {
             this.sendToServer(
                 await netcode.compress(netcode.encodeHighFreq({
                     _v: config.client.major,
-                    _t: Date.now(),
+                    _seq: this.seq = (this.seq + 1) & 0xFF,
                     id: this.connectedId,
                     name: this.launchOptions.name,
                     lobby: this.launchOptions.lobbyCode,
@@ -641,7 +635,7 @@ class BaseGameClient {
                     this.sendToServer(
                         await netcode.compress(netcode.encodePVP({
                             _v: config.client.major,
-                            _t: Date.now(),
+                            _seq: this.seq,
                             id: this.connectedId,
                             name: this.launchOptions.name,
                             lobby: this.launchOptions.lobbyCode,
@@ -668,26 +662,31 @@ class BaseGameClient {
         }
     }
 
-    startConnectionHealthCheck() {
-        if (this.connectionHealthCheck) return;
+    connectionHealthCheckLoop() {
+        if (this.exiting) return;
 
-        this.connectionHealthCheck = setInterval(() => {
-            if (this.exiting) return;
+        const timeout = this.connectedId ? 30000 : 5000;
+        const timeSinceLastPacket = Date.now() - (this.lastReceivedPacket || 0);
 
-            const timeout = this.connectedId ? 30000 : 5000;
-            const timeSinceLastPacket = Date.now() - this.lastReceivedPacket;
+        if (timeSinceLastPacket > timeout) {
+            console.error(`Connection timeout - no packets for ${timeout}ms`);
+            this.handleConnectionFailure().then(() => { /**/ });
+        }
 
-            if (timeSinceLastPacket > timeout) {
-                console.error(`Connection timeout - no packets for ${timeout}ms`);
-                this.handleConnectionFailure().then(() => { /**/ });
-            }
-        }, 2000);
+        if (!this.exiting) {
+            this.connectionHealthCheckTimeout = setTimeout(() => this.connectionHealthCheckLoop(), 2000);
+        }
     }
 
-    stopConnectionHealthCheck() {
-        if (this.connectionHealthCheck) {
-            clearInterval(this.connectionHealthCheck);
-            this.connectionHealthCheck = null;
+    startConnectionHealthCheck() {
+        if (this.connectionHealthCheckTimeout) return;
+        this.connectionHealthCheckTimeout = setTimeout(() => this.connectionHealthCheckLoop(), 2000);
+    }
+
+    stopLoops() {
+        if (this.connectionHealthCheckTimeout) {
+            clearTimeout(this.connectionHealthCheckTimeout);
+            this.connectionHealthCheckTimeout = null;
         }
         if (this.updateLoopTimeout) {
             clearTimeout(this.updateLoopTimeout);
@@ -720,7 +719,7 @@ class BaseGameClient {
 
             const disconnectPacket = await netcode.compress(netcode.encodeDisconnect({
                 _v: config.client.major,
-                _t: Date.now(),
+                _seq: this.seq,
                 id: this.connectedId,
                 name: userData.name,
                 lobby: userData.lobbyCode,
@@ -742,7 +741,7 @@ class BaseGameClient {
     }
 
     async cleanup() {
-        this.stopConnectionHealthCheck();
+        this.stopLoops();
 
         if (this.gameScript && !this.gameScript.isDestroyed) {
             try {

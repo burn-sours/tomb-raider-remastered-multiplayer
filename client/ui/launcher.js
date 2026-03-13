@@ -1,6 +1,7 @@
 let alreadyInjected = false;
 let isLaunching = false;
 let customExePath = null;
+let activeTab = 'multiplayer';
 
 const enableSaveButton = () => {
     if (isLaunching) return;
@@ -11,27 +12,138 @@ const enableSaveButton = () => {
     }
 };
 
-function generateFeatureUI() {
-    const container = document.getElementById("featureOptions");
-    const gameSelect = document.getElementById("gameSelect");
-    const currentGame = gameSelect.value;
+function generateTabUI() {
+    const { categories } = window.api.featureManifests;
+    const currentGame = document.getElementById("gameSelect").value;
+    const sidebarContainer = document.getElementById("tabSidebar");
 
-    container.innerHTML = "";
-
-    const { features, categories } = window.api.featureManifests;
+    sidebarContainer.querySelectorAll(".sidebar-item").forEach(item => item.remove());
+    sidebarContainer.appendChild(createSidebarItem("multiplayer", "Multiplayer", false));
 
     categories.forEach(category => {
-        const categoryFeatures = features.filter(f => {
-            if (f.category !== category.id) return false;
-            return f.supportedGames.includes(currentGame);
-        });
+        if (categoryHasFeatures(category.id, currentGame)) {
+            sidebarContainer.appendChild(createSidebarItem(category.id, category.name, true));
+        }
+    });
+
+    generateFeaturePanels();
+    updateTabCounts();
+
+    if (!document.querySelector(`.sidebar-item[data-tab="${activeTab}"]`)) {
+        activeTab = "multiplayer";
+    }
+    switchTab(activeTab);
+}
+
+function createSidebarItem(id, name, showCount) {
+    const item = document.createElement("button");
+    item.className = "sidebar-item";
+    item.dataset.tab = id;
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = name;
+    item.appendChild(nameSpan);
+
+    if (showCount) {
+        const countSpan = document.createElement("span");
+        countSpan.className = "sidebar-item-count";
+        countSpan.dataset.countFor = id;
+        item.appendChild(countSpan);
+    }
+
+    item.addEventListener("click", () => switchTab(id));
+    return item;
+}
+
+function updateTabCounts() {
+    const { features, categories } = window.api.featureManifests;
+    const currentGame = document.getElementById("gameSelect").value;
+
+    categories.forEach(category => {
+        const countSpan = document.querySelector(`.sidebar-item-count[data-count-for="${category.id}"]`);
+        if (!countSpan) return;
+
+        const categoryFeatures = features.filter(f =>
+            f.category === category.id &&
+            f.supportedGames.includes(currentGame)
+        );
+
+        const total = categoryFeatures.length;
+        const selected = categoryFeatures.filter(f => {
+            const checkbox = document.getElementById(f.id);
+            return checkbox && checkbox.checked;
+        }).length;
+
+        countSpan.textContent = `${selected}/${total}`;
+        countSpan.classList.toggle("has-selection", selected > 0);
+    });
+}
+
+function categoryHasFeatures(categoryId, currentGame) {
+    const { features } = window.api.featureManifests;
+    return features.some(f =>
+        f.category === categoryId &&
+        f.supportedGames.includes(currentGame)
+    );
+}
+
+function switchTab(tabId) {
+    activeTab = tabId;
+
+    document.querySelectorAll(".sidebar-item").forEach(item => {
+        item.classList.toggle("active", item.dataset.tab === tabId);
+    });
+
+    document.querySelectorAll(".tab-panel").forEach(panel => {
+        panel.classList.toggle("active", panel.dataset.panel === tabId);
+    });
+}
+
+function generateFeaturePanels() {
+    const panelsContainer = document.getElementById("tabPanels");
+    const { features, categories } = window.api.featureManifests;
+    const currentGame = document.getElementById("gameSelect").value;
+
+    const savedStates = {};
+    features.forEach(feature => {
+        const checkbox = document.getElementById(feature.id);
+        if (checkbox) savedStates[feature.id] = checkbox.checked;
+        if (feature.ui.altOptions) {
+            feature.ui.altOptions.forEach(alt => {
+                const altCheckbox = document.getElementById(alt.id);
+                if (altCheckbox) savedStates[alt.id] = altCheckbox.checked;
+            });
+        }
+    });
+
+    panelsContainer.querySelectorAll('.tab-panel:not([data-panel="multiplayer"])').forEach(p => p.remove());
+
+    categories.forEach(category => {
+        const categoryFeatures = features.filter(f =>
+            f.category === category.id &&
+            f.supportedGames.includes(currentGame)
+        );
 
         if (categoryFeatures.length === 0) return;
+
+        const panel = document.createElement("div");
+        panel.className = "tab-panel";
+        panel.dataset.panel = category.id;
 
         const heading = document.createElement("h3");
         heading.className = "subtitle";
         heading.textContent = category.name;
-        container.appendChild(heading);
+        panel.appendChild(heading);
+
+        if (category.description) {
+            const description = document.createElement("p");
+            description.className = "tab-description";
+            description.textContent = category.description;
+            panel.appendChild(description);
+        }
+
+        const optionsDiv = document.createElement("div");
+        optionsDiv.className = "options";
 
         categoryFeatures.forEach(feature => {
             const label = document.createElement("label");
@@ -40,6 +152,7 @@ function generateFeatureUI() {
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.id = feature.id;
+            checkbox.checked = savedStates[feature.id] || false;
 
             const checkmark = document.createElement("span");
             checkmark.className = "checkmark";
@@ -47,17 +160,18 @@ function generateFeatureUI() {
             label.appendChild(checkbox);
             label.appendChild(checkmark);
             label.appendChild(document.createTextNode(feature.ui.label));
-
-            container.appendChild(label);
-
-            checkbox.addEventListener("change", enableSaveButton);
-            checkbox.addEventListener("input", enableSaveButton);
+            optionsDiv.appendChild(label);
 
             if (feature.ui.altOptions && feature.ui.altOptions.length > 0) {
                 const altContainer = document.createElement("div");
-                altContainer.id = `${feature.id}-alt-options`;
-                altContainer.className = "conditional options hidden";
-                altContainer.style.marginLeft = "20px";
+                altContainer.className = "alt-options";
+
+                const separator = document.createElement("div");
+                separator.className = "alt-options-separator";
+                separator.textContent = "— OR —";
+                altContainer.appendChild(separator);
+
+                const altCheckboxes = [];
 
                 feature.ui.altOptions.forEach(altOption => {
                     const altLabel = document.createElement("label");
@@ -66,6 +180,7 @@ function generateFeatureUI() {
                     const altCheckbox = document.createElement("input");
                     altCheckbox.type = "checkbox";
                     altCheckbox.id = altOption.id;
+                    altCheckbox.checked = savedStates[altOption.id] || false;
 
                     const altCheckmark = document.createElement("span");
                     altCheckmark.className = "checkmark";
@@ -73,30 +188,38 @@ function generateFeatureUI() {
                     altLabel.appendChild(altCheckbox);
                     altLabel.appendChild(altCheckmark);
                     altLabel.appendChild(document.createTextNode(altOption.label));
-
                     altContainer.appendChild(altLabel);
 
-                    altCheckbox.addEventListener("change", enableSaveButton);
-                    altCheckbox.addEventListener("input", enableSaveButton);
-                });
+                    altCheckboxes.push(altCheckbox);
 
-                container.appendChild(altContainer);
+                    altCheckbox.addEventListener("change", () => {
+                        if (altCheckbox.checked) {
+                            checkbox.checked = false;
+                        }
+                        enableSaveButton();
+                        updateTabCounts();
+                    });
+                });
 
                 checkbox.addEventListener("change", () => {
                     if (checkbox.checked) {
-                        altContainer.classList.add("hidden");
-                    } else {
-                        altContainer.classList.remove("hidden");
+                        altCheckboxes.forEach(alt => alt.checked = false);
                     }
+                    enableSaveButton();
+                    updateTabCounts();
                 });
 
-                if (checkbox.checked) {
-                    altContainer.classList.add("hidden");
-                } else {
-                    altContainer.classList.remove("hidden");
-                }
+                optionsDiv.appendChild(altContainer);
+            } else {
+                checkbox.addEventListener("change", () => {
+                    enableSaveButton();
+                    updateTabCounts();
+                });
             }
         });
+
+        panel.appendChild(optionsDiv);
+        panelsContainer.appendChild(panel);
     });
 }
 
@@ -128,6 +251,19 @@ serverSelect.addEventListener("change", () => {
     }
 });
 
+const privateSessionCheckbox = document.getElementById("privateSession");
+const lobbyCodeOptions = document.getElementById("lobbyCodeOptions");
+const lobbyCodeInput = document.getElementById("lobbyCode");
+privateSessionCheckbox.addEventListener("change", () => {
+    if (privateSessionCheckbox.checked) {
+        lobbyCodeOptions.classList.remove("hidden");
+    } else {
+        lobbyCodeOptions.classList.add("hidden");
+        lobbyCodeInput.value = "";
+    }
+    enableSaveButton();
+});
+
 selectExeButton.addEventListener("click", async () => {
     const filePath = await window.api.selectExeFile();
     if (filePath) {
@@ -152,12 +288,15 @@ launchButton.addEventListener("click", () => {
         manualPatch: patchSection.classList.contains("hidden") ? null : patchSelect.value,
         multiplayer: multiplayerCheckbox.checked,
         name: document.getElementById("displayName").value,
-        lobbyCode: document.getElementById("lobbyCode").value,
+        privateSession: document.getElementById("privateSession").checked,
+        lobbyCode: document.getElementById("lobbyCode").value.toLowerCase(),
         hideLobbyCode: document.getElementById("hideLobbyCode").checked,
+        enableChat: document.getElementById("enableChat").checked,
         customServer: serverSelect.value === "custom",
         serverIp: document.getElementById("serverIp").value,
         serverPort: document.getElementById("serverPort").value,
         customExePath: customExePath,
+        activeTab: activeTab,
     };
 
     const { features } = window.api.featureManifests;
@@ -184,73 +323,33 @@ launchButton.addEventListener("click", () => {
     launchButton.innerText = customExePath ? "Launching Game..." : "Waiting for Game...";
 
     selectExeButton.classList.add("hidden");
-
-    // Disable all inputs during launch
     document.querySelectorAll("input, select").forEach(input => input.setAttribute("disabled", "true"));
 });
 
-// Listen for changes to launcher preferences
-document.querySelectorAll("input").forEach(inp => {
+document.querySelectorAll("input, select").forEach(inp => {
     inp.addEventListener("change", enableSaveButton);
     inp.addEventListener("input", enableSaveButton);
 });
-gameSelect.addEventListener("change", enableSaveButton);
 
-// Generate initial layout
-generateFeatureUI();
+generateTabUI();
+
+const gameToggle = document.getElementById("gameToggle");
+gameToggle.addEventListener("click", (e) => {
+    const btn = e.target.closest(".game-toggle-btn");
+    if (!btn || btn.classList.contains("active")) return;
+
+    gameToggle.querySelectorAll(".game-toggle-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    gameSelect.value = btn.dataset.game;
+    gameSelect.dispatchEvent(new Event("change"));
+});
+
 gameSelect.addEventListener("change", () => {
-    generateFeatureUI();
-    populateFeaturesDropdown();
-});
-
-const featuresMenuButton = document.getElementById("features-menu-button");
-const featuresDropdown = document.getElementById("features-dropdown");
-
-function populateFeaturesDropdown() {
-    const gameSelect = document.getElementById("gameSelect");
-    const currentGame = gameSelect.value;
-    const { features } = window.api.featureManifests;
-    const standaloneFeatures = features.filter(f => f.standalone === true);
-    featuresDropdown.innerHTML = "";
-    standaloneFeatures.forEach(feature => {
-        const item = document.createElement("button");
-        item.className = "features-dropdown-item";
-        item.textContent = feature.name;
-
-        const isSupported = feature.supportedGames.includes(currentGame);
-
-        if (!isSupported) {
-            item.classList.add("disabled");
-            item.setAttribute("disabled", "true");
-        } else {
-            item.addEventListener("click", () => {
-                window.api.openStandaloneFeature(feature.id);
-                featuresDropdown.classList.remove("active");
-            });
-        }
-
-        featuresDropdown.appendChild(item);
+    gameToggle.querySelectorAll(".game-toggle-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.game === gameSelect.value);
     });
-}
-
-featuresMenuButton.addEventListener("click", (e) => {
-    e.stopPropagation();
-    featuresDropdown.classList.toggle("active");
+    generateTabUI();
 });
-
-document.addEventListener("click", (e) => {
-    if (!featuresDropdown.contains(e.target) && e.target !== featuresMenuButton) {
-        featuresDropdown.classList.remove("active");
-    }
-});
-
-populateFeaturesDropdown();
-
-if (alreadyInjected) {
-    featuresMenuButton.removeAttribute("disabled");
-} else {
-    featuresMenuButton.setAttribute("disabled", "true");
-}
 
 window.api.on("modInjecting", (data) => {
     isLaunching = true;
@@ -267,11 +366,16 @@ window.api.on("launcherOptions", (options) => {
         ])
     );
 
-    // Restore basic options
     document.getElementById("multiplayer").checked = options.multiplayer;
     document.getElementById("displayName").value = options.name || "";
     document.getElementById("lobbyCode").value = options.lobbyCode || "";
     document.getElementById("hideLobbyCode").checked = options.hideLobbyCode || false;
+    const hasLobbyCode = options.lobbyCode && options.lobbyCode.length > 0;
+    document.getElementById("privateSession").checked = hasLobbyCode;
+    if (hasLobbyCode) {
+        document.getElementById("lobbyCodeOptions").classList.remove("hidden");
+    }
+    document.getElementById("enableChat").checked = options.enableChat !== false;
     serverSelect.value = "community";
     document.getElementById("serverIp").value = options.serverIp || "";
     document.getElementById("serverPort").value = options.serverPort || "";
@@ -295,7 +399,13 @@ window.api.on("launcherOptions", (options) => {
         }
     });
 
+    updateTabCounts();
     document.getElementById("multiplayer").dispatchEvent(new Event("change"));
+
+    if (options.activeTab) {
+        activeTab = options.activeTab;
+        switchTab(activeTab);
+    }
 });
 
 window.api.on("modStopping", () => {
@@ -312,24 +422,20 @@ window.api.on("modInjected", (options) => {
     stopModsButton.classList.remove("hidden");
     selectExeButton.classList.add("hidden");
 
-    featuresMenuButton.removeAttribute("disabled");
-
-    document.querySelectorAll("#featureOptions input").forEach(input => input.removeAttribute("disabled"));
-
-    // Re-enable lobby code fields (can be changed while playing)
+    document.querySelectorAll(".tab-panel input").forEach(input => input.removeAttribute("disabled"));
+    document.getElementById("privateSession").removeAttribute("disabled");
     document.getElementById("lobbyCode").removeAttribute("disabled");
     document.getElementById("hideLobbyCode").removeAttribute("disabled");
+    document.getElementById("enableChat").removeAttribute("disabled");
 
-    // These fields remain disabled after game attachment (can"t change game type or server mid-session)
     gameSelect.setAttribute("disabled", "true");
+    gameToggle.classList.add("disabled");
     multiplayerCheckbox.setAttribute("disabled", "true");
     multiplayerCheckbox.parentNode.setAttribute("disabled", "true");
     displayNameInput.setAttribute("disabled", "true");
     serverSelect.setAttribute("disabled", "true");
     document.getElementById("serverIp").setAttribute("disabled", "true");
     document.getElementById("serverPort").setAttribute("disabled", "true");
-
-    // Hide patch selection after successful injection
     patchSection.classList.add("hidden");
 });
 
@@ -347,6 +453,7 @@ window.api.on("connectionFailed", () => {
     isLaunching = false;
     document.querySelectorAll("input, select").forEach(input => input.removeAttribute("disabled"));
     multiplayerCheckbox.parentNode.removeAttribute("disabled");
+    gameToggle.classList.remove("disabled");
 });
 
 window.api.on("versionOutdated", () => {
@@ -359,21 +466,29 @@ window.api.on("versionOutdated", () => {
     isLaunching = false;
     document.querySelectorAll("input, select").forEach(input => input.removeAttribute("disabled"));
     multiplayerCheckbox.parentNode.removeAttribute("disabled");
+    gameToggle.classList.remove("disabled");
 });
 
-window.api.on("requiredInputFailed", (options, input) => {
-    launchButton.innerText = "Launch Mods";
+window.api.on("requiredInputFailed", (failedInputs) => {
+    launchButton.innerText = alreadyInjected ? "Re-launch Mods" : "Launch Mods";
     launchButton.removeAttribute("disabled");
-    stopModsButton.classList.add("hidden");
-    alreadyInjected = false;
     isLaunching = false;
-    selectExeButton.classList.remove("hidden");
 
-    document.querySelectorAll("input, select").forEach(input => input.removeAttribute("disabled"));
-    multiplayerCheckbox.parentNode.removeAttribute("disabled");
+    if (!alreadyInjected) {
+        stopModsButton.classList.add("hidden");
+        selectExeButton.classList.remove("hidden");
+        gameToggle.classList.remove("disabled");
+        multiplayerCheckbox.parentNode.removeAttribute("disabled");
+        gameSelect.removeAttribute("disabled");
+    }
 
-    if ("name" in input) {
+    document.querySelectorAll(".tab-panel input, .tab-panel select").forEach(input => input.removeAttribute("disabled"));
+
+    if ("name" in failedInputs) {
         displayNameInput.classList.add("errored");
+    }
+    if ("lobbyCode" in failedInputs) {
+        lobbyCodeInput.classList.add("errored");
     }
 });
 
@@ -408,8 +523,7 @@ window.api.on("modStopped", () => {
     stopModsButton.classList.add("hidden");
     selectExeButton.classList.remove("hidden");
 
-    featuresMenuButton.setAttribute("disabled", "true");
-    featuresDropdown.classList.remove("active");
+    gameToggle.classList.remove("disabled");
 
     document.querySelectorAll("input, select").forEach(input => input.removeAttribute("disabled"));
     multiplayerCheckbox.parentNode.removeAttribute("disabled");
@@ -417,7 +531,6 @@ window.api.on("modStopped", () => {
 });
 
 window.addEventListener("DOMContentLoaded", () => {
-    // Send all links to external browser
     document.addEventListener("click", (e) => {
         const link = e.target.closest("a[target='_blank']");
         if (link && link.href) {
@@ -425,4 +538,31 @@ window.addEventListener("DOMContentLoaded", () => {
             window.api.openExternal(link.href);
         }
     });
+
+    const launcherBody = document.querySelector(".launcher-body");
+    const content = document.querySelector(".content");
+    if (launcherBody && content) {
+        let scrollVelocity = 0;
+        let animating = false;
+
+        const smoothScroll = () => {
+            if (Math.abs(scrollVelocity) < 0.5) {
+                animating = false;
+                return;
+            }
+            content.scrollTop += scrollVelocity;
+            scrollVelocity *= 0.85;
+            requestAnimationFrame(smoothScroll);
+        };
+
+        launcherBody.addEventListener("wheel", (e) => {
+            if (!content.contains(e.target)) {
+                scrollVelocity += e.deltaY * 0.3;
+                if (!animating) {
+                    animating = true;
+                    requestAnimationFrame(smoothScroll);
+                }
+            }
+        }, { passive: true });
+    }
 });

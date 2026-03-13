@@ -1,6 +1,6 @@
 const { djb2Hash } = require('./utils');
 
-const MAJOR_VERSION = "2.2";
+const MAJOR_VERSION = "2.2.2";
 
 module.exports = {
     server: {
@@ -13,10 +13,5 @@ module.exports = {
          * Hashed major version
          */
         majorHash: djb2Hash(MAJOR_VERSION),
-
-        /**
-         * Enable quiz system
-         */
-        quizEnabled: true,
     }
 };

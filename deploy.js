@@ -1,15 +1,18 @@
 const {execSync} = require('child_process');
-const {exec: pkg} = require('pkg');
+const {exec: pkg} = require('@yao-pkg/pkg');
 const fs = require('fs');
 const path = require('path');
 
 const packageJson = require('./package.json');
 const version = packageJson.version;
 
+const fast = process.argv.includes('--fast');
+
 const buildClient = async () => {
-    console.log('Building client...');
+    console.log('Building client...' + (fast ? ' (fast mode, no compression)' : ''));
     try {
-        execSync('electron-builder -p never --win', {stdio: 'inherit'});
+        const cmd = 'electron-builder -p never --win' + (fast ? ' -c.compression=store' : '');
+        execSync(cmd, {stdio: 'inherit'});
         console.log('Client build complete!');
     } catch (error) {
         console.error('Error occurred while running electron-builder:', error);
@@ -61,7 +64,7 @@ const buildServer = async () => {
 
     await pkg([
         'server/index.js',
-        '--target', 'node18-win-x64',
+        '--target', 'node22-win-x64',
         '--output', outputExe
     ]);
 

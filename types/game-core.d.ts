@@ -7,7 +7,7 @@ export interface GameCoreFunctions {
     /**
      * Reads a block of memory as a byte array
      */
-    readMemoryBlock(moduleOffset: string, offset: string, pointer: any, size: string): ArrayBuffer | null;
+    readMemoryBlock(moduleOffset: string, offset: string, pointer: any, size: string | number): Uint8Array | null;
 
     /**
      * Encodes a byte array to hex string
@@ -50,7 +50,7 @@ export interface GameCoreFunctions {
     allocString(string: string): any;
 
     /**
-     * Updates a string pointer with new content
+     * Updates a string pointer with new text
      */
     updateString(pointer: any, string: string): void;
 
@@ -82,7 +82,7 @@ export interface GameCoreFunctions {
     /**
      * Reads a memory block variable by name and module
      */
-    readMemoryBlockVariable(name: string, module: string): ArrayBuffer | null;
+    readMemoryBlockVariable(name: string, module: string): Uint8Array | null;
 
     /**
      * Reads a memory variable by direct address info

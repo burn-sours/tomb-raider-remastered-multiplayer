@@ -10,21 +10,19 @@
         "start-discord": "node server/discord-bot.js",
         "init-discord": "node server/discord-bot.js --init",
         "start-client": "electron client/index.js",
-        "deploy": "node ./deploy.js",
-        "postinstall": "node -e \"const fs=require('fs');if(fs.existsSync('frida_binding.node'))fs.copyFileSync('frida_binding.node','node_modules/frida/build/frida_binding.node')\""
+        "deploy": "node ./deploy.js"
     },
     "dependencies": {
-        "dgram": "^1.0.1",
         "discord.js": "^14.25.1",
-        "frida": "16.4.10",
+        "frida": "^17.7.3",
         "zstd-codec": "^0.1.5"
     },
     "gypfile": true,
     "devDependencies": {
-        "@types/frida-gum": "^18.7.2",
-        "electron": "27.0.0",
-        "electron-builder": "^25.1.8",
-        "pkg": "^5.8.1",
+        "@types/frida-gum": "^19.0.2",
+        "@yao-pkg/pkg": "^6.14.1",
+        "electron": "^40.8.0",
+        "electron-builder": "^26.8.1",
         "resedit": "^2.0.3"
     },
     "pkg": {
@@ -40,7 +38,7 @@
     "build": {
         "appId": "com.laracrofts.launcher",
         "productName": "Burn's Mods Launcher",
-        "copyright": "Copyright © 2025 burn_sours",
+        "copyright": "Copyright © 2026 burn_sours",
         "files": [
             "client/**/*",
             "shared/**/*",
@@ -52,11 +50,16 @@
             "output": "releases"
         },
         "win": {
-            "publisherName": "burn_sours",
-            "target": [
-                "portable"
-            ],
+            "signtoolOptions": {
+                "publisherName": "burn_sours"
+            },
+            "target": ["nsis"],
             "icon": "client/ui/images/burn_256.png"
+        },
+        "nsis": {
+            "oneClick": true,
+            "perMachine": false,
+            "differentialPackage": false
         }
     }
 }

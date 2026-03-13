@@ -102,13 +102,19 @@ module.exports = {
             },
 
             findBaseAddress: (module) => {
-                return Module.findBaseAddress(module);
+                try {
+                    return Process.getModuleByName(module)?.base;
+                } catch (e) {
+                    return null;
+                }
             },
 
             readMemoryBlock: (moduleOffset, offset, pointer, size) => {
                 const address = game.resolveMemoryAddress(moduleOffset, offset, pointer);
                 if (!address) return null;
-                return Memory.readByteArray(ptr(address), parseInt(size, 16));
+                const sizeNum = typeof size === 'string' ? parseInt(size, 16) : size;
+                const buffer = ptr(address).readByteArray(sizeNum);
+                return buffer ? new Uint8Array(buffer) : null;
             },
 
             encodeMemoryBlock: (byteArray) => {
@@ -127,29 +133,30 @@ module.exports = {
             readMemoryValue: (moduleOffset, offset, pointer, type) => {
                 const address = game.resolveMemoryAddress(moduleOffset, offset, pointer);
                 if (!address) return null;
+                const p = ptr(address);
                 switch (type) {
                     case 'Int8':
-                        return Memory.readS8(ptr(address));
+                        return p.readS8();
                     case 'UInt8':
-                        return Memory.readU8(ptr(address));
+                        return p.readU8();
                     case 'Int16':
-                        return Memory.readS16(ptr(address));
+                        return p.readS16();
                     case 'UInt16':
-                        return Memory.readU16(ptr(address));
+                        return p.readU16();
                     case 'Int32':
-                        return Memory.readS32(ptr(address));
+                        return p.readS32();
                     case 'UInt32':
-                        return Memory.readU32(ptr(address));
+                        return p.readU32();
                     case 'Int64':
-                        return Memory.readS64(ptr(address));
+                        return p.readS64();
                     case 'UInt64':
-                        return Memory.readU64(ptr(address));
+                        return p.readU64();
                     case 'Float':
-                        return Memory.readFloat(ptr(address));
+                        return p.readFloat();
                     case 'Double':
-                        return Memory.readDouble(ptr(address));
+                        return p.readDouble();
                     case 'Pointer':
-                        return Memory.readPointer(ptr(address));
+                        return p.readPointer();
                     default:
                         throw new Error("Unsupported read type " + type);
                 }
@@ -158,39 +165,40 @@ module.exports = {
             writeMemoryValue: (moduleOffset, offset, pointer, type, value) => {
                 const address = game.resolveMemoryAddress(moduleOffset, offset, pointer);
                 if (!address) return;
+                const p = ptr(address);
                 switch (type) {
                     case 'Int8':
-                        Memory.writeS8(ptr(address), value);
+                        p.writeS8(value);
                         break;
                     case 'UInt8':
-                        Memory.writeU8(ptr(address), value);
+                        p.writeU8(value);
                         break;
                     case 'Int16':
-                        Memory.writeS16(ptr(address), value);
+                        p.writeS16(value);
                         break;
                     case 'UInt16':
-                        Memory.writeU16(ptr(address), value);
+                        p.writeU16(value);
                         break;
                     case 'Int32':
-                        Memory.writeS32(ptr(address), value);
+                        p.writeS32(value);
                         break;
                     case 'UInt32':
-                        Memory.writeU32(ptr(address), value);
+                        p.writeU32(value);
                         break;
                     case 'Int64':
-                        Memory.writeS64(ptr(address), value);
+                        p.writeS64(value);
                         break;
                     case 'UInt64':
-                        Memory.writeU64(ptr(address), value);
+                        p.writeU64(value);
                         break;
                     case 'Float':
-                        Memory.writeFloat(ptr(address), value);
+                        p.writeFloat(value);
                         break;
                     case 'Double':
-                        Memory.writeDouble(ptr(address), value);
+                        p.writeDouble(value);
                         break;
                     case 'Pointer':
-                        Memory.writePointer(ptr(address), value);
+                        p.writePointer(value);
                         break;
                     default:
                         throw new Error("Unsupported write type " + type);
@@ -212,7 +220,7 @@ module.exports = {
             },
 
             readMemoryPointer: (address) => {
-                const pointerValue = Memory.readPointer(ptr(address));
+                const pointerValue = ptr(address).readPointer();
                 if (pointerValue.isNull()) {
                     return null;
                 }
@@ -232,11 +240,11 @@ module.exports = {
             },
 
             readByteArray: (address, size) => {
-                return Memory.readByteArray(address, size);
+                return address.readByteArray(size);
             },
 
             writeByteArray: (address, data) => {
-                return Memory.writeByteArray(address, data);
+                return address.writeByteArray(data);
             },
 
             delay: async (t) => await new Promise(resolve => setTimeout(resolve, t)),
@@ -415,9 +423,7 @@ module.exports = {
                     for (let fnName of Object.keys(moduleAddresses.hooks)) {
                         if (fnName in hooksExecution) {
                             const fn = moduleAddresses.hooks[fnName];
-                            game.hookFunction(
-                                module, fnName, fn.Address, fn.Return, fn.Params, fn.Disable
-                            );
+                            game.hookFunction(module, fnName, fn.Address, fn.Return, fn.Params, fn.Disable);
                         }
                     }
                 }

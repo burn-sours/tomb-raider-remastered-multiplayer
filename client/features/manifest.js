@@ -13,29 +13,32 @@ module.exports = {
         require("./perma-poison/manifest"),
         require("./infinite-oxygen/manifest"),
         require("./infinite-health/manifest"),
-        require("./level-select/manifest"),
-        require("./lara-editor/manifest"),
     ],
     categories: [
         {
             "id": "challenge",
-            "name": "Challenge Modes"
+            "name": "Challenge Modes",
+            "description": "Make the game harder with challenges."
         },
         {
             "id": "super-lara",
-            "name": "Super Lara"
-        },
-        {
-            "id": "unlocks",
-            "name": "Unlocks"
+            "name": "Super Lara",
+            "description": "Give Lara super abilities."
         },
         {
             "id": "vitals",
-            "name": "Health & Oxygen"
+            "name": "Health & Oxygen",
+            "description": "Modify Lara's vitals."
         },
         {
             "id": "game-speed",
-            "name": "Game Speed"
+            "name": "Game Speed",
+            "description": "Adjust the game speed."
+        },
+        {
+            "id": "unlocks",
+            "name": "Unlocks",
+            "description": "Unlocks and customization options."
         }
     ]
 };

@@ -52,10 +52,6 @@ contextBridge.exposeInMainWorld('api', {
         ipcRenderer.send('stopMods');
     },
 
-    openStandaloneFeature: (featureId) => {
-        ipcRenderer.send('openStandaloneFeature', featureId);
-    },
-
     log: (...m) => ipcRenderer.send('log', m),
     errorBox: (...m) => ipcRenderer.send('errorBox', m),
 });

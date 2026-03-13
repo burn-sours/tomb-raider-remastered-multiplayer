@@ -43,8 +43,6 @@ ui.setupEvents({
     "log": (e, m) => console.log(...m),
     "errorBox": (e, m) => dialog.showErrorBox(...m),
     "openMultiplayerTool": () => ui.createMultiplayerWindow(activeUserData),
-    "openStandaloneFeature": (e, featureId) => openStandaloneFeature(featureId),
-    "standaloneWindowClosed": (closedFeatureId) => onStandaloneWindowClosed(closedFeatureId),
     "featureAction": (e, {feature, action, data}) => activeGameClient?.gameFunctions?.callFeatureAction(feature, action, data),
     "getFeatureManifests": () => featureManifests,
     "openExternal": (e, url) => shell.openExternal(url)
@@ -66,9 +64,11 @@ app.whenReady().then(async () => {
         name: '',
         playerNamesMode: 2,
         lobbyCode: '',
+        enableChat: true,
         customServer: false,
         serverIp: '',
         serverPort: '',
+        activeTab: 'multiplayer',
         ...Object.fromEntries(featureOptions.map(option => [option.id, false]))
     });
 
@@ -107,6 +107,11 @@ async function launchGame(launchOptions) {
         return;
     }
 
+    if (activeUserData.multiplayer && activeUserData.privateSession && (!activeUserData.lobbyCode || activeUserData.lobbyCode.trim().length < 1)) {
+        ui.broadcast('requiredInputFailed', {lobbyCode: activeUserData.lobbyCode});
+        return;
+    }
+
     if (activeUserData.customExePath) {
         const gameManifest = gameManifests.games.find(g => g.id === activeUserData.game);
         const selectedExe = path.basename(activeUserData.customExePath);
@@ -127,10 +132,7 @@ async function launchGame(launchOptions) {
     try {
         ui.broadcast('modInjected');
 
-        await activeGameClient.launchGame({
-            ...activeUserData,
-            standaloneFeatureId: ui.standaloneFeatureId
-        });
+        await activeGameClient.launchGame(activeUserData);
     } catch (err) {}
 }
 
@@ -142,16 +144,18 @@ async function updateGame(launchOptions) {
         return;
     }
 
+    if (activeUserData.multiplayer && activeUserData.privateSession && (!activeUserData.lobbyCode || activeUserData.lobbyCode.trim().length < 1)) {
+        ui.broadcast('requiredInputFailed', {lobbyCode: activeUserData.lobbyCode});
+        return;
+    }
+
     const optionsToSave = {...activeUserData};
     delete optionsToSave.manualPatch;
     userdata.writeOptions(optionsToSave);
 
     ui.broadcast('modInjected');
 
-    await activeGameClient.updateGame({
-        ...activeUserData,
-        standaloneFeatureId: ui.standaloneFeatureId
-    });
+    await activeGameClient.updateGame(activeUserData);
 }
 
 async function stopMods() {
@@ -160,10 +164,8 @@ async function stopMods() {
     if (activeGameClient) {
         console.log('Stopping mods...');
 
-        ui.standaloneWindow?.close();
-
         activeGameClient.exiting = true;
-        activeGameClient.stopConnectionHealthCheck();
+        activeGameClient.stopLoops();
         await activeGameClient.sendDisconnect(activeUserData);
 
         await delay(100);
@@ -234,47 +236,9 @@ async function setupFrida() {
 
     console.log('Setting up game script...');
 
-    await activeGameClient.setupGameScript({
-        ...activeUserData,
-        standaloneFeatureId: ui.standaloneFeatureId
-    });
+    await activeGameClient.setupGameScript(activeUserData);
 
     await activeGameClient.setupGame();
-}
-
-async function openStandaloneFeature(featureId) {
-    if (ui.standaloneFeatureId === featureId) {
-        ui.standaloneWindow?.focus();
-        return;
-    }
-
-    const feature = featureManifests.features.find(f => f.id === featureId);
-    if (!feature) {
-        console.error('Feature not found:', featureId);
-        return;
-    }
-
-    await ui.createStandaloneWindow(featureId, feature, activeUserData);
-
-    if (activeGameClient?.session) {
-        await activeGameClient.updateGame({
-            ...activeUserData,
-            standaloneFeatureId: ui.standaloneFeatureId
-        });
-    }
-}
-
-async function onStandaloneWindowClosed(closedFeatureId) {
-    if (activeGameClient?.session) {
-        await activeGameClient.updateGame({
-            ...activeUserData,
-            standaloneFeatureId: ui.standaloneFeatureId
-        });
-
-        if (closedFeatureId) {
-            await activeGameClient.cleanupStandaloneFeature(closedFeatureId);
-        }
-    }
 }
 
 async function cleanup() {
