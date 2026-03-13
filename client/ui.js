@@ -5,8 +5,6 @@ module.exports = new class {
     constructor() {
         this.welcomeWindow = null;
         this.launcherWindow = null;
-        this.standaloneWindow = null;
-        this.standaloneFeatureId = null;
     }
 
     /**
@@ -15,7 +13,7 @@ module.exports = new class {
     setupApplicationMenu() {
         Menu.setApplicationMenu(Menu.buildFromTemplate([
             {
-                label: 'Links',
+                label: 'About',
                 submenu: [
                     {
                         label: 'Check for updates',
@@ -28,6 +26,15 @@ module.exports = new class {
                     {
                         label: 'Contribute on GitHub',
                         click: () => shell.openExternal('https://github.com/burn-sours/tomb-raider-remastered-multiplayer'),
+                    }
+                ]
+            },
+            {
+                label: 'Links',
+                submenu: [
+                    {
+                        label: 'Website',
+                        click: () => shell.openExternal('https://www.laracrofts.com/'),
                     },
                     {
                         label: 'Join us on Burn\'s Discord',
@@ -36,6 +43,15 @@ module.exports = new class {
                     {
                         label: 'Perma Damage Speedruns',
                         click: () => shell.openExternal('https://www.speedrun.com/tr123456_remastered_ce'),
+                    },
+                ]
+            },
+            {
+                label: 'Donate',
+                submenu: [
+                    {
+                        label: 'Ko-fi.com/burn_sours',
+                        click: () => shell.openExternal('https://ko-fi.com/burn_sours'),
                     },
                 ]
             }
@@ -82,7 +98,7 @@ module.exports = new class {
         }
 
         const newWindow = new BrowserWindow({
-            width: 400,
+            width: 480,
             height: 600,
             resizable: false,
             icon: path.join(__dirname, 'ui/images/burn.ico'),
@@ -113,7 +129,7 @@ module.exports = new class {
         }
 
         const newWindow = new BrowserWindow({
-            width: 400,
+            width: 480,
             height: 600,
             x: this.welcomeWindow.getPosition()[0] || undefined,
             y: this.welcomeWindow.getPosition()[1] || undefined,
@@ -131,9 +147,6 @@ module.exports = new class {
 
             if (this.welcomeWindow) {
                 this.welcomeWindow.close();
-            }
-            if (this.standaloneWindow) {
-                this.standaloneWindow.close();
             }
 
             app.quit();
@@ -153,68 +166,13 @@ module.exports = new class {
     }
 
     /**
-     * Broadcast an event to all windows (welcome, launcher, standalone)
+     * Broadcast an event to all windows (welcome, launcher)
      * @param msg
      * @param data
      */
     broadcast(msg, data = {}) {
         this.welcomeWindow?.webContents.send(msg, data);
         this.launcherWindow?.webContents.send(msg, data);
-        this.standaloneWindow?.webContents.send(msg, data);
-    }
-
-    /**
-     * Create a standalone feature window
-     * @param featureId
-     * @param featureManifest
-     * @param activeUserData
-     * @returns {Promise<void>}
-     */
-    async createStandaloneWindow(featureId, featureManifest, activeUserData) {
-        if (this.standaloneWindow) {
-            await new Promise((resolve) => {
-                this.standaloneWindow.once('closed', resolve);
-                this.standaloneWindow.close();
-            });
-        }
-
-        this.standaloneFeatureId = featureId;
-
-        const windowTitle = featureManifest.ui?.windowTitle || featureManifest.name;
-
-        const newWindow = new BrowserWindow({
-            width: 400,
-            height: 600,
-            x: this.launcherWindow?.getPosition()[0] || undefined,
-            y: this.launcherWindow?.getPosition()[1] || undefined,
-            resizable: false,
-            icon: path.join(__dirname, 'ui/images/burn.ico'),
-            title: windowTitle,
-            webPreferences: {
-                preload: path.join(__dirname, 'ui/standalone-preload.js'),
-                contextIsolation: true,
-                devTools: true,
-            }
-        });
-
-        newWindow.on('closed', () => {
-            const closedFeatureId = this.standaloneFeatureId;
-            this.standaloneWindow = null;
-            this.standaloneFeatureId = null;
-            ipcMain.emit('standaloneWindowClosed', closedFeatureId);
-        });
-
-        await newWindow.loadFile(path.join(__dirname, 'features', featureId, 'ui.html'));
-
-        this.standaloneWindow = newWindow;
-
-        if (this.standaloneWindow) {
-            this.broadcast("launcherOptions", activeUserData);
-        }
-
-        if (this.welcomeWindow) {
-            this.welcomeWindow.close();
-        }
     }
 
 };
