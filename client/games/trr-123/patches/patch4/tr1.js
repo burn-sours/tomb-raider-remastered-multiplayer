@@ -50,51 +50,9 @@ module.exports = {
             Address: "0x30ce50",
             Type: "Int64"
         },
-        LaraFlags: {
-            Address: "0x30ce50",
-            Type: "Int16",
-            Pointer: "0x1e4"
-        },
-        LaraHealth: {
-            Address: "0x30ce50",
-            Type: "Int16",
-            Pointer: "0x26"
-        },
         LaraOxygen: {
             Address: "0x30CCB6",
             Type: "Int16"
-        },
-        LaraXZSpeed: {
-            Address: "0x30ce50",
-            Type: "Int16",
-            Pointer: "0x22"
-        },
-        LaraYSpeed: {
-            Address: "0x30ce50",
-            Type: "Int16",
-            Pointer: "0x24"
-        },
-        LaraAnim: {
-            Address: "0x30ce50",
-            Type: "Int16",
-            Pointer: "0x18"
-        },
-        LaraFrame: {
-            Address: "0x30ce50",
-            Type: "Int16",
-            Pointer: "0x1a"
-        },
-        LaraBones: {
-            Address: "0x30ce50",
-            Type: "Block",
-            Pointer: "0x820",
-            Size: "0x2e0",
-        },
-        LaraPositions: {
-            Address: "0x30ce50",
-            Type: "Block",
-            Pointer: "0x58",
-            Size: "0x10",
         },
         LaraCircleShadow: {
             Address: "0x30ce50",
@@ -107,11 +65,6 @@ module.exports = {
             Type: "Block",
             Pointer: "0x0",
             Size: "0x28",
-        },
-        LaraRoomId: {
-            Address: "0x30ce50",
-            Type: "Int16",
-            Pointer: "0x1c"
         },
         LaraGunFlags: {
             Address: "0x30cce0",
@@ -209,12 +162,36 @@ module.exports = {
             Address: "0x29A100",
             Type: "Int32",
         },
+        CameraRightY: {
+            Address: "0x29A104",
+            Type: "Int32",
+        },
+        CameraRightZ: {
+            Address: "0x29A108",
+            Type: "Int32",
+        },
         CameraUpX: {
             Address: "0x29A110",
             Type: "Int32",
         },
+        CameraUpY: {
+            Address: "0x29A114",
+            Type: "Int32",
+        },
+        CameraUpZ: {
+            Address: "0x29A118",
+            Type: "Int32",
+        },
         CameraForwardX: {
             Address: "0x29A120",
+            Type: "Int32",
+        },
+        CameraForwardY: {
+            Address: "0x29A124",
+            Type: "Int32",
+        },
+        CameraForwardZ: {
+            Address: "0x29A128",
             Type: "Int32",
         },
         CameraFov: {
@@ -270,8 +247,7 @@ module.exports = {
         LoadedLevel: {
             Address: "0x15ea0",
             Params: ['int', 'pointer', 'pointer', 'pointer'],
-            Return: 'pointer',
-            Disable: true
+            Return: 'pointer'
         },
         InitializeLevelAI: {
             Address: "0x2cac0",
@@ -333,7 +309,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetRelYawPitch: {
+        CalculateYawPitch: {
             Address: "0x664c0",
             Params: ['int','int','int', 'pointer'],
             Return: 'void',

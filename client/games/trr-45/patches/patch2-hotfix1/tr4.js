@@ -27,8 +27,7 @@ module.exports = {
         LoadedLevel: {
             Address: "0x100600",
             Params: ['pointer'],
-            Return: 'void',
-            Disable: true
+            Return: 'void'
         },
         InitializeLevelAI: {
             Address: "0x87e90",
@@ -42,13 +41,13 @@ module.exports = {
             Return: 'int',
             Disable: false
         },
-        ProcessGrenade: {
+        EntityGrenade: {
             Address: "0x56b40",
             Params: ['int16'],
             Return: 'void',
             Disable: true
         },
-        ProcessHarpoon: {
+        EntityHarpoon: {
             Address: "0x582c0",
             Params: ['int16'],
             Return: 'void',
@@ -108,7 +107,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetRelYawPitch: {
+        CalculateYawPitch: {
             Address: "0xd6560",
             Params: ['int','int','int', 'pointer'],
             Return: 'void',
@@ -150,7 +149,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetBox: {
+        GetEntityBox: {
             Address: "0xa3d20",
             Params: ['pointer'],
             Return: 'pointer',

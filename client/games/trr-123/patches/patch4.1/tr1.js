@@ -50,51 +50,9 @@ module.exports = {
             Address: "0x311030",
             Type: "Int64"
         },
-        LaraFlags: {
-            Address: "0x311030",
-            Type: "Int16",
-            Pointer: "0x1e4"
-        },
-        LaraHealth: {
-            Address: "0x311030",
-            Type: "Int16",
-            Pointer: "0x26"
-        },
         LaraOxygen: {
             Address: "0x310E96",
             Type: "Int16"
-        },
-        LaraXZSpeed: {
-            Address: "0x311030",
-            Type: "Int16",
-            Pointer: "0x22"
-        },
-        LaraYSpeed: {
-            Address: "0x311030",
-            Type: "Int16",
-            Pointer: "0x24"
-        },
-        LaraAnim: {
-            Address: "0x311030",
-            Type: "Int16",
-            Pointer: "0x18"
-        },
-        LaraFrame: {
-            Address: "0x311030",
-            Type: "Int16",
-            Pointer: "0x1a"
-        },
-        LaraBones: {
-            Address: "0x311030",
-            Type: "Block",
-            Pointer: "0x820",
-            Size: "0x2e0", 
-        },
-        LaraPositions: { 
-            Address: "0x311030",
-            Type: "Block",
-            Pointer: "0x58",
-            Size: "0x10",
         },
         LaraCircleShadow: { 
             Address: "0x311030",
@@ -107,11 +65,6 @@ module.exports = {
             Type: "Block",
             Pointer: "0x0",
             Size: "0x28",
-        },
-        LaraRoomId: {
-            Address: "0x311030",
-            Type: "Int16",
-            Pointer: "0x1c"
         },
         LaraGunFlags: {
             Address: "0x310ec0",
@@ -294,8 +247,12 @@ module.exports = {
         LoadedLevel: {
             Address: "0x16070",
             Params: ['int', 'pointer', 'pointer', 'pointer'],
-            Return: 'pointer',
-            Disable: true
+            Return: 'pointer'
+        },
+        EndLevelSeq: {
+            Address: "0x165b0",
+            Params: ['int', 'pointer', 'pointer', 'pointer'],
+            Return: 'void'
         },
         InitializeLevelAI: {
             Address: "0x2d1c0",
@@ -357,7 +314,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetRelYawPitch: {
+        CalculateYawPitch: {
             Address: "0x68e70",
             Params: ['int','int','int', 'pointer'],
             Return: 'void',

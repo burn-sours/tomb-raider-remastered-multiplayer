@@ -50,11 +50,6 @@ module.exports = {
             Address: "0x3a2070",
             Type: "UInt64"
         },
-        LaraFlags: {
-            Address: "0x3a2070",
-            Type: "Int16",
-            Pointer: "0x1e4"
-        },
         LaraBehaviourFlags: {
             Address: "0x3A1Efc",
             Type: "Int8"
@@ -63,46 +58,9 @@ module.exports = {
             Address: "0x3a1ece",
             Type: "Int16"
         },
-        LaraHealth: {
-            Address: "0x3a2070",
-            Type: "Int16",
-            Pointer: "0x26"
-        },
         LaraOxygen: {
             Address: "0x3a1ed6",
             Type: "Int16"
-        },
-        LaraXZSpeed: {
-            Address: "0x3a2070",
-            Type: "Int16",
-            Pointer: "0x22"
-        },
-        LaraYSpeed: {
-            Address: "0x3a2070",
-            Type: "Int16",
-            Pointer: "0x24"
-        },
-        LaraAnim: {
-            Address: "0x3a2070",
-            Type: "Int16",
-            Pointer: "0x18"
-        },
-        LaraFrame: {
-            Address: "0x3a2070",
-            Type: "Int16",
-            Pointer: "0x1a"
-        },
-        LaraBones: {
-            Address: "0x3a2070",
-            Type: "Block",
-            Pointer: "0x820",
-            Size: "0x2e0"
-        },
-        LaraPositions: { 
-            Address: "0x3a2070",
-            Type: "Block",
-            Pointer: "0x58",
-            Size: "0x10"
         },
         LaraCircleShadow: { 
             Address: "0x3a2070",
@@ -115,11 +73,6 @@ module.exports = {
             Type: "Block",
             Pointer: "0x0",
             Size: "0x28"
-        },
-        LaraRoomId: {
-            Address: "0x3a2070",
-            Type: "Int16",
-            Pointer: "0x1c"
         },
         LaraGunFlags: {
             Address: "0x3a1f00",
@@ -305,18 +258,16 @@ module.exports = {
         UpdateLighting: {
             Address: "0xd76c0",
             Params: ['int','int','int','int','pointer'],
-            Return: 'void',
-            Disable: true
+            Return: 'void'
         },
         LoadedLevel: {
             Address: "0x3b820",
             Params: ['int', 'int', 'pointer', 'pointer'],
-            Return: 'pointer',
-            Disable: true
+            Return: 'pointer'
         },
         InitializeLevelAI: {
-            Address: "0x752a0",
-            Params: ['int'],
+            Address: "0x84ed0",
+            Params: [],
             Return: 'void',
             Disable: false
         },
@@ -380,7 +331,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetRelYawPitch: {
+        CalculateYawPitch: {
             Address: "0xe7920",
             Params: ['int','int','int', 'pointer'],
             Return: 'void',
@@ -422,19 +373,19 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        ProcessGrenade: {
+        EntityGrenade: {
             Address: "0x631b0",
             Params: ['int16'],
             Return: 'void',
             Disable: true,
         },
-        ProcessRocket: {
+        EntityRocket: {
             Address: "0x62120",
             Params: ['int16'],
             Return: 'void',
             Disable: true,
         },
-        ProcessHarpoon: {
+        EntityHarpoon: {
             Address: "0x61500",
             Params: ['int16'],
             Return: 'void',
@@ -452,7 +403,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetBox: {
+        GetEntityBox: {
             Address: "0xc42d0",
             Params: ['pointer'],
             Return: 'pointer',

@@ -27,8 +27,7 @@ module.exports = {
         LoadedLevel: {
             Address: "0xfc370",
             Params: ['pointer'],
-            Return: 'void',
-            Disable: true
+            Return: 'void'
         },
         InitializeLevelAI: {
             Address: "0x84d70",
@@ -96,7 +95,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetRelYawPitch: {
+        CalculateYawPitch: {
             Address: "0xa1e60",
             Params: ['int','int','int', 'pointer'],
             Return: 'void',
@@ -138,7 +137,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetBox: {
+        GetEntityBox: {
             Address: "0x9c710",
             Params: ['pointer'],
             Return: 'pointer',

@@ -50,55 +50,13 @@ module.exports = {
             Address: "0x346170",
             Type: "UInt64"
         },
-        LaraFlags: {
-            Address: "0x346170",
-            Type: "Int16",
-            Pointer: "0x1e4"
-        },
         LaraClimbState: {
             Address: "0x345fce",
             Type: "Int16"
         },
-        LaraHealth: {
-            Address: "0x346170",
-            Type: "Int16",
-            Pointer: "0x26"
-        },
         LaraOxygen: {
             Address: "0x345fd6",
             Type: "Int16"
-        },
-        LaraXZSpeed: {
-            Address: "0x346170",
-            Type: "Int16",
-            Pointer: "0x22"
-        },
-        LaraYSpeed: {
-            Address: "0x346170",
-            Type: "Int16",
-            Pointer: "0x24"
-        },
-        LaraAnim: {
-            Address: "0x346170",
-            Type: "Int16",
-            Pointer: "0x18"
-        },
-        LaraFrame: {
-            Address: "0x346170",
-            Type: "Int16",
-            Pointer: "0x1a"
-        },
-        LaraBones: {
-            Address: "0x346170",
-            Type: "Block",
-            Pointer: "0x820",
-            Size: "0x2e0", 
-        },
-        LaraPositions: { 
-            Address: "0x346170",
-            Type: "Block",
-            Pointer: "0x58",
-            Size: "0x10",
         },
         LaraCircleShadow: { 
             Address: "0x346170",
@@ -111,11 +69,6 @@ module.exports = {
             Type: "Block",
             Pointer: "0x0",
             Size: "0x28",
-        },
-        LaraRoomId: {
-            Address: "0x346170",
-            Type: "Int16",
-            Pointer: "0x1c"
         },
         Rooms: {
             Address: "0x427360",
@@ -273,6 +226,7 @@ module.exports = {
             Address: "0x3FD1B4",
             Type: "Int16"
         },
+        OgGraphicsTable: "0x3fd328",
         OgModelsOffset: "0x3f9650",
         OgModelsWeaponOffset: "0x427382",
         OgModelsAngwyOffset: "0x42a05a",
@@ -301,8 +255,7 @@ module.exports = {
         LoadedLevel: {
             Address: "0x244d0",
             Params: ['int', 'int', 'pointer', 'pointer'],
-            Return: 'pointer',
-            Disable: true
+            Return: 'pointer'
         },
         InitializeLevelAI: {
             Address: "0x556b0",
@@ -376,7 +329,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetRelYawPitch: {
+        CalculateYawPitch: {
             Address: "0x99ce0",
             Params: ['int','int','int', 'pointer'],
             Return: 'void',
@@ -418,13 +371,13 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        ProcessGrenade: {
+        EntityGrenade: {
             Address: "0x45310",
             Params: ['int16'],
             Return: 'void',
             Disable: true
         },
-        ProcessHarpoon: {
+        EntityHarpoon: {
             Address: "0x44e70",
             Params: ['int16'],
             Return: 'void',
@@ -448,7 +401,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetBox: {
+        GetEntityBox: {
             Address: "0x7b720",
             Params: ['pointer'],
             Return: 'pointer',

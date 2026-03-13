@@ -50,46 +50,9 @@ module.exports = {
             Address: "0x342fc0",
             Type: "UInt64"
         },
-        LaraHealth: {
-            Address: "0x342fc0",
-            Type: "Int16",
-            Pointer: "0x26"
-        },
         LaraOxygen: {
             Address: "0x30EAB6",
             Type: "Int16"
-        },
-        LaraXZSpeed: {
-            Address: "0x342fc0",
-            Type: "Int16",
-            Pointer: "0x22"
-        },
-        LaraYSpeed: {
-            Address: "0x342fc0",
-            Type: "Int16",
-            Pointer: "0x24"
-        },
-        LaraAnim: {
-            Address: "0x342fc0",
-            Type: "Int16",
-            Pointer: "0x18"
-        },
-        LaraFrame: {
-            Address: "0x342fc0",
-            Type: "Int16",
-            Pointer: "0x1a"
-        },
-        LaraBones: {
-            Address: "0x342fc0",
-            Type: "Block",
-            Pointer: "0x820",
-            Size: "0x2e0",
-        },
-        LaraPositions: {
-            Address: "0x342fc0",
-            Type: "Block",
-            Pointer: "0x58",
-            Size: "0x10",
         },
         LaraCircleShadow: {
             Address: "0x342fc0",
@@ -102,16 +65,6 @@ module.exports = {
             Type: "Block",
             Pointer: "0x0",
             Size: "0x28",
-        },
-        LaraRoomId: {
-            Address: "0x342fc0",
-            Type: "Int16",
-            Pointer: "0x1c"
-        },
-        LaraFlags: {
-            Address: "0x342fc0",
-            Type: "Int16",
-            Pointer: "0x1e4"
         },
         LaraClimbState: {
             Address: "0x30EAAe",
@@ -213,12 +166,36 @@ module.exports = {
             Address: "0x2cfae0",
             Type: "Int32",
         },
+        CameraRightY: {
+            Address: "0x2cfae4",
+            Type: "Int32",
+        },
+        CameraRightZ: {
+            Address: "0x2cfae8",
+            Type: "Int32",
+        },
         CameraUpX: {
             Address: "0x2CFAF0",
             Type: "Int32",
         },
+        CameraUpY: {
+            Address: "0x2CFAF4",
+            Type: "Int32",
+        },
+        CameraUpZ: {
+            Address: "0x2CFAF8",
+            Type: "Int32",
+        },
         CameraForwardX: {
             Address: "0x2CFB00",
+            Type: "Int32",
+        },
+        CameraForwardY: {
+            Address: "0x2CFB04",
+            Type: "Int32",
+        },
+        CameraForwardZ: {
+            Address: "0x2CFB08",
             Type: "Int32",
         },
         CameraFov: {
@@ -249,6 +226,7 @@ module.exports = {
             Address: "0x3FA010",
             Type: "Int16"
         },
+        OgGraphicsTable: "0x3fa188",
         OgModelsOffset: "0x3f64b0",
         OgModelsWeaponOffset: "0x4241e2",
         OgModelsAngwyOffset: "0x426eba",
@@ -277,8 +255,7 @@ module.exports = {
         LoadedLevel: {
             Address: "0x24210",
             Params: ['int', 'int', 'pointer', 'pointer'],
-            Return: 'pointer',
-            Disable: true
+            Return: 'pointer'
         },
         InitializeLevelAI: {
             Address: "0x559b0",
@@ -334,7 +311,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        RenderSkiidoo: {
+        RenderSkidoo: {
             Address: "0x6d010",
             Params: ['pointer'],
             Return: 'void',
@@ -352,7 +329,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetRelYawPitch: {
+        CalculateYawPitch: {
             Address: "0x98340",
             Params: ['int','int','int', 'pointer'],
             Return: 'void',
@@ -394,13 +371,13 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        ProcessGrenade: {
+        EntityGrenade: {
             Address: "0x454c0",
             Params: ['int16'],
             Return: 'void',
             Disable: true
         },
-        ProcessHarpoon: {
+        EntityHarpoon: {
             Address: "0x45000",
             Params: ['int16'],
             Return: 'void',
@@ -424,7 +401,7 @@ module.exports = {
             Return: 'void',
             Disable: false
         },
-        GetBox: {
+        GetEntityBox: {
             Address: "0x7b930",
             Params: ['pointer'],
             Return: 'pointer',
