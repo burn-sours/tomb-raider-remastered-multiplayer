@@ -57,7 +57,20 @@ const QUIZZES = [
             { question: "In TR2, how many ziplines are there?", answer: "5" },
             { question: "Which level is alphabetically last in TR2?", answer: "Wreck of the Maria Doria" },
             { question: "Which level is alphabetically first in TR3?", answer: "Aldwych" },
-            { question: "How many flares per pickup in TR3?", answer: "8" }
+            { question: "How many flares per pickup in TR3?", answer: "8" },
+            { question: "How many different outfits does Lara wear in TR2?", answer: "4" },
+            { question: "How many enemies are there in total in the TR2 level Home Sweet Home?", answer: "16" },
+            { question: "In TR3, what is Sophia Leigh's estimated age?", answer: "Late 20s/Early 30s" },
+            { question: "In the TR3 Assault Course, how many individual targets does lara have to shoot?", answer: "21" },
+            { question: "In which year was TR1 released?", answer: "1996" },
+            { question: "How many explorable rooms are there in TR1's Mansion?", answer: "5" },
+            { question: "What colour are Marco Bartoli's eyes?", answer: "Red" },
+            { question: "Excluding expansions, how many levels are there in TR2?", answer: "18" },
+            { question: "Which level in TR2 has some leftover developer textures?", answer: "Great Wall (Top left of the far tower)" },
+            { question: "At launch, how many platforms was TR1 released on?", answer: "3 (PC, Playstation, Sega Saturn)" },
+            { question: "In which TR1 level were the Atlanteans first spotted?", answer: "Tomb of Qualopec" },
+            { question: "In TR3, what was the name of the event celebrated by the tribesman Lara encounters at the end of Crash Site?", answer: "The feast of Smythe" },
+            { question: "How many eyes does the Willard-Spider have in TR3?", answer: "8" }
         ]
     }
 ];
