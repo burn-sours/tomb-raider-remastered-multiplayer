@@ -24,7 +24,7 @@ module.exports = {
                 const moduleAddresses = game.getModuleAddresses(module);
                 if (!moduleAddresses) return;
 
-                const currentHealth = lara.add(moduleAddresses.variables.LaraHealth.Pointer).readS16();
+                const currentHealth = lara.add(ENTITY_HEALTH).readS16();
                 if (currentHealth > 0) {
                     game.writeMemoryVariable("LaraPoisoned", 4000, module);
                     game.writeMemoryVariable("PoisonFactor", 1, module);

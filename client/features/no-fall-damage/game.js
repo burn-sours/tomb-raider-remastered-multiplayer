@@ -12,12 +12,11 @@ module.exports = {
             if (!lara || lara.isNull() || roomType !== 0) return;
 
             try {
-                const moduleAddresses = game.getModuleAddresses(module);
                 const fallSpeed = 130;
-                let speed = lara.add(moduleAddresses.variables.LaraYSpeed.Pointer).readS16();
+                let speed = lara.add(ENTITY_Y_SPEED).readS16();
                 if (speed > fallSpeed) {
                     speed = fallSpeed;
-                    lara.add(moduleAddresses.variables.LaraYSpeed.Pointer).writeS16(speed);
+                    lara.add(ENTITY_Y_SPEED).writeS16(speed);
                 }
             } catch (err) {
                 console.error("No Fall Damage error:", err);

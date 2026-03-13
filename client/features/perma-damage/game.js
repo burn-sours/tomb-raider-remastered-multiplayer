@@ -20,8 +20,7 @@ module.exports = {
             if (!lara || lara.isNull()) return;
             
             try {
-                const moduleAddresses = game.getModuleAddresses(game.getGameModule());
-                permaDamageHealth = lara.add(moduleAddresses.variables.LaraHealth.Pointer).readS16();
+                permaDamageHealth = lara.add(ENTITY_HEALTH).readS16();
             } catch (err) {
                 console.error("Track health error:", err);
             }
@@ -47,15 +46,14 @@ module.exports = {
                 const firstExpansionLevel = {'tomb1.dll': 18, 'tomb2.dll': 19, 'tomb3.dll': 21, 'tomb4.dll': 40, 'tomb5.dll': 0};
                 const moduleAddresses = game.getModuleAddresses(module);
                 const lara = game.getLara();
-                const healthPointer = moduleAddresses.variables.LaraHealth.Pointer;
 
                 if (lara && !lara.isNull() && game.isLevelSupported(currentLevel)) {
-                    if (lara.add(healthPointer).readS16() > 1000) {
-                        lara.add(healthPointer).writeS16(1000);
+                    if (lara.add(ENTITY_HEALTH).readS16() > 1000) {
+                        lara.add(ENTITY_HEALTH).writeS16(1000);
                     }
 
                     if ((currentLevel >= firstLevel[module] && currentLevel !== firstExpansionLevel[module]) && permaDamageHealth > 0) {
-                        lara.add(healthPointer).writeS16(Math.min(1000, permaDamageHealth));
+                        lara.add(ENTITY_HEALTH).writeS16(Math.min(1000, permaDamageHealth));
                     }
                 }
 
@@ -77,7 +75,7 @@ module.exports = {
                 if (!moduleHooks.DrawHealth) return;
 
                 if (!pvpMode) {
-                    let hp = lara.add(moduleVariables.LaraHealth.Pointer).readS16();
+                    let hp = lara.add(ENTITY_HEALTH).readS16();
                     if (hp < 0xfb) {
                         const binaryTick = game.readMemoryVariable("BinaryTick", module);
                         binaryTick === 0 && (hp = 0);

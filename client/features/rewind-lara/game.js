@@ -55,8 +55,8 @@ module.exports = {
 
                 let [keycode, pressedDown] = args;
                 
-                // keycode 72 = F11
-                if (keycode === 72) {
+                // keycode 71 = F10
+                if (keycode === 71) {
                     rewind_isRewinding = rewind_rewindIndex > 0 && pressedDown > 0;
                     rewind_toggleLabel(rewind_isRewinding);
                 }

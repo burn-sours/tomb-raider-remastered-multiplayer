@@ -36,7 +36,8 @@ module.exports = {
                     return;
                 }
 
-                const animId = game.readMemoryVariable("LaraAnim", module);
+                const lara = game.getLara();
+                const animId = lara?.add(ENTITY_ANIM_ID).readS16();
 
                 // Animation IDs - different for TR1-3 vs TR4-5
                 const isTR45 = (module === 'tomb4.dll' || module === 'tomb5.dll');

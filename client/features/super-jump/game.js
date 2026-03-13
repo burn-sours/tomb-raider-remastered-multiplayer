@@ -15,15 +15,14 @@ module.exports = {
 
             if (!lara || lara.isNull() || roomType !== 0) return;
 
-            const moduleAddresses = game.getModuleAddresses(module);
             const maxJumpSpeed = userData['super-speed'] ? 170 : 175;
-            const current = lara.add(moduleAddresses.variables.LaraYSpeed.Pointer).readS16();
+            const current = lara.add(ENTITY_Y_SPEED).readS16();
             let newSpeed = current;
 
             if (superJumpActive) {
                 if (current < 0) {
                     newSpeed = Math.max(-maxJumpSpeed, current - 25);
-                    lara.add(moduleAddresses.variables.LaraYSpeed.Pointer).writeS16(newSpeed);
+                    lara.add(ENTITY_Y_SPEED).writeS16(newSpeed);
                 }
                 if (newSpeed <= -maxJumpSpeed || (current < 0 && newSpeed >= 0)) {
                     superJumpActive = false;

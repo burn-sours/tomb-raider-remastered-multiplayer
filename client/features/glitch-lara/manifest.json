@@ -4,7 +4,7 @@
   "category": "super-lara",
   "name": "Glitch Lara",
   "ui": {
-    "label": "Glitch Lara (qwop anywhere)?"
+    "label": "Glitch Lara - press [F7]?"
   },
   "supportedGames": [
     "trr-123"

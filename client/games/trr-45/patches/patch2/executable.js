@@ -27,14 +27,6 @@ module.exports = {
             Type: "Block",
             Size: "0x17",
         },
-        LaraAppearanceModernOutfit: {
-            Address: "0x585A78",
-            Type: "UInt64",
-        },
-        LaraAppearanceModernSunglasses: {
-            Address: "0x585A8F",
-            Type: "Int8",
-        },
         IsPhotoMode: {
             Address: "0x585A9C",
             Type: "Int32"

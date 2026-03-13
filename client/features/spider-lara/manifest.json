@@ -4,7 +4,7 @@
   "category": "super-lara",
   "name": "Spider Lara",
   "ui": {
-    "label": "Spider Lara (climb anywhere)?"
+    "label": "Spider Lara?"
   },
   "supportedGames": [
     "trr-123",

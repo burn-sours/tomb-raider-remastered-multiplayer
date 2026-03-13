@@ -4,7 +4,7 @@
   "category": "super-lara",
   "name": "Rewind Lara",
   "ui": {
-    "label": "Rewind Time [F11]?"
+    "label": "Rewind Time - press [F10]?"
   },
   "supportedGames": [
     "trr-123"

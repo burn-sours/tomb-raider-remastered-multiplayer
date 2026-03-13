@@ -4,7 +4,7 @@
   "category": "super-lara",
   "name": "Swim Fly",
   "ui": {
-    "label": "Swim fly [F11]?"
+    "label": "Swim fly - press [F11]?"
   },
   "supportedGames": [
     "trr-123",

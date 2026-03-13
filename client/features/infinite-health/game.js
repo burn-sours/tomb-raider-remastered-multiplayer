@@ -21,9 +21,9 @@ module.exports = {
                 const module = game.getGameModule();
                 const moduleAddresses = game.getModuleAddresses(module);
                 
-                const currentHealth = lara.add(moduleAddresses.variables.LaraHealth.Pointer).readS16();
+                const currentHealth = lara.add(ENTITY_HEALTH).readS16();
                 if (currentHealth > 0) {
-                    lara.add(moduleAddresses.variables.LaraHealth.Pointer).writeS16(2000);
+                    lara.add(ENTITY_HEALTH).writeS16(2000);
                 }
             } catch (err) {
                 console.error("Infinite Health error:", err);
