@@ -24,6 +24,7 @@ const DISCORD_MESSAGE_ID = '123456789012345678';  // Message to edit (bot must h
 // =====================================================
 
 const STATS_FILE = path.join(__dirname, '..', 'player-stats.json');
+const LOBBIES_STATS_FILE = path.join(__dirname, '..', 'player-stats-lobbies.json');
 const POLL_INTERVAL_MS = 5000;        // Check stats every 5 seconds
 const STALE_THRESHOLD_MS = 30000;     // Server offline if no update for 30 seconds
 const CHANNEL_RENAME_INTERVAL_MS = 300000;  // Only rename channel every 5 minutes (Discord rate limit)
@@ -37,49 +38,49 @@ const LEVEL_NAMES = {
         2: "Vilcabamba",
         3: "Lost Valley",
         4: "Qualopec",
-        5: "St. Francis' Folly",
+        5: "Francis Folly",
         6: "Colosseum",
         7: "Palace Midas",
         8: "The Cistern",
-        9: "Tomb of Tihocan",
-        10: "City of Khamoon",
-        11: "Obelisk of Khamoon",
-        12: "Sanctuary of the Scion",
+        9: "Tihocan",
+        10: "City Khamoon",
+        11: "Obelisk Khamoon",
+        12: "Sanctuary",
         13: "Natla's Mines",
         14: "Atlantis",
-        15: "The Great Pyramid",
+        15: "Great Pyramid",
         16: "Return to Egypt",
-        17: "Temple of the Cat",
-        18: "Atlantean Stronghold",
+        17: "Temple of Cat",
+        18: "Stronghold",
         19: "The Hive",
         24: "Main Menu"
     },
     // TR2: bundleId=0, version=1
     '0_1': {
         0: "Lara's Home",
-        1: "The Great Wall",
+        1: "Great Wall",
         2: "Venice",
-        3: "Bartoli's Hideout",
+        3: "Bartoli's",
         4: "Opera House",
         5: "Offshore Rig",
         6: "Diving Area",
         7: "40 Fathoms",
-        8: "Wreck of the Maria Doria",
+        8: "Maria Doria",
         9: "Living Quarters",
         10: "The Deck",
-        11: "Tibetan Foothills",
-        12: "Barkhang Monastery",
-        13: "Catacombs of the Talion",
+        11: "Tibet",
+        12: "Barkhang",
+        13: "Talion",
         14: "Ice Palace",
         15: "Temple of Xian",
         16: "Floating Islands",
-        17: "The Dragon's Lair",
+        17: "Dragon's Lair",
         18: "Home Sweet Home",
         19: "The Cold War",
         20: "Fool's Gold",
-        21: "Furnace of the Gods",
+        21: "Furnace of Gods",
         22: "Kingdom",
-        23: "Nightmare in Vegas",
+        23: "Vegas",
         63: "Main Menu"
     },
     // TR3: bundleId=0, version=2
@@ -87,7 +88,7 @@ const LEVEL_NAMES = {
         0: "Lara's Home",
         1: "Jungle",
         2: "Temple Ruins",
-        3: "The River Ganges",
+        3: "River Ganges",
         4: "Caves of Kaliya",
         5: "Coastal Village",
         6: "Crash Site",
@@ -98,17 +99,17 @@ const LEVEL_NAMES = {
         11: "Lud's Gate",
         12: "City",
         13: "Nevada Desert",
-        14: "High Security Compound",
+        14: "HSC",
         15: "Area 51",
         16: "Antarctica",
         17: "RX-Tech Mines",
-        18: "Lost City of Tinnos",
+        18: "Tinnos",
         19: "Meteorite Cavern",
         20: "All Hallows",
         21: "Highland Fling",
         22: "Willard's Lair",
         23: "Shakespeare Cliff",
-        24: "Sleeping with the Fishes",
+        24: "Sleeping with Fishes",
         25: "It's a Madhouse!",
         26: "Reunion",
         63: "Main Menu"
@@ -117,39 +118,39 @@ const LEVEL_NAMES = {
     '1_0': {
         0: "Main Menu",
         1: "Angkor Wat",
-        2: "Race for the Iris",
+        2: "Race for Iris",
         3: "The Tomb of Seth",
         4: "Burial Chambers",
-        5: "Valley of the Kings",
+        5: "Valley of Kings",
         6: "KV5",
         7: "Temple of Karnak",
-        8: "The Great Hypostyle Hall",
+        8: "Great Hypostyle",
         9: "Sacred Lake",
         11: "Tomb of Semerkhet",
         12: "Guardian of Semerkhet",
         13: "Desert Railroad",
         14: "Alexandria",
         15: "Coastal Ruins",
-        16: "Pharos, Temple of Isis",
-        17: "Cleopatra's Palaces",
+        16: "Pharos",
+        17: "Cleopatra's",
         18: "Catacombs",
-        19: "Temple of Poseidon",
+        19: "Poseidon",
         20: "The Lost Library",
-        21: "Hall of Demetrius",
-        22: "City of the Dead",
+        21: "Demetrius",
+        22: "City of Dead",
         23: "Trenches",
         24: "Chambers of Tulun",
         25: "Street Bazaar",
         26: "Citadel Gate",
         27: "Citadel",
-        28: "The Sphinx Complex",
-        30: "Underneath the Sphinx",
+        28: "Sphinx Complex",
+        30: "Underneath Sphinx",
         31: "Menkaure's Pyramid",
-        32: "Inside Menkaure's Pyramid",
+        32: "Inside Menkaure's",
         33: "The Mastabas",
-        34: "The Great Pyramid",
-        35: "Khufu's Queens Pyramids",
-        36: "Inside the Great Pyramid",
+        34: "Great Pyramid",
+        35: "Khufu's Queens",
+        36: "Inside Great Pyramid",
         37: "Temple of Horus",
         38: "Temple of Horus",
         40: "The Times Exclusive"
@@ -157,18 +158,18 @@ const LEVEL_NAMES = {
     // TR5: bundleId=1, version=1
     '1_1': {
         0: "Main Menu",
-        1: "Streets of Rome",
+        1: "Rome",
         2: "Trajan's Markets",
-        3: "The Colosseum",
+        3: "Colosseum",
         4: "The Base",
-        5: "The Submarine",
+        5: "Submarine",
         6: "Deepsea Dive",
         7: "Sinking Submarine",
         8: "Gallows Tree",
         9: "Labyrinth",
         10: "Old Mill",
         11: "The 13th Floor",
-        12: "Escape with the Iris",
+        12: "Escape with Iris",
         13: "Security Breach",
         14: "Red Alert!"
     }
@@ -230,11 +231,12 @@ async function postInitialMessage() {
 function startPolling() {
     setInterval(async () => {
         try {
-            const stats = readStatsFile();
+            const stats = await readStatsFile(STATS_FILE);
+            const lobbyStats = await readStatsFile(LOBBIES_STATS_FILE);
             if (!stats || Date.now() - stats.timestamp > STALE_THRESHOLD_MS) {
                 await showOffline();
             } else {
-                await updatePlayerList(stats);
+                await updatePlayerList(stats, lobbyStats);
             }
         } catch (e) {
             console.error('Poll error:', e.message);
@@ -243,13 +245,23 @@ function startPolling() {
     }, POLL_INTERVAL_MS);
 }
 
-function readStatsFile() {
-    try {
-        const data = fs.readFileSync(STATS_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (e) {
-        return null;
+async function readStatsFile(filePath) {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 100;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+            const data = fs.readFileSync(filePath, 'utf8');
+            return JSON.parse(data);
+        } catch (e) {
+            if (e.code === 'ENOENT') {
+                return null;
+            }
+            if (attempt < MAX_RETRIES - 1) {
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+            }
+        }
     }
+    return null;
 }
 
 async function showOffline() {
@@ -258,15 +270,30 @@ async function showOffline() {
     await renameChannel('🔴-server-offline');
 }
 
-async function updatePlayerList(stats) {
-    const message = formatPlayerMessage(stats);
+async function updatePlayerList(stats, lobbyStats) {
+    const message = formatPlayerMessage(stats, lobbyStats);
+    const totalAll = stats.totalPlayers + (lobbyStats?.totalPlayers || 0);
     await updateDiscordMessage(message);
-    await renameChannel(`🟢-${stats.totalPlayers}-players-online`);
+    await renameChannel(`🟢-${totalAll}-players-online`);
 }
 
-function formatPlayerMessage(stats) {
-    if (stats.totalPlayers === 0) {
+function formatPlayerMessage(stats, lobbyStats) {
+    const privateCount = lobbyStats?.totalPlayers || 0;
+    const totalAll = stats.totalPlayers + privateCount;
+
+    if (totalAll === 0) {
         return '# Players online\n\n**No players currently online**';
+    }
+
+    let message = '# Players online\n';
+
+    // Show private lobby count first if any
+    if (privateCount > 0) {
+        message += `\n## :lock: Private Lobbies - \`${privateCount} online\`\n`;
+    }
+
+    if (stats.totalPlayers === 0) {
+        return message;
     }
 
     // Group players by game
@@ -282,8 +309,6 @@ function formatPlayerMessage(stats) {
         }
         gameGroups[gameKey][levelName]++;
     }
-
-    let message = '# Players online\n';
 
     // Sort games by their key (TR1, TR2, TR3, TR4, TR5)
     const sortedGames = Object.keys(gameGroups).sort();
