@@ -14,17 +14,93 @@ module.exports = {
 
         let chatOpened = false;
         let chatMessage = "";
-        let chatMessages = [{time: Date.now(), name: null, text: "Welcome to TRR Multiplayer"}, {
-            time: Date.now(),
-            name: null,
-            text: "Support Multiplayer: ko-fi.com/burn_sours"
-        }, {
-            time: Date.now(),
-            name: null,
-            text: "[F2] Teleport, [F6] Skip level, [F7] Name display, [F8] Text chat, [F10] PVP"
-        }];
-        
+        let chatMessages = [
+            {time: Date.now(), name: null, text: "Welcome to Tomb Raider Multiplayer.  [ko-fi.com/burn_sours]"},
+            {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93"},
+            {time: Date.now(), name: null, text: "[F2] Menu, [F4] Confirm, [F8] Chat"}
+        ];
+
+        const QUIZZES = [
+            { question: "How many crumble tiles are in Tomb of Qualopec?", answer: "6" },
+            { question: "Which TR1/TR2 level has no water?", answer: "Caves" },
+            { question: "How many bears appear in TR1?", answer: "Three" },
+            { question: "How many Pierre encounters are there if you always shoot him?", answer: "9" },
+            { question: "Who created Boing% and Multiplayer?", answer: "Burn_Sours" },
+            { question: "What's the first obtainable weapon in TR2? (Excluding starting guns)", answer: "Grenade Launcher" },
+            { question: "How many levels in TR2 have drivable vehicles?", answer: "Three" },
+            { question: "What is on the back of Pierre's jacket?", answer: "A woman in a bikini" },
+            { question: "How many sets of clang-clang doors appear in TR1?", answer: "10" },
+            { question: "Which TR1/TR2 level has the most kills? (Monks excluded)", answer: "Opera House" },
+            { question: "Which TR1/TR2 level has the fewest kills?", answer: "Natla's Mines" },
+            { question: "Which are more numerous in Barkhang Monastery: monks or human enemies?", answer: "Human Enemies" },
+            { question: "How many raptors are there in TR1?", answer: "9" },
+            { question: "Which level is the last level you see a croc in TR1?", answer: "Obelisk of Khamoon" },
+            { question: "How many TR1 levels end with item pickups?", answer: "2" },
+            { question: "How many levels in TR1 have spikes?", answer: "8" },
+            { question: "How many enemy species are in the Venice levels?", answer: "3" },
+            { question: "What's the minimum kill count for a TR1 glitchless run?", answer: "4" },
+            { question: "How many levels in TR2 end with a cut scene/FMV starting?", answer: "8" },
+            { question: "How many different items contain the word 'key' in their name in TR1?", answer: "9" },
+            { question: "How many sharks are in TR2?", answer: "8" },
+            { question: "How many levels in TR3 have drivable vehicles?", answer: "6" },
+            { question: "How many TR2 enemies have health bars?", answer: "6" },
+            { question: "How many total levels in TR1-3? (Including bonuses/DLCs)", answer: "113" },
+            { question: "Which level in TR1 has only one lever in the entire level?", answer: "Lost Valley" },
+            { question: "Which 3 levels in TR2 don't have any human enemies to kill?", answer: "Great Wall, Ice Palace, Temple of Xian" },
+            { question: "Which level has the most secrets in TR1?", answer: "Lost Valley" },
+            { question: "What's the dying monk's name in Diving Area?", answer: "Brother Chen" },
+            { question: "Which level in TR1 has the first boulder?", answer: "Tomb of Qualopec" },
+            { question: "What two items does Lara start with in Home Sweet Home?", answer: "Shotgun and Flares" },
+            { question: "What food did Pierre eat before St Francis Folly?", answer: "Beans" },
+            { question: "In TR3, which level has the least amount of kills?", answer: "City" },
+            { question: "What's the TR3 all secrets bonus level called?", answer: "All Hallows" },
+            { question: "Which has the most pickups: TR1, 2 or 3?", answer: "TR2" },
+            { question: "How many crumble tiles are in Tomb of Qualopec?", answer: "10" },
+            { question: "Where's the first Uzi ammo pickup in TR1?", answer: "3rd secret in City of Vilcabamba" },
+            { question: "How many TR1 levels need no pickups?", answer: "Two" },
+            { question: "How many wolves are dead on the Peru loading screen?", answer: "3" },
+            { question: "Name the 4 artifacts that you pick up in Obelisk of Khamoon?", answer: "Eye of Horus, Scarab, Seal of Anubis, Ankh" },
+            { question: "How many single-tile pillars in Palace Midas lever room?", answer: "6" },
+            { question: "Which level in TR1 has the most save crystals?", answer: "Palace Midas" },
+            { question: "Which has more: gorillas in Palace Midas or wolves in Vilcabamba?", answer: "Gorillas (17-11)" },
+            { question: "How many TR2 levels have spiked tiles? (not glass/spikey balls)", answer: "5" },
+            { question: "How many Clang Clang Doors are there in Barkhang Monastery?", answer: "5" },
+            { question: "What's the color order of keycards in Offshore Rig?", answer: "Yellow, Red, Green" },
+            { question: "In TR2, how many ziplines are there?", answer: "5" },
+            { question: "Which level is alphabetically last in TR2?", answer: "Wreck of the Maria Doria" },
+            { question: "Which level is alphabetically first in TR3?", answer: "Aldwych" },
+            { question: "How many flares per pickup in TR3?", answer: "8" },
+            { question: "How many different outfits does Lara wear in TR2?", answer: "4" },
+            { question: "How many enemies are there in total in the TR2 level Home Sweet Home?", answer: "16" },
+            { question: "In TR3, what is Sophia Leigh's estimated age?", answer: "Late 20s/Early 30s" },
+            { question: "In the TR3 Assault Course, how many individual targets does lara have to shoot?", answer: "21" },
+            { question: "In which year was TR1 released?", answer: "1996" },
+            { question: "How many explorable rooms are there in TR1's Mansion?", answer: "5" },
+            { question: "What colour are Marco Bartoli's eyes?", answer: "Red" },
+            { question: "Excluding expansions, how many levels are there in TR2?", answer: "18" },
+            { question: "Which level in TR2 has some leftover developer textures?", answer: "Great Wall (Top left of the far tower)" },
+            { question: "At launch, how many platforms was TR1 released on?", answer: "3 (PC, Playstation, Sega Saturn)" },
+            { question: "In which TR1 level were the Atlanteans first spotted?", answer: "Tomb of Qualopec" },
+            { question: "In TR3, what was the name of the event celebrated by the tribesman Lara encounters at the end of Crash Site?", answer: "The feast of Smythe" },
+            { question: "How many eyes does the Willard-Spider have in TR3?", answer: "8" }
+        ];
+        const QUIZ_ANSWER_DELAY = 20000;
+        let quizPending = null;
+
         let gameCoreFunctions = {
+            runQuiz: () => {
+                if (quizPending) {
+                    clearTimeout(quizPending);
+                    quizPending = null;
+                }
+                const q = QUIZZES[Math.floor(Math.random() * QUIZZES.length)];
+                send({event: "multiplayer:sendChat", args: {asQuiz: true, text: q.question}});
+                quizPending = setTimeout(() => {
+                    send({event: "multiplayer:sendChat", args: {asQuiz: true, text: "Answer: " + q.answer}});
+                    quizPending = null;
+                }, QUIZ_ANSWER_DELAY);
+            },
+
             findBaseAddress: (module) => {
                 return Module.findBaseAddress(module);
             },
@@ -483,6 +559,33 @@ module.exports = {
                 }
             },
 
+            callFeatureAction: (featureId, action, data) => {
+                try {
+                    const feature = supportedFeatures.find(f => f.id === featureId);
+                    if (!feature) {
+                        console.error('Feature not found:', featureId);
+                        return;
+                    }
+
+                    const actionHandler = feature.game.actions?.[action];
+                    if (!actionHandler) {
+                        if (action !== 'cleanup') {
+                            console.warn('Action not found:', action, 'for feature:', featureId);
+                        }
+                        return;
+                    }
+
+                    const handlerFn = eval(actionHandler);
+                    if (typeof handlerFn === 'function') {
+                        handlerFn(data);
+                    } else {
+                        console.error('Action handler is not a function:', actionHandler);
+                    }
+                } catch (err) {
+                    console.error('Feature action error:', err);
+                }
+            },
+
             startFeatureLoops: (supportedFeatures) => {
                 const loopsByInterval = {};
 
@@ -516,41 +619,6 @@ module.exports = {
                     } catch (err) {
                         console.error('Feature loop error:', err.stack, loopsByInterval[interval]);
                     }
-                }
-            },
-
-            callFeatureAction: (featureId, action, data) => {
-                try {
-                    const feature = supportedFeatures.find(f => f.id === featureId);
-                    if (!feature) {
-                        console.error('Feature not found:', featureId);
-                        return;
-                    }
-
-                    const actionHandler = feature.game.actions?.[action];
-                    if (!actionHandler) {
-                        if (action !== 'cleanup') {
-                            console.warn('Action not found:', action, 'for feature:', featureId);
-                        }
-                        return;
-                    }
-                    
-                    const handlerFn = eval(actionHandler);
-                    if (typeof handlerFn === 'function') {
-                        handlerFn(data);
-                    } else {
-                        console.error('Action handler is not a function:', actionHandler);
-                    }
-                } catch (err) {
-                    console.error('Feature action error:', err);
-                }
-            },
-
-            cleanupStandaloneFeature: (featureId) => {
-                try {
-                    game.callFeatureAction(featureId, 'cleanup', {});
-                } catch (err) {
-                    console.error('Error cleaning up standalone feature:', err);
                 }
             },
 

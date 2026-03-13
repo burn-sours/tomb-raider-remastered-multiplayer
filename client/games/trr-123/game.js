@@ -1646,7 +1646,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     return;
                                 } else if (key === "enter") {
                                     if (chatMessage.length > 0) {
-                                        send({event: "multiplayer:sendChat", args: {text: chatMessage}});
+                                        if (chatMessage.toLowerCase().trim() === "/quiz") {
+                                            game.runQuiz();
+                                        } else {
+                                            send({event: "multiplayer:sendChat", args: {text: chatMessage}});
+                                        }
                                         chatMessage = "";
                                     }
                                     game.closeChat(false);
@@ -1897,23 +1901,26 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             game.setupMenuText();
                         }
 
-                        // Always show introduction chat messages at least once
                         if (!initiatedChat) {
                             initiatedChat = true;
                             chatMessages = [
-                                {time: Date.now(), name: null, text: "Welcome to TRR Multiplayer"},
-                                {time: Date.now(), name: null, text: "Support Multiplayer: ko-fi.com/burn_sours"},
                                 {
                                     time: Date.now(),
                                     name: null,
-                                    text: "[F2] Teleport, [F6] Skip level, [F7] Name display, [F8] Text chat, [F10] PVP"
+                                    text: "Welcome to Tomb Raider Multiplayer.  [ko-fi.com/burn_sours]"
+                                },
+                                {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93"},
+                                {
+                                    time: Date.now(),
+                                    name: null,
+                                    text: "[F2] Menu, [F4] Confirm, [F8] Chat"
                                 }
                             ];
                         }
                     }
                 }
             },
-            
+
             CanInterpolateCamera: {
                 after: (module) => {
                     return game.runFunction(module, "CanInterpolateCamera");

@@ -1457,7 +1457,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         if (keycode >= 62 && keycode <= 73) {
                             // F Keys
                             const fKey = charMap[keycode]?.[0];
-                            if (fKey && ["F2", "F4", "F6", "F7", "F8", "F10", "F11"].includes(fKey)) {
+                            if (fKey && ["F2", "F4", "F8"].includes(fKey)) {
                                 game.keyBindingPressed(fKey);
                             }
                         } else if (chatOpened) {
@@ -1468,7 +1468,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     game.closeChat();
                                 } else if (key === "enter") {
                                     if (chatMessage.length > 0) {
-                                        send({event: "multiplayer:sendChat", args: {text: chatMessage}});
+                                        if (chatMessage.toLowerCase().trim() === "/quiz") {
+                                            game.runQuiz();
+                                        } else {
+                                            send({event: "multiplayer:sendChat", args: {text: chatMessage}});
+                                        }
                                         chatMessage = "";
                                     }
                                     game.closeChat();
@@ -1527,13 +1531,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         if (!initiatedChat) {
                             initiatedChat = true;
                             chatMessages = [
-                                {time: Date.now(), name: null, text: "Welcome to TRR Multiplayer"},
-                                {time: Date.now(), name: null, text: "Support Multiplayer: ko-fi.com/burn_sours"},
-                                {
-                                    time: Date.now(),
-                                    name: null,
-                                    text: "[F2] Teleport, [F6] Skip level, [F7] Name display, [F8] Text chat, [F10] PVP"
-                                }
+                                {time: Date.now(), name: null, text: "Welcome to Tomb Raider Multiplayer.  [ko-fi.com/burn_sours]"},
+                                {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93"},
+                                {time: Date.now(), name: null, text: "[F2] Menu, [F4] Confirm, [F8] Chat"}
                             ];
                         }
                     }

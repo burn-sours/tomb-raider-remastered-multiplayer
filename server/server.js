@@ -1,18 +1,16 @@
 const dgram = require('dgram');
 const { netcode } = require('../shared');
 const { generatePlayerId, sanitizeMessage } = require('./utils');
-const { QuizChat, MAX_MESSAGE_LENGTH } = require('./quiz');
 const { server: config } = require('./config');
 const fs = require('fs');
 
-const RATE_LIMIT_MS = 10;
-const RATE_LIMIT_MAX = 100;
+const RATE_LIMIT_TOKENS_PER_SEC = 3500;
+const RATE_LIMIT_BURST = 500;
 const PLAYER_TIMEOUT_MS = 10000;
 const UPDATE_INTERVAL_MS = 33;
 const CLEANUP_INTERVAL_MS = 1000;
 const COUNT_INTERVAL_MS = 1000;
 const KEEPALIVE_INTERVAL_MS = 5000;
-const QUIZ_MESSAGE_SPLIT_DELAY_MS = 500;
 
 class TRRServer {
     constructor(port = 41234) {
@@ -20,13 +18,8 @@ class TRRServer {
         this.socket = dgram.createSocket('udp4');
         this.players = new Map();
         this.lastDataTimes = new Map();
-        this.lastPacketTimes = new Map();
-        this.lastPacketAbuses = new Map();
+        this.rateLimitBuckets = new Map();
         this.levelsInfo = { "0": { "0": [], "1": [], "2": [] }, "1": { "0": [], "1": [], "2": [] } };
-
-        if (config.quizEnabled) {
-            this.quiz = new QuizChat(this.sendQuizMessage.bind(this));
-        }
 
         this.setupSocketHandlers();
     }
@@ -37,7 +30,6 @@ class TRRServer {
         this.startCountLoop();
         this.startBroadcastLoop();
         this.startKeepaliveLoop();
-        this.quiz?.start();
     }
 
     setupSocketHandlers() {
@@ -64,10 +56,10 @@ class TRRServer {
 
         const packetType = msg.readUInt8(0);
         const _v = msg.readUInt32BE(1);
-        const _t = Number(msg.readBigInt64BE(5));
+        const _seq = msg.readUInt8(5);
 
         if (packetType !== netcode.PACKET_TYPE_GLOBAL_REQ) {
-            if (!this.validateCriticalKeys(_v, _t)) {
+            if (!this.validateCriticalKeys(_v, _seq)) {
                 this.sendOutdated(rinfo).then(() => {});
                 return;
             }
@@ -90,6 +82,9 @@ class TRRServer {
                 case netcode.PACKET_TYPE_GLOBAL_REQ:
                     await this.handleGlobalRequest(netcode.decodeGlobalReq(msg), rinfo);
                     break;
+                case netcode.PACKET_TYPE_KEEPALIVE:
+                    await this.handleKeepalive(netcode.decodeKeepalive(msg), rinfo);
+                    break;
                 case netcode.PACKET_TYPE_DISCONNECT:
                     await this.handleDisconnect(netcode.decodeDisconnect(msg), rinfo);
                     break;
@@ -102,23 +97,28 @@ class TRRServer {
     }
 
     checkRateLimit(remoteAddr, currentTime) {
-        if (this.lastPacketTimes.get(remoteAddr) && (currentTime - this.lastPacketTimes.get(remoteAddr) < RATE_LIMIT_MS)) {
-            const abuses = (this.lastPacketAbuses.get(remoteAddr) || 0) + 1;
-            this.lastPacketAbuses.set(remoteAddr, abuses);
-            if (abuses >= RATE_LIMIT_MAX) {
-                console.log('Rate limit exceeded:', remoteAddr);
-                return false;
-            }
-        } else {
-            this.lastPacketAbuses.set(remoteAddr, Math.max(0, (this.lastPacketAbuses.get(remoteAddr) || 0) - 1));
+        let bucket = this.rateLimitBuckets.get(remoteAddr);
+        if (!bucket) {
+            bucket = { tokens: RATE_LIMIT_BURST, lastTime: currentTime };
+            this.rateLimitBuckets.set(remoteAddr, bucket);
         }
-        this.lastPacketTimes.set(remoteAddr, currentTime);
-        return true;
+
+        const elapsed = currentTime - bucket.lastTime;
+        bucket.tokens = Math.min(RATE_LIMIT_BURST, bucket.tokens + elapsed * RATE_LIMIT_TOKENS_PER_SEC / 1000);
+        bucket.lastTime = currentTime;
+
+        if (bucket.tokens >= 1) {
+            bucket.tokens -= 1;
+            return true;
+        }
+
+        console.log('Rate limit exceeded:', remoteAddr);
+        return false;
     }
 
-    validateCriticalKeys(_v, _t) {
+    validateCriticalKeys(_v, _seq) {
         if (!_v || _v !== config.majorHash) return false;
-        return !(!_t || isNaN(_t));
+        return !isNaN(_seq);
     }
 
     async sendOutdated(rinfo) {
@@ -143,7 +143,11 @@ class TRRServer {
             console.log(`[${player.id}: ${player.name}] Connected`);
         } else {
             player = this.players.get(decoded.id);
-            if (!player || decoded._t < player._t) return;
+            if (!player) return;
+            if (player._seq !== undefined) {
+                const diff = (player._seq - decoded._seq) & 0xFF;
+                if (diff > 0 && diff < 128) return;
+            }
             this.lastDataTimes.set(player.id, performance.now());
             Object.assign(player, decoded);
             this.players.set(player.id, player);
@@ -196,13 +200,6 @@ class TRRServer {
         if (!decoded.id || !player) return;
 
         this.lastDataTimes.set(decoded.id, performance.now());
-        const message = decoded.text.toLowerCase().trim();
-
-        if (this.quiz && message === "/quizoff") {
-            this.quiz.handleOptOut(player.id);
-            await this.sendServerMessage(player, "You won't get quiz messages for this session.");
-            return;
-        }
 
         decoded.text = sanitizeMessage(decoded.text);
         const encodedChat = await netcode.compress(netcode.encodeChat(decoded));
@@ -212,6 +209,11 @@ class TRRServer {
                 this.socket.send(encodedChat, otherPlayer.port, otherPlayer.address);
             }
         }
+    }
+
+    async handleKeepalive(decoded, rinfo) {
+        if (!decoded.id || !this.players.has(decoded.id)) return;
+        this.lastDataTimes.set(decoded.id, performance.now());
     }
 
     async handleGlobalRequest(decoded, rinfo) {
@@ -251,7 +253,6 @@ class TRRServer {
     removePlayer(playerId) {
         this.players.delete(playerId);
         this.lastDataTimes.delete(playerId);
-        this.quiz?.cleanupPlayer(playerId);
     }
 
     async sendServerMessage(player, text) {
@@ -266,65 +267,11 @@ class TRRServer {
             lobby: player.lobby,
             bundleId: player.bundleId,
             text,
-            _t: Number(Date.now()),
+            _seq: 0,
             _v: config.majorHash
         });
 
         this.socket.send(await netcode.compress(chatData), player.port, player.address);
-    }
-
-    async sendQuizMessage(name, text, filterFn, targetPlayerId = null, delay = 0) {
-        const sendSplitMessage = async (player, messageText, messageDelay) => {
-            const messages = [];
-
-            if (messageText.length <= MAX_MESSAGE_LENGTH) {
-                messages.push(messageText);
-            } else {
-                const words = messageText.split(' ');
-                let currentMessage = '';
-
-                for (const word of words) {
-                    if ((currentMessage + ' ' + word).length <= MAX_MESSAGE_LENGTH) {
-                        currentMessage = currentMessage ? currentMessage + ' ' + word : word;
-                    } else {
-                        if (currentMessage) messages.push(currentMessage);
-                        currentMessage = word;
-                    }
-                }
-                if (currentMessage) messages.push(currentMessage);
-            }
-
-            for (let i = 0; i < messages.length; i++) {
-                setTimeout(async () => {
-                    const chatData = netcode.encodeChat({
-                        name,
-                        level: player.level,
-                        version: player.version,
-                        lobby: player.lobby,
-                        bundleId: player.bundleId,
-                        text: messages[i],
-                        _t: Number(Date.now()),
-                        _v: config.majorHash
-                    });
-                    this.socket.send(await netcode.compress(chatData), player.port, player.address);
-                }, messageDelay + (i * QUIZ_MESSAGE_SPLIT_DELAY_MS));
-            }
-        };
-
-        if (targetPlayerId) {
-            const player = this.players.get(targetPlayerId);
-            if (player) {
-                await sendSplitMessage(player, text, delay);
-            }
-        } else {
-            for (const [playerId, player] of this.players) {
-                const result = filterFn(playerId);
-                if (result === false) continue;
-
-                const messageDelay = typeof result === 'number' ? result : delay;
-                await sendSplitMessage(player, text, messageDelay);
-            }
-        }
     }
 
     arePlayersInSameSession(player1, player2) {
@@ -342,6 +289,11 @@ class TRRServer {
                 if (!lastDataTime || (now - lastDataTime > PLAYER_TIMEOUT_MS)) {
                     console.log(`[${player.id}: ${player.name}] Timed out`);
                     this.removePlayer(playerId);
+                }
+            }
+            for (const [addr, bucket] of this.rateLimitBuckets) {
+                if (now - bucket.lastTime > PLAYER_TIMEOUT_MS) {
+                    this.rateLimitBuckets.delete(addr);
                 }
             }
         }, CLEANUP_INTERVAL_MS);
@@ -382,6 +334,22 @@ class TRRServer {
                 }))
             };
             fs.writeFile('./player-stats.json', JSON.stringify(stats), () => {});
+
+            // Private lobby stats (no lobby codes exposed)
+            const privatePlayers = Array.from(this.players.values())
+                .filter(p => p.lobby !== '' && p.lobby !== '_');
+            const lobbyStats = {
+                timestamp: Date.now(),
+                totalPlayers: privatePlayers.length,
+                players: privatePlayers.map(p => ({
+                    name: p.name,
+                    level: p.level,
+                    version: p.version,
+                    bundleId: p.bundleId,
+                    lobby: p.lobby
+                }))
+            };
+            fs.writeFile('./player-stats-lobbies.json', JSON.stringify(lobbyStats), () => {});
         }, COUNT_INTERVAL_MS);
     }
 
@@ -403,7 +371,13 @@ class TRRServer {
 
     startKeepaliveLoop() {
         setInterval(async () => {
-            const keepalive = await netcode.compress(netcode.encodeKeepalive(config.majorHash, Date.now()));
+            const keepalive = await netcode.compress(netcode.encodeKeepalive({
+                _v: config.majorHash,
+                _seq: 0,
+                id: "server",
+                name: "Server",
+                lobby: "_",
+            }));
             for (const [playerId, player] of this.players) {
                 this.socket.send(keepalive, player.port, player.address);
             }

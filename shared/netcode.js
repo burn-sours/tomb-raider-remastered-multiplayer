@@ -56,14 +56,14 @@ module.exports = {
         const lobbyBuffer = Buffer.from(playerState.lobby || "_", 'utf-8');
         const lobbyLength = lobbyBuffer.length;
     
-        const buffer = Buffer.alloc(23 + idLength + nameLength + lobbyLength);
+        const buffer = Buffer.alloc(16 + idLength + nameLength + lobbyLength);
         let bufferX = 0;
         buffer.writeUInt8(packetType, 0);
         buffer.writeInt32BE(playerState._v, 1);
-        buffer.writeBigInt64BE(BigInt(playerState._t), 5);
-        buffer.writeUInt16BE(idLength, 13);
-        idBuffer.copy(buffer, 15);
-        bufferX = 15 + idLength;
+        buffer.writeUInt8(playerState._seq || 0, 5);
+        buffer.writeUInt16BE(idLength, 6);
+        idBuffer.copy(buffer, 8);
+        bufferX = 8 + idLength;
         buffer.writeUInt16BE(nameLength, bufferX);
         nameBuffer.copy(buffer, bufferX + 2);
         bufferX = bufferX + 2 + nameLength;
@@ -81,9 +81,9 @@ module.exports = {
 
     decodeGeneric: (buffer) => {
         const modVersion = Number(buffer.readInt32BE(1));
-        const time = Number(buffer.readBigInt64BE(5));
+        const _seq = buffer.readUInt8(5);
 
-        let bufferX = 13;
+        let bufferX = 6;
         const idLength = buffer.readUInt16BE(bufferX);
         const id = buffer.slice(bufferX + 2, bufferX + 2 + idLength).toString('utf-8');
         bufferX = bufferX + 2 + idLength;
@@ -108,7 +108,7 @@ module.exports = {
         return {
             data: { 
                 _v: modVersion,
-                _t: time,
+                _seq,
                 id,
                 name,
                 lobby,
@@ -415,12 +415,12 @@ module.exports = {
         return module.exports.decodeGeneric(buffer).data;
     },
 
-    encodeKeepalive: (_v, _t) => {
-        const buffer = Buffer.alloc(13);
-        buffer.writeUInt8(PACKET_TYPE_KEEPALIVE, 0);
-        buffer.writeInt32BE(_v, 1);
-        buffer.writeBigInt64BE(BigInt(_t), 5);
-        return buffer;
+    encodeKeepalive: (keepaliveState) => {
+        return module.exports.encodeGeneric(keepaliveState, PACKET_TYPE_KEEPALIVE);
+    },
+
+    decodeKeepalive: (buffer) => {
+        return module.exports.decodeGeneric(buffer).data;
     },
 
     encodeDisconnect: (disconnectState) => {
