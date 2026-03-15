@@ -304,7 +304,7 @@ module.exports = {
         },
         DrawHealth: {
             Address: "0xee9d0",
-            Params: ['int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },

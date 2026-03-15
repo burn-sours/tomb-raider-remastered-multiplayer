@@ -44,7 +44,6 @@ module.exports = {
                 // Define 1st levels to engage permadamage
                 const firstLevel = {'tomb1.dll': 2, 'tomb2.dll': 2, 'tomb3.dll': 2, 'tomb4.dll': 2, 'tomb5.dll': 2};
                 const firstExpansionLevel = {'tomb1.dll': 18, 'tomb2.dll': 19, 'tomb3.dll': 21, 'tomb4.dll': 40, 'tomb5.dll': 0};
-                const moduleAddresses = game.getModuleAddresses(module);
                 const lara = game.getLara();
 
                 if (lara && !lara.isNull() && game.isLevelSupported(currentLevel)) {
@@ -69,7 +68,7 @@ module.exports = {
                 const lara = game.getLara();
                 if (exiting || !lara || lara.isNull()) return;
 
-                const moduleVariables = game.getModuleAddresses(module).variables;
+                const moduleAddresses = game.getModuleAddresses(module);
                 const moduleHooks = game.getModuleAddresses(module).hooks;
                 
                 if (!moduleHooks.DrawHealth) return;
@@ -83,7 +82,11 @@ module.exports = {
                     if (hp > 1000) {
                         hp = 1000;
                     }
-                    game.runFunction(module, "DrawHealth", hp / 10);
+                    let drawArgs = [hp / 10, 1];
+                    if (moduleAddresses.hooks.DrawHealth.Params.length === 1) {
+                        drawArgs = [hp / 10];
+                    }
+                    game.runFunction(module, "DrawHealth", ...drawArgs);
                 }
             `
         }

@@ -2739,7 +2739,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         if (hp > 1000) {
                             hp = 1000;
                         }
-                        game.runFunction(module, "DrawHealth", hp / 10);
+                        let drawArgs = [hp / 10, 1];
+                        if (moduleAddresses.hooks.DrawHealth.Params.length === 1) {
+                            drawArgs = [hp / 10];
+                        }
+                        game.runFunction(module, "DrawHealth", ...drawArgs);
                     }
 
                     if (!userData.multiplayer) return;
