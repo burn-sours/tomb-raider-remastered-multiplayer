@@ -138,11 +138,11 @@ module.exports = {
             Type: "Int32",
         },
         CameraY: {
-            Address: "0x2c38ac",
+            Address: "0x2c389c",
             Type: "Int32",
         },
         CameraZ: {
-            Address: "0x2c389c",
+            Address: "0x2c38ac",
             Type: "Int32",
         },
         CameraYaw: { 
