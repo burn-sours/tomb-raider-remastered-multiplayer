@@ -2291,7 +2291,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     name: null,
                                     text: "Welcome to Tomb Raider Multiplayer.  [ko-fi.com/burn_sours]"
                                 },
-                                {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93"},
+                                {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93 & @gizzy_91"},
                                 {
                                     time: Date.now(),
                                     name: null,
