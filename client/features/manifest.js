@@ -7,7 +7,6 @@ module.exports = {
         require("./glitch-lara/manifest"),
         require("./super-speed/manifest"),
         require("./swim-fly/manifest"),
-        require("./rewind-lara/manifest"),
         require("./unlock-golden-pistols/manifest"),
         require("./perma-damage/manifest"),
         require("./perma-poison/manifest"),
