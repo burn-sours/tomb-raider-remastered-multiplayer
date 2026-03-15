@@ -4,7 +4,7 @@ module.exports = {
     uiLayer: 0x39,
 
     /* tomb2.dll max outfits */
-    maxOutfits: 44,
+    challengeOutfits: true,
     
     /** tomb2.dll variables */
     variables: {

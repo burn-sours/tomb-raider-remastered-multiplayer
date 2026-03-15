@@ -156,52 +156,59 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 id: "outfit",
                 label: () => "Change Outfit",
                 hasSubmenu: true,
-                getSubmenuItems: () => [
-                    {id: 1, label: "Classic 1"},
-                    {id: 2, label: "Training 1"},
-                    {id: 3, label: "Classic 2"},
-                    {id: 4, label: "Training 2"},
-                    {id: 5, label: "Wetsuit"},
-                    {id: 6, label: "Bomber"},
-                    {id: 7, label: "Bathrobe"},
-                    {id: 8, label: "Training 3"},
-                    {id: 9, label: "Nevada"},
-                    {id: 10, label: "Pacific"},
-                    {id: 11, label: "Catsuit"},
-                    {id: 12, label: "Antarctica"},
-                    {id: 13, label: "Bloody Classic"},
-                    {id: 14, label: "Vegas"},
-                    {id: 15, label: "Paragon of Peace (B)"},
-                    {id: 16, label: "Paragon of Peace (S)"},
-                    {id: 17, label: "Paragon of Peace (G)"},
-                    {id: 18, label: "Established Explorer (B)"},
-                    {id: 19, label: "Established Explorer (S)"},
-                    {id: 20, label: "Established Explorer (G)"},
-                    {id: 21, label: "Atlantean Bio-Armour (B)"},
-                    {id: 22, label: "Atlantean Bio-Armour (S)"},
-                    {id: 23, label: "Atlantean Bio-Armour (G)"},
-                    {id: 24, label: "Master Mobster (B)"},
-                    {id: 25, label: "Master Mobster (S)"},
-                    {id: 26, label: "Master Mobster (G)"},
-                    {id: 27, label: "Ahab Approved (B)"},
-                    {id: 28, label: "Ahab Approved (S)"},
-                    {id: 29, label: "Ahab Approved (G)"},
-                    {id: 30, label: "Dragon Warrior (B)"},
-                    {id: 31, label: "Dragon Warrior (S)"},
-                    {id: 32, label: "Dragon Warrior (G)"},
-                    {id: 33, label: "Speed Demon (B)"},
-                    {id: 34, label: "Speed Demon (S)"},
-                    {id: 35, label: "Speed Demon (G)"},
-                    {id: 36, label: "Flying High (B)"},
-                    {id: 37, label: "Flying High (S)"},
-                    {id: 38, label: "Flying High (G)"},
-                    {id: 39, label: "Honorary Damned (B)"},
-                    {id: 40, label: "Honorary Damned (S)"},
-                    {id: 41, label: "Honorary Damned (G)"},
-                    {id: 42, label: "Cooler than Cool (B)"},
-                    {id: 43, label: "Cooler than Cool (S)"},
-                    {id: 44, label: "Cooler than Cool (G)"},
-                ],
+                getSubmenuItems: () => {
+                    const outfits = [
+                        {id: 1, label: "Classic 1"},
+                        {id: 2, label: "Training 1"},
+                        {id: 3, label: "Classic 2"},
+                        {id: 4, label: "Training 2"},
+                        {id: 5, label: "Wetsuit"},
+                        {id: 6, label: "Bomber"},
+                        {id: 7, label: "Bathrobe"},
+                        {id: 8, label: "Training 3"},
+                        {id: 9, label: "Nevada"},
+                        {id: 10, label: "Pacific"},
+                        {id: 11, label: "Catsuit"},
+                        {id: 12, label: "Antarctica"},
+                        {id: 13, label: "Bloody Classic"},
+                        {id: 14, label: "Vegas"}
+                    ];
+                    if (game.getModuleAddresses(game.getGameModule()).challengeOutfits) {
+                        outfits.push(
+                            {id: 15, label: "Paragon of Peace (B)"},
+                            {id: 16, label: "Paragon of Peace (S)"},
+                            {id: 17, label: "Paragon of Peace (G)"},
+                            {id: 18, label: "Established Explorer (B)"},
+                            {id: 19, label: "Established Explorer (S)"},
+                            {id: 20, label: "Established Explorer (G)"},
+                            {id: 21, label: "Atlantean Bio-Armour (B)"},
+                            {id: 22, label: "Atlantean Bio-Armour (S)"},
+                            {id: 23, label: "Atlantean Bio-Armour (G)"},
+                            {id: 24, label: "Master Mobster (B)"},
+                            {id: 25, label: "Master Mobster (S)"},
+                            {id: 26, label: "Master Mobster (G)"},
+                            {id: 27, label: "Ahab Approved (B)"},
+                            {id: 28, label: "Ahab Approved (S)"},
+                            {id: 29, label: "Ahab Approved (G)"},
+                            {id: 30, label: "Dragon Warrior (B)"},
+                            {id: 31, label: "Dragon Warrior (S)"},
+                            {id: 32, label: "Dragon Warrior (G)"},
+                            {id: 33, label: "Speed Demon (B)"},
+                            {id: 34, label: "Speed Demon (S)"},
+                            {id: 35, label: "Speed Demon (G)"},
+                            {id: 36, label: "Flying High (B)"},
+                            {id: 37, label: "Flying High (S)"},
+                            {id: 38, label: "Flying High (G)"},
+                            {id: 39, label: "Honorary Damned (B)"},
+                            {id: 40, label: "Honorary Damned (S)"},
+                            {id: 41, label: "Honorary Damned (G)"},
+                            {id: 42, label: "Cooler than Cool (B)"},
+                            {id: 43, label: "Cooler than Cool (S)"},
+                            {id: 44, label: "Cooler than Cool (G)"}
+                        );
+                    }
+                    return outfits;
+                },
                 onSubmenuConfirm: (submenuItem, module) => {
                     if (submenuItem) {
                         const execAddresses = game.getModuleAddresses(manifest.executable);
@@ -2598,7 +2605,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             // Ensure vanilla outfit index 
                             const outfit = appearancePointer.readS32();
-                            const maxOutfits = moduleAddresses.maxOutfits || 14;
+                            const maxOutfits = moduleAddresses.challengeOutfits ? 44 : 14;
                             if (outfit < 1 || outfit > maxOutfits) {
                                 appearancePointer.writeS32(1);
                             }
