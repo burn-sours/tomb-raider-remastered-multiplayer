@@ -1783,7 +1783,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
             },
 
-            InitializeLevelAI: {
+            LoadLevelAssets: {
                 after: (module, p1) => {
                     laraPointer = null;
                     isRendering = false;

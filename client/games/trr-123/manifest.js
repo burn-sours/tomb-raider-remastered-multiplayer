@@ -37,7 +37,16 @@ module.exports = {
                 "tomb2.dll": require("./patches/patch4.1/tr2"),
                 "tomb3.dll": require("./patches/patch4.1/tr3"),
             }
+        },
+        "patch5": {
+            "name": "Patch 5 (12 March 2026)",
+            "patch": "5c309576b480ac7457c9cec83f35267532747dfaafbc7dc65ba22680d8bfafd9",
+            "memory": {
+                "executable": require("./patches/patch5/executable"),
+                "tomb1.dll": require("./patches/patch5/tr1"),
+                "tomb2.dll": require("./patches/patch5/tr2"),
+                "tomb3.dll": require("./patches/patch5/tr3"),
+            }
         }
-    },
-    "defaultPatch": "patch4.1"
+    }
 };

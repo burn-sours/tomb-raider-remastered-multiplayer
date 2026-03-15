@@ -104,7 +104,7 @@ module.exports = {
                 }
             `
         },
-        InitializeLevelAI: {
+        LoadLevelAssets: {
             // language=JavaScript
             after: `
                 floodedLevelRooms = false;

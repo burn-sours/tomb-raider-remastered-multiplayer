@@ -170,13 +170,46 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     {id: 11, label: "Catsuit"},
                     {id: 12, label: "Antarctica"},
                     {id: 13, label: "Bloody Classic"},
-                    {id: 14, label: "Vegas"}
+                    {id: 14, label: "Vegas"},
+                    {id: 15, label: "Paragon of Peace (B)"},
+                    {id: 16, label: "Paragon of Peace (S)"},
+                    {id: 17, label: "Paragon of Peace (G)"},
+                    {id: 18, label: "Established Explorer (B)"},
+                    {id: 19, label: "Established Explorer (S)"},
+                    {id: 20, label: "Established Explorer (G)"},
+                    {id: 21, label: "Atlantean Bio-Armour (B)"},
+                    {id: 22, label: "Atlantean Bio-Armour (S)"},
+                    {id: 23, label: "Atlantean Bio-Armour (G)"},
+                    {id: 24, label: "Master Mobster (B)"},
+                    {id: 25, label: "Master Mobster (S)"},
+                    {id: 26, label: "Master Mobster (G)"},
+                    {id: 27, label: "Ahab Approved (B)"},
+                    {id: 28, label: "Ahab Approved (S)"},
+                    {id: 29, label: "Ahab Approved (G)"},
+                    {id: 30, label: "Dragon Warrior (B)"},
+                    {id: 31, label: "Dragon Warrior (S)"},
+                    {id: 32, label: "Dragon Warrior (G)"},
+                    {id: 33, label: "Speed Demon (B)"},
+                    {id: 34, label: "Speed Demon (S)"},
+                    {id: 35, label: "Speed Demon (G)"},
+                    {id: 36, label: "Flying High (B)"},
+                    {id: 37, label: "Flying High (S)"},
+                    {id: 38, label: "Flying High (G)"},
+                    {id: 39, label: "Honorary Damned (B)"},
+                    {id: 40, label: "Honorary Damned (S)"},
+                    {id: 41, label: "Honorary Damned (G)"},
+                    {id: 42, label: "Cooler than Cool (B)"},
+                    {id: 43, label: "Cooler than Cool (S)"},
+                    {id: 44, label: "Cooler than Cool (G)"},
                 ],
                 onSubmenuConfirm: (submenuItem, module) => {
                     if (submenuItem) {
                         const execAddresses = game.getModuleAddresses(manifest.executable);
                         const appearancePointer = executableBase.add(execAddresses.variables.LaraAppearanceModern.Address);
                         appearancePointer.writeS8(submenuItem.id);
+                        if (game.hasFunction(module, "LoadOutfits")) {
+                            game.runFunction(module, "LoadOutfits");
+                        }
                         return "Outfit: " + submenuItem.label;
                     }
                 },
@@ -189,8 +222,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 playsSound: false,
                 getSubmenuItems: () => [
                     {id: "health", label: "Fill Health"},
-                    {id: "oxygen", label: "Fill Oxygen"},
-                    {id: "all-weapons", label: "All Weapons"}
+                    {id: "oxygen", label: "Fill Oxygen"}
                 ],
                 onSubmenuConfirm: (submenuItem, module) => {
                     if (!submenuItem) return;
@@ -205,51 +237,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             game.writeMemoryVariable("LaraOxygen", 1800, module);
                             game.runFunction(module, "SoundEffect", 0x24, game.getMemoryVariable("CameraFixedX", module), 2);
                             return "Oxygen filled";
-                        case "all-weapons":
-                            if (module === "tomb2.dll") {
-                                // TR2
-                                game.runFunction(module, "AddItemToInventory", 0x8b);
-                                game.runFunction(module, "AddItemToInventory", 0x8d);
-                                game.runFunction(module, "AddItemToInventory", 0x8c);
-                                game.runFunction(module, "AddItemToInventory", 0x88);
-                                game.runFunction(module, "AddItemToInventory", 0x89);
-                                game.runFunction(module, "AddItemToInventory", 0x8a);
-                                game.writeMemoryVariable("InventoryAmmoShotgun", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoAutoPistols", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoUzis", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoGrenades", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoM16", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoHarpoon", 5000, module);
-                            } else if (module === "tomb3.dll") {
-                                // TR3
-                                game.runFunction(module, "AddItemToInventory", 0xa5);
-                                game.runFunction(module, "AddItemToInventory", 0xa1);
-                                game.runFunction(module, "AddItemToInventory", 0xa3);
-                                game.runFunction(module, "AddItemToInventory", 0xa2);
-                                game.runFunction(module, "AddItemToInventory", 0xa0);
-                                game.runFunction(module, "AddItemToInventory", 0xa6);
-                                game.runFunction(module, "AddItemToInventory", 0xa7);
-                                game.runFunction(module, "AddItemToInventory", 0xa4);
-                                game.writeMemoryVariable("InventoryAmmoShotgun", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoDeagle", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoUzis", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoHarpoon", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoRockets", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoGrenades", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoMp5", 5000, module);
-                            } else {
-                                // TR1
-                                game.runFunction(module, "AddItemToInventory", 0x55); // Shotgun
-                                game.runFunction(module, "AddItemToInventory", 0x56); // Magnums
-                                game.runFunction(module, "AddItemToInventory", 0x57); // Uzis
-                                game.runFunction(module, "AddItemToInventory", 93);   // Small Medipack
-                                game.runFunction(module, "AddItemToInventory", 94);   // Large Medipack
-                                game.writeMemoryVariable("InventoryAmmoShotgun", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoMagnums", 5000, module);
-                                game.writeMemoryVariable("InventoryAmmoUzis", 5000, module);
-                            }
-                            game.runFunction(module, "SoundEffect", 0x7, ptr(0x0), 2);
-                            return "Weapons added";
                     }
                 },
                 isDisabled: () => false
@@ -2281,10 +2268,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
             },
 
-            InitializeLevelAI: {
+            LoadLevelAssets: {
                 after: (module) => {
-                    console.log("InitializeLevelAI");
-
+                    console.log("LoadLevelAssets");
                     game.setLara();
 
                     if (userData.multiplayer) {
@@ -2510,12 +2496,22 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             },
 
             RenderLara: {
-                after: (module, entity) => {
+                after: (module, entity, z, y, sector) => {
                     if (isRendering || exiting) return;
                     if (!laraPointer || laraPointer.isNull()) return;
 
+                    const execVariables = game.getModuleAddresses(manifest.executable).variables;
+                    const moduleAddresses = game.getModuleAddresses(module);
+                    const moduleVariables = moduleAddresses.variables;
+                    const moduleBase = moduleBaseAddresses[module];
+                    
+                    let renderArgs = [entity, z, y, sector];
+                    if (moduleAddresses.hooks.RenderLara.Params.length === 1) {
+                        renderArgs = [entity];
+                    }
+
                     if (!userData.multiplayer) {
-                        game.runFunction(module, "RenderLara", laraPointer);
+                        game.runFunction(module, "RenderLara", ...renderArgs);
                         return;
                     }
 
@@ -2524,10 +2520,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         changedPlayerRoom = null;
                         return;
                     }
-
-                    const execVariables = game.getModuleAddresses(manifest.executable).variables;
-                    const moduleVariables = game.getModuleAddresses(module).variables;
-                    const moduleBase = moduleBaseAddresses[module];
 
                     let appearancePointer;
                     let gunFlagsPointer;
@@ -2590,6 +2582,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             game.runFunction(module, "Clone", laraPointer, playerConnection.laraPointer, ENTITY_SIZE);
                             game.runFunction(module, "Clone", appearancePointer, playerConnection.appearance, LARA_APPEARANCE_SIZE);
+                            if (game.hasFunction(module, "LoadOutfits")) {
+                                game.runFunction(module, "LoadOutfits");
+                            }
 
                             const hairLeftX = game.getMemoryVariable("LaraHairLeftX", module);
 
@@ -2603,7 +2598,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             // Ensure vanilla outfit index 
                             const outfit = appearancePointer.readS32();
-                            if (outfit < 1 || outfit > 14) {
+                            const maxOutfits = moduleAddresses.maxOutfits || 14;
+                            if (outfit < 1 || outfit > maxOutfits) {
                                 appearancePointer.writeS32(1);
                             }
 
@@ -2641,7 +2637,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     } else if ([51, 13].includes(modelId) && game.hasFunction(module, "RenderSkidoo")) {
                                         game.runFunction(module, "RenderSkidoo", playerConnection.vehicle);
                                     } else if ([14, 15, 16, 17, 19].includes(modelId) && game.hasFunction(module, "RenderEntity")) {
-                                        game.runFunction(module, "RenderEntity", playerConnection.vehicle);
+                                        let vehicleParams = [playerConnection.vehicle, z, y, sector];
+                                        if (moduleAddresses.hooks.RenderEntity.Params.length === 1) {
+                                            vehicleParams = [playerConnection.vehicle];
+                                        }
+                                        game.runFunction(module, "RenderEntity", ...vehicleParams);
                                     }
                                 }
                             }
@@ -2662,7 +2662,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             }
 
                             // Render her
-                            game.runFunction(module, "RenderLara", playerConnection.laraPointer);
+                            let otherRenderArgs = [playerConnection.laraPointer, z, y, sector];
+                            if (moduleAddresses.hooks.RenderLara.Params.length === 1) {
+                                otherRenderArgs = [playerConnection.laraPointer];
+                            }
+                            game.runFunction(module, "RenderLara", ...otherRenderArgs);
                         } catch (err) {
                             console.warn("Cannot render other lara: ", err.message);
                         }
@@ -2682,7 +2686,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         }
 
                         // Render
-                        game.runFunction(module, "RenderLara", laraPointer);
+                        game.runFunction(module, "RenderLara", ...renderArgs);
                     } catch (err) {
                         console.warn("Cannot render lara: ", err.message);
                     }

@@ -290,7 +290,7 @@ module.exports = {
             Params: ['pointer'],
             Return: 'void'
         },
-        InitializeLevelAI: {
+        LoadLevelAssets: {
             Address: "0xf8d90",
             Params: ['int'],
             Return: 'void',

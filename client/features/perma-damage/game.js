@@ -36,7 +36,7 @@ module.exports = {
             `
         },
 
-        InitializeLevelAI: {
+        LoadLevelAssets: {
             // language=JavaScript
             after: `
                 if (!userData['perma-damage']) return;

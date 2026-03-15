@@ -41,6 +41,5 @@ module.exports = {
                 "tomb5.dll": require("./patches/patch2-hotfix1/tr5")
             }
         }
-    },
-    "defaultPatch": "patch2-hotfix1"
+    }
 };

@@ -53,7 +53,7 @@ module.exports = {
         },
         MoreSettings: {
             Address: "0x577C97",
-            Type: "Int8"
+            Type: "UInt8"
         },
     },
 

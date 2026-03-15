@@ -3,7 +3,7 @@ module.exports = {
     template: `
         let rewind_isRewinding = false;
         const REWIND_MAX_FRAMES = 10000;
-        const REWIND_BUFFER_SIZE = 0x3800;
+        const REWIND_BUFFER_SIZE = 0x3800; // TODO: do we need to use the size from patch file? 0x6800 in latest patch...
         const REWIND_INPUT_SIZE = 0x4;
         const REWIND_FRAME_SIZE = REWIND_BUFFER_SIZE + REWIND_INPUT_SIZE;
         let rewind_rewindBuffer = null;
@@ -62,7 +62,7 @@ module.exports = {
                 }
             `
         },
-        InitializeLevelAI: {
+        LoadLevelAssets: {
             // language=JavaScript
             after: `
                 if (!userData['rewind-lara']) return;

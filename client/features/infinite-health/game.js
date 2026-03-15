@@ -40,7 +40,7 @@ module.exports = {
             `
         },
 
-        InitializeLevelAI: {
+        LoadLevelAssets: {
             // language=JavaScript
             after: `
                 if (!userData['infinite-health']) return;

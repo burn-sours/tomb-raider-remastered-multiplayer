@@ -17,14 +17,6 @@ module.exports = {
             Address: "0xe2ab8",
             Type: "Int32"
         },
-        MenuSelection: {
-            Address: "0xe2e54",
-            Type: "UInt16"
-        },
-        MenuState: {
-            Address: "0x4c8d62",
-            Type: "UInt16"
-        },
         WorldStateBackupPointer: {
             Address: "0x4c4e00",
             Type: "Block",
@@ -238,12 +230,6 @@ module.exports = {
             Return: 'void',
             Disable: true
         },
-        UpdateLaraAppearance: {
-            Address: "0x6f300",
-            Params: [],
-            Return: 'void',
-            Disable: false
-        },
         LoadedLevel: {
             Address: "0x16070",
             Params: ['int', 'pointer', 'pointer', 'pointer'],
@@ -254,7 +240,7 @@ module.exports = {
             Params: ['int', 'pointer', 'pointer', 'pointer'],
             Return: 'void'
         },
-        InitializeLevelAI: {
+        LoadLevelAssets: {
             Address: "0x2d1c0",
             Params: [],
             Return: 'void',
