@@ -69,7 +69,7 @@ module.exports = {
                 if (exiting || !lara || lara.isNull()) return;
 
                 const moduleAddresses = game.getModuleAddresses(module);
-                const moduleHooks = game.getModuleAddresses(module).hooks;
+                const moduleHooks = moduleAddresses.hooks;
                 
                 if (!moduleHooks.DrawHealth) return;
 
@@ -82,7 +82,7 @@ module.exports = {
                     if (hp > 1000) {
                         hp = 1000;
                     }
-                    let drawArgs = [hp / 10, 1];
+                    let drawArgs = [hp / 10, 0];
                     if (moduleAddresses.hooks.DrawHealth.Params.length === 1) {
                         drawArgs = [hp / 10];
                     }

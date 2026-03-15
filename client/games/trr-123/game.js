@@ -2746,7 +2746,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         if (hp > 1000) {
                             hp = 1000;
                         }
-                        let drawArgs = [hp / 10, 1];
+                        let drawArgs = [hp / 10, 0];
                         if (moduleAddresses.hooks.DrawHealth.Params.length === 1) {
                             drawArgs = [hp / 10];
                         }
