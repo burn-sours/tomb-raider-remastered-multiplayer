@@ -1,225 +1,229 @@
 /** tomb1.dll */
 module.exports = {
     /** tomb1.dll draw/graphics */
-    uiLayer: 0x39,
+    uiLayer: 0x46,
 
+    /* tomb1.dll max outfits */
+    challengeOutfits: true,
+    challengeOutfitsScrewed: true,
+    
     /** tomb1.dll variables */
     variables: {
         BinaryTick: {
-            Address: "0xf95b0",
+            Address: "0x",
             Type: "Int8"
         },
         LevelCompleted: {
-            Address: "0xF95A0",
+            Address: "0x121104",
             Type: "Int32"
         },
         LevelId: {
-            Address: "0xdea54",
+            Address: "0x100ab8",
             Type: "Int32"
         },
         WorldStateBackupPointer: {
-            Address: "0x4c0c20",
+            Address: "0x4ee480",
             Type: "Block",
-            Size: "0x3800"
+            Size: "0x6800"
         },
         ActionKeys: {
-            Address: "0x3edc94",
+            Address: "0x41a934",
             Type: "UInt32"
         },
         InterpolationFactor: {
-            Address: "0x29a0b0",
+            Address: "0x2c5798",
             Type: "UInt32"
         },
         NewGamePlus: {
-            Address: "0x4c124a",
+            Address: "0x4eeaaa",
             Type: "UInt8"
         },
         LaraId: {
-            Address: "0x30cca0",
+            Address: "0x3387a0",
             Type: "Int16"
         },
         LaraBase: {
-            Address: "0x30ce50",
+            Address: "0x338950",
             Type: "Int64"
         },
         LaraOxygen: {
-            Address: "0x30CCB6",
+            Address: "0x3387b6",
             Type: "Int16"
         },
-        LaraCircleShadow: {
-            Address: "0x30ce50",
+        LaraCircleShadow: { 
+            Address: "0x338950",
             Type: "Block",
             Pointer: "0xe20",
             Size: "0x30",
         },
         LaraBasicData: {
-            Address: "0x30ce50",
+            Address: "0x338950",
             Type: "Block",
             Pointer: "0x0",
             Size: "0x28",
         },
         LaraGunFlags: {
-            Address: "0x30cce0",
+            Address: "0x3387e0",
             Type: "UInt32",
         },
         LaraGunType: {
-            Address: "0x30CCA2",
+            Address: "0x3387a2",
             Type: "Int32",
         },
         LaraAimingEnemy: {
-            Address: "0x30cd90",
+            Address: "0x338890",
             Type: "UInt64",
         },
         LaraAimingYaw: {
-            Address: "0x30cd98",
+            Address: "0x338898",
             Type: "Int16",
         },
         LaraAimingPitch: {
-            Address: "0x30CD9A",
+            Address: "0x33889a",
             Type: "Int16",
         },
         LaraAimingLeft: {
-            Address: "0x30CDBC",
+            Address: "0x3388bc",
             Type: "Int16",
         },
         LaraAimingRight: {
-            Address: "0x30CDD4",
+            Address: "0x3388d4",
             Type: "Int16",
         },
         RoomType: {
-            Address: "0x30CCAC",
+            Address: "0x3387ac",
             Type: "Int16",
         },
         LaraHairLeftX: {
-            Address: "0x3458a0",
+            Address: "0x3713c0",
             Type: "Int32",
         },
         UiTextsCount: {
-            Address: "0x1003E0",
+            Address: "0x12173c",
             Type: "Int16",
         },
         UiDrawX: {
-            Address: "0x29a05c",
+            Address: "0x2c578c",
             Type: "Int32",
         },
         UiDrawWidth: {
-            Address: "0x29a078",
+            Address: "0x2c5790",
             Type: "Int32",
         },
         UiDrawHeight: {
-            Address: "0x29a138",
+            Address: "0x2c5818",
             Type: "Int32",
         },
         UiResWidth: {
-            Address: "0x29a0e4",
+            Address: "0x2c57c4",
             Type: "Int32",
         },
         UiResHeight: {
-            Address: "0x29a0e8",
+            Address: "0x2c57c8",
             Type: "Int32",
         },
         CameraFixedX: {
-            Address: "0x29a080",
+            Address: "0x2c5740",
             Type: "Int32",
         },
         CameraFixedY: {
-            Address: "0x29a084",
+            Address: "0x2c5744",
             Type: "Int32",
         },
         CameraFixedZ: {
-            Address: "0x29a088",
+            Address: "0x2c5748",
             Type: "Int32",
         },
-        CameraX: {
-            Address: "0x29A10C",
+        CameraX: { 
+            Address: "0x2c57ec",
             Type: "Int32",
         },
         CameraY: {
-            Address: "0x29A11C",
+            Address: "0x2c57fc",
             Type: "Int32",
         },
         CameraZ: {
-            Address: "0x29A12C",
+            Address: "0x2c580c",
             Type: "Int32",
         },
-        CameraYaw: {
-            Address: "0x29a08e",
+        CameraYaw: { 
+            Address: "0x2c576e",
             Type: "UInt16",
         },
-        CameraPitch: {
-            Address: "0x29a08c",
+        CameraPitch: { 
+            Address: "0x2c576c",
             Type: "UInt16",
         },
         CameraRightX: {
-            Address: "0x29A100",
+            Address: "0x2c57e0",
             Type: "Int32",
         },
         CameraRightY: {
-            Address: "0x29A104",
+            Address: "0x2c57e4",
             Type: "Int32",
         },
         CameraRightZ: {
-            Address: "0x29A108",
+            Address: "0x2c57e8",
             Type: "Int32",
         },
         CameraUpX: {
-            Address: "0x29A110",
+            Address: "0x2C57F0",
             Type: "Int32",
         },
         CameraUpY: {
-            Address: "0x29A114",
+            Address: "0x2C57F4",
             Type: "Int32",
         },
         CameraUpZ: {
-            Address: "0x29A118",
+            Address: "0x2C57F8",
             Type: "Int32",
         },
         CameraForwardX: {
-            Address: "0x29A120",
+            Address: "0x2C5800",
             Type: "Int32",
         },
         CameraForwardY: {
-            Address: "0x29A124",
+            Address: "0x2C5804",
             Type: "Int32",
         },
         CameraForwardZ: {
-            Address: "0x29A128",
+            Address: "0x2C5808",
             Type: "Int32",
         },
         CameraFov: {
-            Address: "0x29A130",
-            Type: "Int32",
+            Address: "0x2c5810",
+            Type: "Int32"
         },
         IsInGameScene: {
-            Address: "0xDEA78",
-            Type: "Int32",
+            Address: "0x100e50",
+            Type: "Int32"
         },
         Entities: {
-            Address: "0x3edf98",
-            Type: "Pointer",
+            Address: "0x41ac38",
+            Type: "Pointer"
         },
         EntitiesCount: {
-             Address: "0x3ede50",
+            Address: "0x3ea588",
             Type: "Int16"
         },
         Rooms: {
-            Address: "0x3edf88",
+            Address: "0x41ac28",
             Type: "Pointer"
         },
         RoomsCount: {
-            Address: "0x3EDE50",
+            Address: "0x41aaf0",
             Type: "Int16"
         },
-        OgModelsOffset: "0x3edc88",
-        OgModelsWeaponOffset2: "0x3ef1b2",
-        OgModelsWeaponOffset: "0x3edfc2",
-        OgModelsAngwyOffset: "0x3F03A2",
-        OgModelsFace: "0x30cd78",
-        OgModelsLeftHand: "0x30cd70",
-        OgModelsRightHand: "0x30cd58",
-        OgModelsLeftPocket: "0x30cd10",
-        OgModelsRightPocket: "0x30cd28",
-        OgModelsBackPocket: "0x30cd40"
+        OgModelsOffset: "0x41a928",
+        OgModelsWeaponOffset2: "0x41be62",
+        OgModelsWeaponOffset: "0x41ac62",
+        OgModelsAngwyOffset: "0x41d062",
+        OgModelsFace: "0x338878",
+        OgModelsLeftHand: "0x338870",
+        OgModelsRightHand: "0x338858",
+        OgModelsLeftPocket: "0x338810",
+        OgModelsRightPocket: "0x338828",
+        OgModelsBackPocket: "0x338840"
     },
 
     ogGunMap: {
@@ -228,151 +232,156 @@ module.exports = {
         backPocket: null,
         flare: null,
         twoHanded: [],
-        stride: "0x47c"
+        stride: "0x480"
     },
 
     /** tomb1.dll hooks */
     hooks: {
         RenderLara: {
-            Address: "0xee40",
-            Params: ['pointer'],
+            Address: "0xfc10",
+            Params: ['pointer','pointer','pointer','pointer'],
             Return: 'void',
             Disable: true
         },
         LoadedLevel: {
-            Address: "0x15ea0",
+            Address: "0x16de0",
             Params: ['int', 'pointer', 'pointer', 'pointer'],
             Return: 'pointer'
         },
         EndLevelSeq: {
-            Address: "0x163d0",
-            Params: ['int', 'pointer', 'pointer', 'pointer'],
+            Address: "0x17360",
+            Params: ['int'],
             Return: 'void'
         },
         LoadLevelAssets: {
-            Address: "0x2cac0",
-            Params: [],
+            Address: "0x40310",
+            Params: ['int', 'pointer', 'pointer', 'pointer'],
             Return: 'void',
             Disable: false
         },
         SoundEffect: {
-            Address: "0x78ff0",
+            Address: "0x867d0",
             Params: ['int', 'pointer', 'int'],
             Return: 'int',
             Disable: false
         },
         RenderUI: {
-            Address: "0x19780",
+            Address: "0x1ae10",
             Params: [],
-            Return: 'void',
+            Return: 'int',
             Disable: false
         },
         Menu: {
-            Address: "0x1b850",
+            Address: "0x1d1d0",
             Params: ['int'],
             Return: 'pointer',
             Disable: false
         },
         Clone: {
-            Address: "0x8e780",
+            Address: "0xb9980",
             Params: ['pointer', 'pointer', 'uint64'],
             Return: 'void',
             Disable: false
         },
         AddText: {
-            Address: "0x7be50",
+            Address: "0x897a0",
             Params: ['int', 'int', 'int', 'pointer'],
             Return: 'pointer',
             Disable: false
         },
         DrawSetup: {
-            Address: "0x50460",
+            Address: "0x5bbf0",
             Params: ['int','pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
-            Address: "0x51320",
+            Address: "0x5ca70",
             Params: ['int','int','int','int','uint64','uint64'],
             Return: 'void',
             Disable: false
         },
         DrawHealth: {
-            Address: "0x62740",
+            Address: "0x6f0b0",
             Params: ['int'],
             Return: 'void',
             Disable: false
         },
         RoomChange: {
-            Address: "0x1eab0",
+            Address: "0x206f0",
             Params: ['int','int'],
             Return: 'void',
             Disable: false
         },
         CalculateYawPitch: {
-            Address: "0x664c0",
+            Address: "0x72f30",
             Params: ['int','int','int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         GetLOS: {
-            Address: "0x4fcc0",
+            Address: "0x58600",
             Params: ['pointer', 'pointer'],
             Return: 'int',
             Disable: false
         },
         TraceRangeX: {
-            Address: "0x4f900",
+            Address: "0x58240",
             Params: ['pointer', 'pointer'],
             Return: 'int',
             Disable: false
         },
         TraceRangeZ: {
-            Address: "0x4f540",
+            Address: "0x57e80",
             Params: ['pointer', 'pointer'],
             Return: 'int',
             Disable: false
         },
         CheckAim: {
-            Address: "0x26520",
+            Address: "0x28510",
             Params: ['pointer'],
             Return: 'void',
             Disable: false
         },
         OnDamage: {
-            Address: "0x436e0",
+            Address: "0x47c40",
             Params: ['pointer', 'int', 'int'],
             Return: 'void',
             Disable: false
         },
         SimulateLaraHair: {
-            Address: "0x4c8c0",
+            Address: "0x55050",
             Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },
         RecordWorldState: {
-            Address: "0x37ef0",
+            Address: "0x3b760",
             Params: ['int'],
             Return: 'void',
             Disable: false
         },
         RestoreWorldState: {
-            Address: "0x38670",
+            Address: "0x3c0d0",
             Params: ['int'],
             Return: 'void',
             Disable: false
         },
         ProcessDemo: {
-            Address: "0x49d50",
+            Address: "0x51c40",
             Params: [],
             Return: 'void',
         },
         CanInterpolateCamera: {
-            Address: "0x66200",
+            Address: "0x72c60",
             Params: [],
             Return: 'int',
             Disable: true,
+        },
+        LoadOutfits: {
+            Address: "0x74470",
+            Params: [],
+            Return: 'void'
         }
     },
 

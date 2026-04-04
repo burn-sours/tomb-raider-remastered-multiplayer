@@ -47,7 +47,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let hairLeftBackup = null;
         let hairRightBackup = null;
         let gunTypesBackup = null;
-        
+
         let isRendering = false;
         let isSimulatingHair = false;
         let laraPointer = null;
@@ -57,9 +57,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let lastCapturedSFX = {};
         let levelLastLoadedId = null;
         let levelIsRestarting = false;
-        let multiplayerText = "Burn's Multiplayer v2.2";
-        let modsText = "Burn's Mods v2.2";
-        let permaDamageText = "Burn's Perma-damage v2.2";
+        let multiplayerText = "Burn's Multiplayer v2.3";
+        let modsText = "Burn's Mods v2.3";
+        let permaDamageText = "Burn's Perma-damage v2.3";
         let levelsInfo = [];
 
         // Mod menu system state
@@ -135,29 +135,29 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 label: () => "Change Outfit",
                 hasSubmenu: true,
                 getSubmenuItems: () => [
-                    { id: 0, label: "Classic" },
-                    { id: 1, label: "FMV" },
-                    { id: 2, label: "Young 1" },
-                    { id: 3, label: "Young 2" },
-                    { id: 4, label: "Camouflage" },
-                    { id: 5, label: "Deep Dive" },
-                    { id: 6, label: "Catsuit 1" },
-                    { id: 7, label: "Catsuit 2" },
-                    { id: 8, label: "X-ray" },
-                    { id: 10, label: "Classic TR1" },
-                    { id: 11, label: "Training TR1" },
-                    { id: 12, label: "Bloody TR1" },
-                    { id: 13, label: "Classic TR2" },
-                    { id: 14, label: "Training TR2" },
-                    { id: 15, label: "Wetsuit TR2" },
-                    { id: 16, label: "Bomber TR2" },
-                    { id: 17, label: "Bathrobe TR2" },
-                    { id: 18, label: "Vegas TR2" },
-                    { id: 19, label: "Training TR3" },
-                    { id: 20, label: "Nevada TR3" },
-                    { id: 21, label: "Pacific TR3" },
-                    { id: 22, label: "Catsuit TR3" },
-                    { id: 23, label: "Antarctica TR3" }
+                    {id: 0, label: "Classic"},
+                    {id: 1, label: "FMV"},
+                    {id: 2, label: "Young 1"},
+                    {id: 3, label: "Young 2"},
+                    {id: 4, label: "Camouflage"},
+                    {id: 5, label: "Deep Dive"},
+                    {id: 6, label: "Catsuit 1"},
+                    {id: 7, label: "Catsuit 2"},
+                    {id: 8, label: "X-ray"},
+                    {id: 10, label: "Classic TR1"},
+                    {id: 11, label: "Training TR1"},
+                    {id: 12, label: "Bloody TR1"},
+                    {id: 13, label: "Classic TR2"},
+                    {id: 14, label: "Training TR2"},
+                    {id: 15, label: "Wetsuit TR2"},
+                    {id: 16, label: "Bomber TR2"},
+                    {id: 17, label: "Bathrobe TR2"},
+                    {id: 18, label: "Vegas TR2"},
+                    {id: 19, label: "Training TR3"},
+                    {id: 20, label: "Nevada TR3"},
+                    {id: 21, label: "Pacific TR3"},
+                    {id: 22, label: "Catsuit TR3"},
+                    {id: 23, label: "Antarctica TR3"}
                 ],
                 onSubmenuConfirm: (submenuItem, module) => {
                     if (submenuItem) {
@@ -190,7 +190,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     for (const [id, name] of Object.entries(levelNames)) {
                         const levelId = parseInt(id);
                         if (game.isLevelSupported(levelId) && !game.isLevelMenu(levelId)) {
-                            levels.push({ id: levelId, label: name });
+                            levels.push({id: levelId, label: name});
                         }
                     }
                     levels.sort((a, b) => a.id - b.id);
@@ -213,8 +213,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 label: () => "Cheats",
                 hasSubmenu: true,
                 getSubmenuItems: () => [
-                    { id: "health", label: "Fill Health" },
-                    { id: "oxygen", label: "Fill Oxygen" }
+                    {id: "health", label: "Fill Health"},
+                    {id: "oxygen", label: "Fill Oxygen"}
                 ],
                 onSubmenuConfirm: (submenuItem, module) => {
                     if (!submenuItem) return;
@@ -379,7 +379,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     const outfitId = parseInt(outfitPointerAddress.sub(outfitsPointer).toString()) / LARA_OUTFIT_SIZE;
                     translatedAppearanceBackup.add(0x0).writePointer(ptr(outfitId));
-                    
+
                     const faceId = parseInt(facePointerAddress.sub(facesPointer).toString()) / LARA_FACE_SIZE;
                     translatedAppearanceBackup.add(0x8).writePointer(ptr(faceId));
 
@@ -442,7 +442,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 if (!lara || lara.isNull()) return null;
 
                 const moduleVariables = game.getModuleAddresses(game.getGameModule()).variables;
-                
+
                 const basePtr = ptr(lara.add(moduleVariables.LaraBasicData.Pointer));
                 const data = new Uint8Array(LARA_BASIC_SIZE);
                 data.set(new Uint8Array(game.readByteArray(basePtr, LARA_BASIC_SIZE - 0x2)), 0);
@@ -454,7 +454,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             getLaraRoomIdBackup: () => {
                 const lara = game.getLara();
                 if (!lara || lara.isNull()) return null;
-                
+
                 return lara.add(ENTITY_ROOM).readS16();
             },
 
@@ -549,7 +549,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     if (!laraBackup) {
                         laraBackup = Memory.alloc(ENTITY_SIZE);
                     }
-                    
+
                     if (!laraPointer || laraPointer.isNull()) {
                         laraPointer = null;
                     } else if (cloneBackup) {
@@ -637,10 +637,10 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     cloneLaraSlot.used = true;
 
                     game.runFunction(
-                        module, 
-                        "Clone", 
-                        cloneLaraPointer, 
-                        lara, 
+                        module,
+                        "Clone",
+                        cloneLaraPointer,
+                        lara,
                         ENTITY_SIZE
                     );
 
@@ -725,7 +725,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                 const modelsOffset = moduleBase.add(moduleVariables.OgModelsOffset).readPointer();
                 const ogFaceModel = moduleBase.add(moduleVariables.OgModelsFace);
-                
+
                 if (angry) {
                     const angwyModelIndex = moduleBase.add(moduleVariables.OgModelsAngwyOffset).readS16();
                     ogFaceModel.writePointer(
@@ -951,17 +951,17 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 const cameraForwardX = game.readMemoryVariable("CameraForwardX", module);
                 const cameraForwardY = game.readMemoryVariable("CameraForwardY", module);
                 const cameraForwardZ = game.readMemoryVariable("CameraForwardZ", module);
-                
+
                 const cameraSpaceX = directionZ * cameraRightZ + directionY * cameraRightY + directionX * cameraRightX;
                 const cameraSpaceY = directionX * cameraUpX + directionZ * cameraUpZ + directionY * cameraUpY;
                 const cameraSpaceZ = directionX * cameraForwardX + directionZ * cameraForwardZ + directionY * cameraForwardY;
-                
+
                 const fovScaled = game.readMemoryVariable("CameraFov", module);
                 let fovResolution = game.readMemoryVariable("ResolutionH", manifest.executable);
 
                 const screenX = (screenHeight * (cameraSpaceX / (cameraSpaceZ / fovScaled) + resolutionWidth)) / fovResolution;
                 const screenY = (screenHeight * (cameraSpaceY / (cameraSpaceZ / fovScaled) + resolutionHeight)) / fovResolution;
-                
+
                 return {x: screenX, y: screenY};
             },
 
@@ -1063,24 +1063,21 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 game.writeByteArray(lara.add(ENTITY_X),
                     game.readByteArray(otherLara.add(ENTITY_X), ENTITY_POS_SIZE));
 
-                const roomId = otherLara.add(ENTITY_ROOM).readS16();
-                if (!isRendering || isRendering === lara) {
-                    game.runFunction(module, "RoomChange",
-                        game.readMemoryVariable("LaraId", module), roomId);
-                } else {
-                    changedPlayerRoom = roomId;
-                }
+                changedPlayerRoom = otherLara.add(ENTITY_ROOM).readS16();
 
                 send({
                     event: "multiplayer:sendChat",
-                    args: { text: userData.name + " teleported to " + playerConnection.name, chatAction: true }
+                    args: {text: userData.name + " teleported to " + playerConnection.name, chatAction: true}
                 });
             },
 
             isModMenuTimedOut: () => modMenuState.isOpen && (Date.now() - modMenuState.lastInteraction > MOD_MENU_TIMEOUT),
 
             renderModMenu: (module) => {
-                if (game.isModMenuTimedOut()) { game.closeModMenu(); return; }
+                if (game.isModMenuTimedOut()) {
+                    game.closeModMenu();
+                    return;
+                }
                 if (!modMenuState.isOpen) return;
 
                 const moduleAddresses = game.getModuleAddresses(module);
@@ -1099,8 +1096,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     title = typeof selectedItem.label === 'function' ? selectedItem.label() : selectedItem.label;
                     const submenuItems = selectedItem.getSubmenuItems();
                     items = submenuItems.length > 0
-                        ? submenuItems.map(si => ({ text: si.label, disabled: false }))
-                        : [{ text: "(No items)", disabled: true }];
+                        ? submenuItems.map(si => ({text: si.label, disabled: false}))
+                        : [{text: "(No items)", disabled: true}];
                 } else {
                     items = MOD_MENU_ITEMS.map(mi => ({
                         text: typeof mi.label === 'function' ? mi.label() : mi.label,
@@ -1176,7 +1173,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     game.drawTextLabel(prefix + item.text + suffix, 0, false, "center", 0, itemY, 0.3, 0.3);
                 }
             },
-            
+
             enterPhotoMode: () => {
                 game.closeChat();
             },
@@ -1522,9 +1519,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         const flameWeapons = [0x12];
                         if (flameWeapons.includes(pvpWeapon)) {
                             game.playExplosionGraphic(
-                                lara.add(ENTITY_X).readS32(), 
-                                lara.add(ENTITY_Y).readS32() + -500, 
-                                lara.add(ENTITY_Z).readS32(), 
+                                lara.add(ENTITY_X).readS32(),
+                                lara.add(ENTITY_Y).readS32() + -500,
+                                lara.add(ENTITY_Z).readS32(),
                                 lara.add(ENTITY_ROOM).readU16()
                             );
                         }
@@ -1619,7 +1616,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     keycode = parseInt(keycode, 16);
 
                     const gameModule = game.getGameModule();
-                    
+
                     const currentTime = Date.now();
                     if (!(currentTime - (lastKeyPressTime[keycode] || 0) >= 175)) {
                         return;
@@ -1900,18 +1897,18 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 const smoothX = lerp(oldPos.readS32(), currPos.readS32());
                                 const smoothY = lerp(oldPos.add(4).readS32(), currPos.add(4).readS32());
                                 const smoothZ = lerp(oldPos.add(8).readS32(), currPos.add(8).readS32());
-                                
+
                                 isFacing = game.worldToScreenPos(
                                     smoothX,
                                     smoothY + yOffset,
                                     smoothZ,
                                     playerConnection.laraPointer.add(ENTITY_ROOM).readS16()
                                 );
-                                
+
                                 if (!isFacing || !("x" in isFacing && "y" in isFacing)) {
                                     continue;
                                 }
-                                
+
                                 x = Math.floor(x + isFacing.x) - 10;
                                 y = Math.floor(isFacing.y - 10);
                             } else {
@@ -1984,7 +1981,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     const screenX = 5 + game.readMemoryVariable("UiDrawX", module);
                     if (chatOpened) {
                         game.runFunction(
-                            module, 
+                            module,
                             "DrawRect",
                             screenX + 1,
                             screenHeight - 54,
@@ -1994,7 +1991,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             0x90000000
                         );
                         game.runFunction(
-                            module, 
+                            module,
                             "DrawRect",
                             screenX,
                             screenHeight - 54,
@@ -2004,7 +2001,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             0xFF000000
                         );
                         game.runFunction(
-                            module, 
+                            module,
                             "DrawRect",
                             screenX + 150,
                             screenHeight - 54,
@@ -2014,7 +2011,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             0xFF000000
                         );
                         game.runFunction(
-                            module, 
+                            module,
                             "DrawRect",
                             screenX,
                             screenHeight - 55,
@@ -2024,7 +2021,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             0xFF000000
                         );
                         game.runFunction(
-                            module, 
+                            module,
                             "DrawRect",
                             screenX,
                             screenHeight - 14,
@@ -2034,7 +2031,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             0xFF000000
                         );
                         game.runFunction(
-                            module, 
+                            module,
                             "DrawRect",
                             screenX + 1,
                             screenHeight - 13,
@@ -2225,10 +2222,10 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 playerConnection.resetHair = false;
                                 game.runFunction(module, "ResetLaraHair");
                             }
-                            
+
                             if (shouldUpdateHair) {
                                 playerConnection.hasFreshRenderState = false;
-                                
+
                                 game.runFunction(module, "SimulateLaraHair", 0, 0);
                                 if (!isRenderingModern || isYoungLara) {
                                     game.runFunction(module, "SimulateLaraHair", 0, 1);
@@ -2268,7 +2265,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 const interpolate = Math.min(256, ((Date.now() - playerConnection.timeLastData) / 33) * 256);
                                 game.writeMemoryVariable("InterpolationFactor", interpolate, module);
                             }
-                            
+
                             // Render her
                             game.runFunction(module, "RenderLara", playerConnection.laraPointer);
                         } catch (err) {
@@ -2559,7 +2556,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     if (!projectile || projectile.isNull()) return;
 
                     processingProjectiles.push(dartId);
-                    
+
                     const projectileX = projectile.add(ENTITY_X).readS32();
                     const projectileY = projectile.add(ENTITY_Y).readS32();
                     const projectileZ = projectile.add(ENTITY_Z).readS32();
@@ -2615,15 +2612,15 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             if (playerConnection.health <= 0) continue;
 
                             const bound = game.runFunction(module, "GetEntityBox", playerConnection.laraPointer);
-                            
+
                             const hit = game.runFunction(
-                                module, 
-                                "DetectHit", 
-                                fromPosX, 
-                                toPosX, 
-                                bound, 
-                                playerConnection.laraPointer.add(ENTITY_X), 
-                                hitPos, 
+                                module,
+                                "DetectHit",
+                                fromPosX,
+                                toPosX,
+                                bound,
+                                playerConnection.laraPointer.add(ENTITY_X),
+                                hitPos,
                                 -1
                             );
 
@@ -2641,7 +2638,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     }
                 }
             },
-            
+
             SimulateLaraHair: {
                 before: (module, mode, flags) => {
                     isSimulatingHair = true;

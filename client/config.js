@@ -9,6 +9,6 @@ module.exports = {
         /**
          * Client major version
          */
-        major: 195157399,
+        major: 195158558,
     }
 };

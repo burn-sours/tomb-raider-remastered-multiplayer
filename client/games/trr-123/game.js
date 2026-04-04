@@ -70,9 +70,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let otherPlayers = [];
         let lastCapturedSFX = {};
         let topLeftLabel = null;
-        let multiplayerText = "Burn's Multiplayer v2.2";
-        let modsText = "Burn's Mods v2.2";
-        let permaDamageText = "Burn's Perma-damage v2.2";
+        let multiplayerText = "Burn's Multiplayer v2.3";
+        let modsText = "Burn's Mods v2.3";
+        let permaDamageText = "Burn's Perma-damage v2.3";
         let topCenterLabel = null;
 
         // Mod menu system state
@@ -760,7 +760,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             setGunsOG: (leftGun, rightGun) => {
                 const module = game.getGameModule();
-                const moduleVariables = game.getModuleAddresses(module).variables;
+                const moduleAddresses = game.getModuleAddresses(module);
+                const moduleVariables = moduleAddresses.variables;
+                const ogGunMappings = moduleAddresses.ogGunMap;
                 const moduleBase = moduleBaseAddresses[module];
                 const gun = leftGun || rightGun;
                 const modelsOffset = moduleBase.add(moduleVariables.OgModelsOffset).readPointer();
@@ -770,32 +772,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 const weaponModelIndexEmpty = weaponModelIndexAddress.readS16();
 
                 if (gun) {
-                    let gunIndex;
-                    let flareIndex = null;
-                    let twoHandedIndices = [];
-                    if (module === "tomb1.dll") {
-                        gunIndex = {"11": 2, "13": 4, "14": 6, "12": 8}[gun];
-                    } else if (module === "tomb2.dll") {
-                        gunIndex = {"11": 2, "12": 10, "13": 6, "15": 8, "17": 12, "20": 14, "19": 16, "22": 18}[gun];
-                        flareIndex = 18;
-                        twoHandedIndices = [12, 14, 16];
-                    } else if (module === "tomb3.dll") {
-                        flareIndex = 20;
-                        gunIndex = {
-                            "11": 2,
-                            "22": flareIndex,
-                            "12": 10,
-                            "13": 6,
-                            "16": 8,
-                            "18": 12,
-                            "21": 14,
-                            "20": 16,
-                            "19": 18
-                        }[gun];
-                        twoHandedIndices = [6, 8, 12, 14, 16, 18];
-                    }
+                    let gunIndex = ogGunMappings.guns[gun];
+                    let flareIndex = ogGunMappings.flare || null;
+                    let twoHandedIndices = ogGunMappings.twoHanded || null;
 
-                    const weaponModelIndex = weaponModelIndexAddress.add(gunIndex * parseInt("0x47c", 16)).readS16();
+                    const weaponModelIndex = weaponModelIndexAddress.add(gunIndex * parseInt(ogGunMappings.stride, 16)).readS16();
 
                     if (gunIndex === flareIndex) {
                         // flare requires empty right hand
@@ -830,24 +811,19 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             setPocketsOG: (leftGun, rightGun) => {
                 const module = game.getGameModule();
-                const moduleVariables = game.getModuleAddresses(module).variables;
+                const moduleAddresses = game.getModuleAddresses(module);
+                const moduleVariables = moduleAddresses.variables;
+                const ogGunMappings = moduleAddresses.ogGunMap;
                 const moduleBase = moduleBaseAddresses[module];
                 const modelsOffset = moduleBase.add(moduleVariables.OgModelsOffset).readPointer();
                 const weaponModelIndexAddress = moduleBase.add(moduleVariables.OgModelsWeaponOffset);
                 const ogLeftPocketModel = moduleBase.add(moduleVariables.OgModelsLeftPocket);
                 const ogRightPocketModel = moduleBase.add(moduleVariables.OgModelsRightPocket);
 
-                let gunMap = {};
-                if (module === "tomb1.dll") {
-                    gunMap = {"1": 2, "4": 6, "2": 8};
-                } else if (module === "tomb2.dll") {
-                    gunMap = {"1": 2, "4": 6, "2": 8};
-                } else if (module === "tomb3.dll") {
-                    gunMap = {"1": 2, "2": 10, "6": 8};
-                }
+                let gunMap = ogGunMappings.pockets;
 
                 if (leftGun && String(leftGun) in gunMap) {
-                    const weaponModelIndex = weaponModelIndexAddress.add(gunMap[String(leftGun)] * parseInt("0x47c", 16)).readS16();
+                    const weaponModelIndex = weaponModelIndexAddress.add(gunMap[String(leftGun)] * parseInt(ogGunMappings.stride, 16)).readS16();
                     ogLeftPocketModel.writePointer(
                         modelsOffset.add(0x8).add(weaponModelIndex * 8).readPointer()
                     );
@@ -858,7 +834,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
 
                 if (rightGun && String(rightGun) in gunMap) {
-                    const weaponModelIndex = weaponModelIndexAddress.add(gunMap[String(rightGun)] * parseInt("0x47c", 16)).readS16();
+                    const weaponModelIndex = weaponModelIndexAddress.add(gunMap[String(rightGun)] * parseInt(ogGunMappings.stride, 16)).readS16();
                     ogRightPocketModel.writePointer(
                         modelsOffset.add(0x20).add(weaponModelIndex * 8).readPointer()
                     );
@@ -871,7 +847,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             setPocketBackOG: (weaponId = 3) => {
                 const module = game.getGameModule();
-                const moduleVariables = game.getModuleAddresses(module).variables;
+                const moduleAddresses = game.getModuleAddresses(module);
+                const moduleVariables = moduleAddresses.variables;
+                const ogGunMappings = moduleAddresses.ogGunMap;
                 const moduleBase = moduleBaseAddresses[module];
 
                 if (module === "tomb1.dll") {
@@ -888,15 +866,10 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             modelsOffset.add(0x38).add(weaponModelIndex * 8).readPointer()
                         );
                     }
-                } else if (module === "tomb2.dll") {
-                    // TR2 back model uses index
+                } else {
+                    // TR2 + TR3 use index
                     const ogBackPocketModel = moduleBase.add(moduleVariables.OgModelsBackPocket);
-                    const backGun = {"0": 0, "3": 3, "7": 6, "9": 8}[weaponId];
-                    backGun !== undefined && ogBackPocketModel.writeS16(backGun);
-                } else if (module === "tomb3.dll") {
-                    // TR3 back model uses index
-                    const ogBackPocketModel = moduleBase.add(moduleVariables.OgModelsBackPocket);
-                    const backGun = {"0": 0, "3": 3, "8": 6, "9": 9, "10": 8, "11": 7}[weaponId];
+                    const backGun = ogGunMappings.backPocket[weaponId];
                     backGun !== undefined && ogBackPocketModel.writeS16(backGun);
                 }
             },
@@ -1174,12 +1147,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 game.writeByteArray(lara.add(ENTITY_X),
                     game.readByteArray(otherLara.add(ENTITY_X), ENTITY_POS_SIZE));
 
-                const roomId = otherLara.add(ENTITY_ROOM).readS16();
-                if (!isRendering || isRendering === lara) {
-                    game.runFunction(module, "RoomChange", game.readMemoryVariable("LaraId", module), roomId);
-                } else {
-                    changedPlayerRoom = roomId;
-                }
+                changedPlayerRoom = otherLara.add(ENTITY_ROOM).readS16();
 
                 send({
                     event: "multiplayer:sendChat",
@@ -2298,7 +2266,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     name: null,
                                     text: "Welcome to Tomb Raider Multiplayer.  [ko-fi.com/burn_sours]"
                                 },
-                                {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93 & @gizzy_91"},
+                                {
+                                    time: Date.now(),
+                                    name: null,
+                                    text: "Type /quiz for trivia - credits to @joef93 & @gizzy_91"
+                                },
                                 {
                                     time: Date.now(),
                                     name: null,
@@ -2511,7 +2483,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     const moduleAddresses = game.getModuleAddresses(module);
                     const moduleVariables = moduleAddresses.variables;
                     const moduleBase = moduleBaseAddresses[module];
-                    
+
                     let renderArgs = [entity, z, y, sector];
                     if (moduleAddresses.hooks.RenderLara.Params.length === 1) {
                         renderArgs = [entity];
@@ -2523,7 +2495,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     }
 
                     if (changedPlayerRoom != null) {
-                        game.runFunction(module, "RoomChange", game.readMemoryVariable("LaraId", module), changedPlayerRoom);
+                        let roomChangeParams = [game.readMemoryVariable("LaraId", module), changedPlayerRoom, ptr(0x0)];
+                        if (moduleAddresses.hooks.RoomChange.Params.length === 2) {
+                            roomChangeParams = [roomChangeParams[0], roomChangeParams[1]];
+                        }
+                        game.runFunction(module, "RoomChange", ...roomChangeParams);
                         changedPlayerRoom = null;
                         return;
                     }
@@ -2589,9 +2565,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             game.runFunction(module, "Clone", laraPointer, playerConnection.laraPointer, ENTITY_SIZE);
                             game.runFunction(module, "Clone", appearancePointer, playerConnection.appearance, LARA_APPEARANCE_SIZE);
-                            if (game.hasFunction(module, "LoadOutfits")) {
-                                game.runFunction(module, "LoadOutfits");
-                            }
 
                             const hairLeftX = game.getMemoryVariable("LaraHairLeftX", module);
 
@@ -2605,9 +2578,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                             // Ensure vanilla outfit index 
                             const outfit = appearancePointer.readS32();
-                            const maxOutfits = moduleAddresses.challengeOutfits ? 44 : 14;
+                            const maxOutfits = moduleAddresses.challengeOutfits && !moduleAddresses.challengeOutfitsScrewed ? 44 : 14;
                             if (outfit < 1 || outfit > maxOutfits) {
                                 appearancePointer.writeS32(1);
+                            }
+
+                            if (game.hasFunction(module, "LoadOutfits")) {
+                                game.runFunction(module, "LoadOutfits");
                             }
 
                             // Set gun flags
@@ -2639,12 +2616,18 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 const modelId = playerConnection.vehicle.add(ENTITY_MODEL).readS16();
 
                                 if (playerConnection.vehicleLoaded) {
+                                    let vehicleParams = [playerConnection.vehicle, z, y, sector];
                                     if ([14].includes(modelId) && game.hasFunction(module, "RenderBoat")) {
-                                        game.runFunction(module, "RenderBoat", playerConnection.vehicle);
+                                        if (moduleAddresses.hooks.RenderBoat.Params.length === 1) {
+                                            vehicleParams = [playerConnection.vehicle];
+                                        }
+                                        game.runFunction(module, "RenderBoat", ...vehicleParams);
                                     } else if ([51, 13].includes(modelId) && game.hasFunction(module, "RenderSkidoo")) {
-                                        game.runFunction(module, "RenderSkidoo", playerConnection.vehicle);
+                                        if (moduleAddresses.hooks.RenderSkidoo.Params.length === 1) {
+                                            vehicleParams = [playerConnection.vehicle];
+                                        }
+                                        game.runFunction(module, "RenderSkidoo", ...vehicleParams);
                                     } else if ([14, 15, 16, 17, 19].includes(modelId) && game.hasFunction(module, "RenderEntity")) {
-                                        let vehicleParams = [playerConnection.vehicle, z, y, sector];
                                         if (moduleAddresses.hooks.RenderEntity.Params.length === 1) {
                                             vehicleParams = [playerConnection.vehicle];
                                         }

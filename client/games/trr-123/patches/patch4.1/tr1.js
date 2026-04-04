@@ -222,6 +222,15 @@ module.exports = {
         OgModelsBackPocket: "0x310f20"
     },
 
+    ogGunMap: {
+        guns: {"11": 2, "13": 4, "14": 6, "12": 8},
+        pockets: {"1": 2, "4": 6, "2": 8},
+        backPocket: null,
+        flare: null,
+        twoHanded: [],
+        stride: "0x47c"
+    },
+
     /** tomb1.dll hooks */
     hooks: {
         RenderLara: {

@@ -229,6 +229,15 @@ module.exports = {
         OgModelsRightPocket: "0x346048",
         OgModelsBackPocket: "0x345fec",
     },
+
+    ogGunMap: {
+        guns: {"11": 2, "12": 10, "13": 6, "15": 8, "17": 12, "20": 14, "19": 16, "22": 18},
+        pockets: {"1": 2, "4": 6, "2": 8},
+        backPocket: {"0": 0, "3": 3, "7": 6, "9": 8},
+        flare: 18,
+        twoHanded: [12, 14, 16],
+        stride: "0x47c"
+    },
     
     /** tomb2.dll hooks */
     hooks: {
