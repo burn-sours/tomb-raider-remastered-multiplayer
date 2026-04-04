@@ -51,10 +51,6 @@ module.exports = {
             Address: "0x585F38",
             Type: "Int32"
         },
-        MoreSettings: {
-            Address: "0x585F67",
-            Type: "UInt8"
-        },
     },
 
     /** tomb456.exe hooks */

@@ -51,9 +51,6 @@ This is a free, open-source launcher that brings **multiplayer** and **customiza
   - Quicker pushblock movement
   - Increased swimming speed
 
-#### Unlocks
-- **Unlock Golden Pistols** - Get instant access to the Golden Pistols
-
 ---
 
 ## How It Works

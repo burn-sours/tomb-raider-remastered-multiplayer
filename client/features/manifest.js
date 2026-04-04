@@ -7,7 +7,6 @@ module.exports = {
         require("./glitch-lara/manifest"),
         require("./super-speed/manifest"),
         require("./swim-fly/manifest"),
-        require("./unlock-golden-pistols/manifest"),
         require("./perma-damage/manifest"),
         require("./perma-poison/manifest"),
         require("./infinite-oxygen/manifest"),
@@ -34,10 +33,5 @@ module.exports = {
             "name": "Game Speed",
             "description": "Adjust the game speed."
         },
-        {
-            "id": "unlocks",
-            "name": "Unlocks",
-            "description": "Unlocks and customization options."
-        }
     ]
 };

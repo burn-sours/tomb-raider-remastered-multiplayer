@@ -31,10 +31,6 @@ module.exports = {
             Address: "0x388ac4",
             Type: "UInt8"
         },
-        MoreSettings: {
-            Address: "0x388ac6",
-            Type: "UInt8"
-        },
         ResolutionH: {
             Address: "0x41802c",
             Type: "Int32"
