@@ -10,7 +10,7 @@ module.exports = {
     /** tomb1.dll variables */
     variables: {
         BinaryTick: {
-            Address: "0x",
+            Address: "0x121118",
             Type: "Int8"
         },
         LevelCompleted: {
