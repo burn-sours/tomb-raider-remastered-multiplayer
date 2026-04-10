@@ -31,6 +31,10 @@ module.exports = {
             Address: "0x38cc3c",
             Type: "UInt8"
         },
+        ChallengeModeSettings: {
+            Address: "0x38CE7C",
+            Type: "UInt8"
+        },
         ResolutionH: {
             Address: "0x41c1ac",
             Type: "Int32"
