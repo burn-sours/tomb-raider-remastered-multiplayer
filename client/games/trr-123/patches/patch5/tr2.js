@@ -5,7 +5,7 @@ module.exports = {
 
     /* tomb2.dll max outfits */
     challengeOutfits: true,
-    
+
     /** tomb2.dll variables */
     variables: {
         BinaryTick: {
@@ -53,7 +53,7 @@ module.exports = {
             Address: "0x373996",
             Type: "Int16"
         },
-        LaraCircleShadow: { 
+        LaraCircleShadow: {
             Address: "0x373b30",
             Type: "Block",
             Pointer: "0xe20",
@@ -133,11 +133,11 @@ module.exports = {
             Address: "0x300998",
             Type: "Int32",
         },
-        CameraFixedX: { 
+        CameraFixedX: {
             Address: "0x3009ac",
             Type: "Int32",
         },
-        CameraFixedY: { 
+        CameraFixedY: {
             Address: "0x3009Bc",
             Type: "Int32",
         },
@@ -145,7 +145,7 @@ module.exports = {
             Address: "0x3009cc",
             Type: "Int32",
         },
-        CameraX: { 
+        CameraX: {
             Address: "0x3009ac",
             Type: "Int32",
         },
@@ -157,11 +157,11 @@ module.exports = {
             Address: "0x3009cc",
             Type: "Int32",
         },
-        CameraYaw: { 
+        CameraYaw: {
             Address: "0x30092e",
             Type: "UInt16",
         },
-        CameraPitch: { 
+        CameraPitch: {
             Address: "0x30092c",
             Type: "UInt16",
         },
@@ -201,7 +201,7 @@ module.exports = {
             Address: "0x3001a8",
             Type: "Int32",
         },
-        CameraFov: { 
+        CameraFov: {
             Address: "0x3009d0",
             Type: "Int32",
         },
@@ -234,14 +234,14 @@ module.exports = {
     },
 
     ogGunMap: {
-        guns: {"11": 2, "12": 10, "13": 6, "15": 8, "17": 12, "20": 14, "19": 16, "22": 18},
-        pockets: {"1": 2, "4": 6, "2": 8},
-        backPocket: {"0": 0, "3": 3, "7": 6, "9": 8},
+        guns: { "11": 2, "12": 10, "13": 6, "15": 8, "17": 12, "20": 14, "19": 16, "22": 18 },
+        pockets: { "1": 2, "4": 6, "2": 8 },
+        backPocket: { "0": 0, "3": 3, "7": 6, "9": 8 },
         flare: 18,
         twoHanded: [12, 14, 16],
         stride: "0x47c"
     },
-    
+
     /** tomb2.dll hooks */
     hooks: {
         RenderLara: {
@@ -293,13 +293,13 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0x8b680",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
             Address: "0x8c540",
-            Params: ['int','int','int','int','uint64','uint64'],
+            Params: ['int', 'int', 'int', 'int', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false
         },
@@ -323,17 +323,17 @@ module.exports = {
         },
         RoomChange: {
             Address: "0x3e160",
-            Params: ['int','int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },
         CalculateYawPitch: {
             Address: "0xa4730",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0x881e0",
             Params: ['pointer', 'pointer'],
             Return: 'int',
@@ -383,7 +383,7 @@ module.exports = {
         },
         ModernGfx: {
             Address: "0x21980",
-            Params: ['int','int','int','int','int','int','int'],
+            Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',
             Disable: false
         },

@@ -208,7 +208,7 @@ module.exports = {
         },
         EntitiesCount: {
             Address: "0x3fa010",
-           Type: "Int16"
+            Type: "Int16"
         },
         Rooms: {
             Address: "0x4241c0",
@@ -231,9 +231,9 @@ module.exports = {
     },
 
     ogGunMap: {
-        guns: {"11": 2, "12": 10, "13": 6, "15": 8, "17": 12, "20": 14, "19": 16, "22": 18},
-        pockets: {"1": 2, "4": 6, "2": 8},
-        backPocket: {"0": 0, "3": 3, "7": 6, "9": 8},
+        guns: { "11": 2, "12": 10, "13": 6, "15": 8, "17": 12, "20": 14, "19": 16, "22": 18 },
+        pockets: { "1": 2, "4": 6, "2": 8 },
+        backPocket: { "0": 0, "3": 3, "7": 6, "9": 8 },
         flare: 18,
         twoHanded: [12, 14, 16],
         stride: "0x47c"
@@ -290,13 +290,13 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0x7ffd0",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
             Address: "0x80e90",
-            Params: ['int','int','int','int','uint64','uint64'],
+            Params: ['int', 'int', 'int', 'int', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false
         },
@@ -320,17 +320,17 @@ module.exports = {
         },
         RoomChange: {
             Address: "0x3c9b0",
-            Params: ['int','int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },
         CalculateYawPitch: {
             Address: "0x98340",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0x7f750",
             Params: ['pointer', 'pointer'],
             Return: 'int',
@@ -380,7 +380,7 @@ module.exports = {
         },
         ModernGfx: {
             Address: "0x20870",
-            Params: ['int','int','int','int','int','int','int'],
+            Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',
             Disable: false
         },

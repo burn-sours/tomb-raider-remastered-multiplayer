@@ -346,19 +346,19 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0xadff0",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false,
         },
         DrawRect: {
             Address: "0xaeb10",
-            Params: ['float','float','float','float','uint64','uint64'],
+            Params: ['float', 'float', 'float', 'float', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false,
         },
         RoomChange: {
             Address: "0x3edf0",
-            Params: ['int','int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false,
         },
@@ -370,11 +370,11 @@ module.exports = {
         },
         CalculateYawPitch: {
             Address: "0xd0b70",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false,
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0x14a40",
             Params: ['pointer', 'pointer'],
             Return: 'int',
@@ -406,7 +406,7 @@ module.exports = {
         },
         ModernGfx: {
             Address: "0x30c10",
-            Params: ['int','int','int','int','int','int','int'],
+            Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',
             Disable: false,
         },

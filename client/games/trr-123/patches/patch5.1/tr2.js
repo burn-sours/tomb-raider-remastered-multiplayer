@@ -6,7 +6,7 @@ module.exports = {
     /* tomb2.dll max outfits */
     challengeOutfits: true,
     challengeOutfitsScrewed: true,
-    
+
     /** tomb2.dll variables */
     variables: {
         BinaryTick: {
@@ -54,7 +54,7 @@ module.exports = {
             Address: "0x3768d6",
             Type: "Int16"
         },
-        LaraCircleShadow: { 
+        LaraCircleShadow: {
             Address: "0x376a70",
             Type: "Block",
             Pointer: "0xe20",
@@ -134,11 +134,11 @@ module.exports = {
             Address: "0x3038d8",
             Type: "Int32",
         },
-        CameraFixedX: { 
+        CameraFixedX: {
             Address: "0x3038ec",
             Type: "Int32",
         },
-        CameraFixedY: { 
+        CameraFixedY: {
             Address: "0x3038fc",
             Type: "Int32",
         },
@@ -146,7 +146,7 @@ module.exports = {
             Address: "0x30390c",
             Type: "Int32",
         },
-        CameraX: { 
+        CameraX: {
             Address: "0x3038ec",
             Type: "Int32",
         },
@@ -158,11 +158,11 @@ module.exports = {
             Address: "0x30390c",
             Type: "Int32",
         },
-        CameraYaw: { 
+        CameraYaw: {
             Address: "0x30386e",
             Type: "UInt16",
         },
-        CameraPitch: { 
+        CameraPitch: {
             Address: "0x30386c",
             Type: "UInt16",
         },
@@ -202,7 +202,7 @@ module.exports = {
             Address: "0x3030e8",
             Type: "Int32",
         },
-        CameraFov: { 
+        CameraFov: {
             Address: "0x303910",
             Type: "Int32",
         },
@@ -235,19 +235,19 @@ module.exports = {
     },
 
     ogGunMap: {
-        guns: {"11": 2, "12": 10, "13": 6, "15": 8, "17": 12, "20": 14, "19": 16, "22": 18},
-        pockets: {"1": 2, "4": 6, "2": 8},
-        backPocket: {"0": 0, "3": 3, "7": 6, "9": 8},
+        guns: { "11": 2, "12": 10, "13": 6, "15": 8, "17": 12, "20": 14, "19": 16, "22": 18 },
+        pockets: { "1": 2, "4": 6, "2": 8 },
+        backPocket: { "0": 0, "3": 3, "7": 6, "9": 8 },
         flare: 18,
         twoHanded: [12, 14, 16],
         stride: "0x480"
     },
-    
+
     /** tomb2.dll hooks */
     hooks: {
         RenderLara: {
             Address: "0x178d0",
-            Params: ['pointer','pointer','pointer','pointer'],
+            Params: ['pointer', 'pointer', 'pointer', 'pointer'],
             Return: 'void',
             Disable: true
         },
@@ -294,13 +294,13 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0x8d450",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
             Address: "0x8e2d0",
-            Params: ['int','int','int','int','uint64','uint64'],
+            Params: ['int', 'int', 'int', 'int', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false
         },
@@ -312,29 +312,29 @@ module.exports = {
         },
         RenderSkidoo: {
             Address: "0x734c0",
-            Params: ['pointer','pointer','pointer','pointer'],
+            Params: ['pointer', 'pointer', 'pointer', 'pointer'],
             Return: 'void',
             Disable: false
         },
         RenderBoat: {
             Address: "0x176c0",
-            Params: ['pointer','pointer','pointer','pointer'],
+            Params: ['pointer', 'pointer', 'pointer', 'pointer'],
             Return: 'void',
             Disable: false
         },
         RoomChange: {
             Address: "0x3e130",
-            Params: ['int','int','pointer'],
+            Params: ['int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         CalculateYawPitch: {
             Address: "0xa6ab0",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0x89db0",
             Params: ['pointer', 'pointer'],
             Return: 'int',
@@ -384,7 +384,7 @@ module.exports = {
         },
         ModernGfx: {
             Address: "0x219b0",
-            Params: ['int','int','int','int','int','int','int'],
+            Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',
             Disable: false
         },

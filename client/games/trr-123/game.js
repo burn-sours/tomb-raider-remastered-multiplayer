@@ -1388,7 +1388,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     inRangeV = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
                 }
                 if (inRangeH !== 1 || inRangeV !== 1) return null;
-                const inLOS = game.runFunction(module, "GetLOS", fromPos, targetPos);
+                const inLOS = game.runFunction(module, "TraceLineOfSight", fromPos, targetPos);
                 if (inLOS === 0) return null;
 
                 // Check field of view
@@ -2092,7 +2092,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             inRangeV = game.runFunction(module, "TraceRangeX", fromPos, targetPos);
                         }
                         if (inRangeH !== 1 || inRangeV !== 1) continue;
-                        if (game.runFunction(module, "GetLOS", fromPos, targetPos) === 0) continue;
+                        if (game.runFunction(module, "TraceLineOfSight", fromPos, targetPos) === 0) continue;
 
                         // Check field of view
                         let relativeYawPitch = game.allocMemory(0x4);

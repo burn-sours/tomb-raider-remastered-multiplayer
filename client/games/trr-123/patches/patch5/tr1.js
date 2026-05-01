@@ -5,7 +5,7 @@ module.exports = {
 
     /* tomb1.dll max outfits */
     challengeOutfits: true,
-    
+
     /** tomb1.dll variables */
     variables: {
         BinaryTick: {
@@ -49,7 +49,7 @@ module.exports = {
             Address: "0x336856",
             Type: "Int16"
         },
-        LaraCircleShadow: { 
+        LaraCircleShadow: {
             Address: "0x3369f0",
             Type: "Block",
             Pointer: "0xe20",
@@ -133,7 +133,7 @@ module.exports = {
             Address: "0x2c37e8",
             Type: "Int32",
         },
-        CameraX: { 
+        CameraX: {
             Address: "0x2c388c",
             Type: "Int32",
         },
@@ -145,11 +145,11 @@ module.exports = {
             Address: "0x2c38ac",
             Type: "Int32",
         },
-        CameraYaw: { 
+        CameraYaw: {
             Address: "0x2c380e",
             Type: "UInt16",
         },
-        CameraPitch: { 
+        CameraPitch: {
             Address: "0x2c380c",
             Type: "UInt16",
         },
@@ -226,8 +226,8 @@ module.exports = {
     },
 
     ogGunMap: {
-        guns: {"11": 2, "13": 4, "14": 6, "12": 8},
-        pockets: {"1": 2, "4": 6, "2": 8},
+        guns: { "11": 2, "13": 4, "14": 6, "12": 8 },
+        pockets: { "1": 2, "4": 6, "2": 8 },
         backPocket: null,
         flare: null,
         twoHanded: [],
@@ -238,7 +238,7 @@ module.exports = {
     hooks: {
         RenderLara: {
             Address: "0xfb10",
-            Params: ['pointer','pointer','pointer','pointer'],
+            Params: ['pointer', 'pointer', 'pointer', 'pointer'],
             Return: 'void',
             Disable: true
         },
@@ -290,13 +290,13 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0x5b830",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
             Address: "0x5c6f0",
-            Params: ['int','int','int','int','uint64','uint64'],
+            Params: ['int', 'int', 'int', 'int', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false
         },
@@ -308,17 +308,17 @@ module.exports = {
         },
         RoomChange: {
             Address: "0x20430",
-            Params: ['int','int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },
         CalculateYawPitch: {
             Address: "0x72570",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0x58440",
             Params: ['pointer', 'pointer'],
             Return: 'int',

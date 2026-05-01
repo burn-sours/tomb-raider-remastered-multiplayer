@@ -2,7 +2,7 @@
 module.exports = {
     /** tomb3.dll draw/graphics */
     uiLayer: 0x39,
-    
+
     /** tomb3.dll variables */
     variables: {
         BinaryTick: {
@@ -54,7 +54,7 @@ module.exports = {
             Address: "0x3a1ed6",
             Type: "Int16"
         },
-        LaraCircleShadow: { 
+        LaraCircleShadow: {
             Address: "0x3a2070",
             Type: "Block",
             Pointer: "0xe20",
@@ -126,7 +126,7 @@ module.exports = {
             Address: "0x32f2d4",
             Type: "Int32"
         },
-        CameraFixedX: { 
+        CameraFixedX: {
             Address: "0x32f30c",
             Type: "Int32"
         },
@@ -134,11 +134,11 @@ module.exports = {
             Address: "0x32f31c",
             Type: "Int32"
         },
-        CameraFixedZ: { 
+        CameraFixedZ: {
             Address: "0x32f32c",
             Type: "Int32"
         },
-        CameraX: { 
+        CameraX: {
             Address: "0x32eaac",
             Type: "Int32"
         },
@@ -150,11 +150,11 @@ module.exports = {
             Address: "0x32eacc",
             Type: "Int32"
         },
-        CameraYaw: { 
+        CameraYaw: {
             Address: "0x32f28e",
             Type: "UInt16"
         },
-        CameraPitch: { 
+        CameraPitch: {
             Address: "0x32f28c",
             Type: "UInt16"
         },
@@ -194,7 +194,7 @@ module.exports = {
             Address: "0x32f328",
             Type: "Int32"
         },
-        CameraFov: { 
+        CameraFov: {
             Address: "0x32f2d8",
             Type: "Int32"
         },
@@ -234,14 +234,14 @@ module.exports = {
     },
 
     ogGunMap: {
-        guns: {"11": 2, "22": 20, "12": 10, "13": 6, "16": 8, "18": 12, "21": 14, "20": 16, "19": 18},
-        pockets: {"1": 2, "2": 10, "6": 8},
-        backPocket: {"0": 0, "3": 3, "8": 6, "9": 9, "10": 8, "11": 7},
+        guns: { "11": 2, "22": 20, "12": 10, "13": 6, "16": 8, "18": 12, "21": 14, "20": 16, "19": 18 },
+        pockets: { "1": 2, "2": 10, "6": 8 },
+        backPocket: { "0": 0, "3": 3, "8": 6, "9": 9, "10": 8, "11": 7 },
         flare: 20,
         twoHanded: [6, 8, 12, 14, 16, 18],
         stride: "0x47c"
     },
-    
+
     /** tomb3.dll hooks */
     hooks: {
         RenderLara: {
@@ -252,7 +252,7 @@ module.exports = {
         },
         UpdateLighting: {
             Address: "0xd76c0",
-            Params: ['int','int','int','int','pointer'],
+            Params: ['int', 'int', 'int', 'int', 'pointer'],
             Return: 'void'
         },
         LoadedLevel: {
@@ -298,13 +298,13 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0xc9710",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
             Address: "0xca5a0",
-            Params: ['int','int','int','int','uint64','uint64'],
+            Params: ['int', 'int', 'int', 'int', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false
         },
@@ -316,7 +316,7 @@ module.exports = {
         },
         RoomChange: {
             Address: "0x51e80",
-            Params: ['int','int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },
@@ -328,11 +328,11 @@ module.exports = {
         },
         CalculateYawPitch: {
             Address: "0xe7920",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0xc8e80",
             Params: ['pointer', 'pointer'],
             Return: 'int',
@@ -388,7 +388,7 @@ module.exports = {
         },
         ModernGfx: {
             Address: "0x30740",
-            Params: ['int','int','int','int','int','int','int'],
+            Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',
             Disable: false
         },

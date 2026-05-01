@@ -212,7 +212,7 @@ module.exports = {
         },
         EntitiesCount: {
             Address: "0x45BD10",
-           Type: "Int16"
+            Type: "Int16"
         },
         Rooms: {
             Address: "0x45cb40",
@@ -234,9 +234,9 @@ module.exports = {
     },
 
     ogGunMap: {
-        guns: {"11": 2, "22": 20, "12": 10, "13": 6, "16": 8, "18": 12, "21": 14, "20": 16, "19": 18},
-        pockets: {"1": 2, "2": 10, "6": 8},
-        backPocket: {"0": 0, "3": 3, "8": 6, "9": 9, "10": 8, "11": 7},
+        guns: { "11": 2, "22": 20, "12": 10, "13": 6, "16": 8, "18": 12, "21": 14, "20": 16, "19": 18 },
+        pockets: { "1": 2, "2": 10, "6": 8 },
+        backPocket: { "0": 0, "3": 3, "8": 6, "9": 9, "10": 8, "11": 7 },
         flare: 20,
         twoHanded: [6, 8, 12, 14, 16, 18],
         stride: "0x47c"
@@ -252,7 +252,7 @@ module.exports = {
         },
         UpdateLighting: {
             Address: "0xd59c0",
-            Params: ['int','int','int','int','pointer'],
+            Params: ['int', 'int', 'int', 'int', 'pointer'],
             Return: 'void'
         },
         LoadedLevel: {
@@ -298,13 +298,13 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0xc8480",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
             Address: "0xc9350",
-            Params: ['int','int','int','int','uint64','uint64'],
+            Params: ['int', 'int', 'int', 'int', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false
         },
@@ -316,7 +316,7 @@ module.exports = {
         },
         RoomChange: {
             Address: "0x516a0",
-            Params: ['int','int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },
@@ -328,11 +328,11 @@ module.exports = {
         },
         CalculateYawPitch: {
             Address: "0xe5460",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0xc7c00",
             Params: ['pointer', 'pointer'],
             Return: 'int',
@@ -388,7 +388,7 @@ module.exports = {
         },
         ModernGfx: {
             Address: "0x30540",
-            Params: ['int','int','int','int','int','int','int'],
+            Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',
             Disable: false
         },

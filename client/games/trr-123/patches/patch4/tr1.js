@@ -199,7 +199,7 @@ module.exports = {
             Type: "Pointer",
         },
         EntitiesCount: {
-             Address: "0x3ede50",
+            Address: "0x3ede50",
             Type: "Int16"
         },
         Rooms: {
@@ -223,8 +223,8 @@ module.exports = {
     },
 
     ogGunMap: {
-        guns: {"11": 2, "13": 4, "14": 6, "12": 8},
-        pockets: {"1": 2, "4": 6, "2": 8},
+        guns: { "11": 2, "13": 4, "14": 6, "12": 8 },
+        pockets: { "1": 2, "4": 6, "2": 8 },
         backPocket: null,
         flare: null,
         twoHanded: [],
@@ -287,13 +287,13 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0x50460",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
             Address: "0x51320",
-            Params: ['int','int','int','int','uint64','uint64'],
+            Params: ['int', 'int', 'int', 'int', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false
         },
@@ -305,17 +305,17 @@ module.exports = {
         },
         RoomChange: {
             Address: "0x1eab0",
-            Params: ['int','int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },
         CalculateYawPitch: {
             Address: "0x664c0",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0x4fcc0",
             Params: ['pointer', 'pointer'],
             Return: 'int',

@@ -270,7 +270,7 @@ module.exports = {
         OgModelsRightPocket: "0x4f3ea1",
         OgModelsBackPocket: "0x4f3dac",
     },
-    
+
     /** tomb4.dll hooks */
     hooks: {
         RenderLara: {
@@ -346,19 +346,19 @@ module.exports = {
         },
         DrawSetup: {
             Address: "0xb2410",
-            Params: ['int','pointer'],
+            Params: ['int', 'pointer'],
             Return: 'void',
             Disable: false
         },
         DrawRect: {
             Address: "0xb2f30",
-            Params: ['float','float','float','float','uint64','uint64'],
+            Params: ['float', 'float', 'float', 'float', 'uint64', 'uint64'],
             Return: 'void',
             Disable: false
         },
         RoomChange: {
             Address: "0x407b0",
-            Params: ['int','int'],
+            Params: ['int', 'int'],
             Return: 'void',
             Disable: false
         },
@@ -370,11 +370,11 @@ module.exports = {
         },
         CalculateYawPitch: {
             Address: "0xd6540",
-            Params: ['int','int','int', 'pointer'],
+            Params: ['int', 'int', 'int', 'pointer'],
             Return: 'void',
             Disable: false
         },
-        GetLOS: {
+        TraceLineOfSight: {
             Address: "0x14e20",
             Params: ['pointer', 'pointer'],
             Return: 'int',
@@ -406,7 +406,7 @@ module.exports = {
         },
         ModernGfx: {
             Address: "0x32240",
-            Params: ['int','int','int','int','int','int','int'],
+            Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',
             Disable: false
         },
