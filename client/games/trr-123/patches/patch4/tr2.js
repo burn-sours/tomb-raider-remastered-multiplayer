@@ -378,13 +378,13 @@ module.exports = {
             Return: 'void',
             Disable: true
         },
-        ModernGfx: {
+        CreateGraphic: {
             Address: "0x20870",
             Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',
             Disable: false
         },
-        OgGfxPrep: {
+        OG_CreateGraphic: {
             Address: "0x3cb20",
             Params: ['int'],
             Return: 'uint64',

@@ -386,7 +386,7 @@ module.exports = {
             Return: 'void',
             Disable: true
         },
-        ModernGfx: {
+        CreateGraphic: {
             Address: "0x30540",
             Params: ['int', 'int', 'int', 'int', 'int', 'int', 'int'],
             Return: 'void',

@@ -850,9 +850,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 const module = game.getGameModule();
                 const gfx1 = 2;
                 const gfx2 = 0;
-                game.runFunction(module, "ModernGfx", x, y, z, gfx1, -2, gfx2, roomId);
-                game.runFunction(module, "ModernGfx", x, y, z, gfx1, -1, gfx2, roomId);
-                game.runFunction(module, "ModernGfx", x, y, z, gfx1, -1, gfx2, roomId);
+                game.runFunction(module, "CreateGraphic", x, y, z, gfx1, -2, gfx2, roomId);
+                game.runFunction(module, "CreateGraphic", x, y, z, gfx1, -1, gfx2, roomId);
+                game.runFunction(module, "CreateGraphic", x, y, z, gfx1, -1, gfx2, roomId);
             },
 
             drawTextLabel: (text, fontStyle, headerFont, anchorPosition, xPos, yPos, xScale, yScale) => {

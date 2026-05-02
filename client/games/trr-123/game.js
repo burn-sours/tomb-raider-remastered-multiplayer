@@ -883,14 +883,14 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 if (isRenderingModern || module === "tomb3.dll") {
                     const gfx1 = module === "tomb3.dll" ? 2 : 3;
                     const gfx2 = module === "tomb3.dll" ? 1 : 0;
-                    game.runFunction(module, "ModernGfx", x, y, z, gfx1, -2, gfx2, roomId);
-                    game.runFunction(module, "ModernGfx", x, y, z, gfx1, -1, gfx2, roomId);
-                    game.runFunction(module, "ModernGfx", x, y, z, gfx1, -1, gfx2, roomId);
+                    game.runFunction(module, "CreateGraphic", x, y, z, gfx1, -2, gfx2, roomId);
+                    game.runFunction(module, "CreateGraphic", x, y, z, gfx1, -1, gfx2, roomId);
+                    game.runFunction(module, "CreateGraphic", x, y, z, gfx1, -1, gfx2, roomId);
                     return;
                 }
 
                 if (module === "tomb2.dll") {
-                    const gfxId = game.runFunction(module, "OgGfxPrep", roomId);
+                    const gfxId = game.runFunction(module, "OG_CreateGraphic", roomId);
                     if (gfxId !== -1) {
                         const moduleBase = moduleBaseAddresses[module];
                         const moduleVariables = game.getModuleAddresses(module).variables;
