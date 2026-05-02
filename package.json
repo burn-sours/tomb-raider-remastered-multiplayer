@@ -1,6 +1,6 @@
 {
     "name": "tomb-raider-remastered-launcher",
-    "version": "2.3.0",
+    "version": "2.3.1",
     "description": "Burn's Mods & Multiplayer for TRR I-V",
     "license": "GPL-3.0-only",
     "author": "burn_sours",
@@ -53,7 +53,9 @@
             "signtoolOptions": {
                 "publisherName": "burn_sours"
             },
-            "target": ["nsis"],
+            "target": [
+                "nsis"
+            ],
             "icon": "client/ui/images/burn_256.png"
         },
         "nsis": {
