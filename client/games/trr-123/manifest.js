@@ -18,8 +18,18 @@ module.exports = {
         }
     },
     "patches": {
+        "patch5.2": {
+            "name": "30 April 2026 - Challenge Mode Update 2",
+            "patch": "8592e79cfbde4f5ef0991cb810595a7fa7828ad9f76a1f4a260e5921e5d6c19d",
+            "memory": {
+                "executable": require("./patches/patch5.2/executable"),
+                "tomb1.dll": require("./patches/patch5.2/tr1"),
+                "tomb2.dll": require("./patches/patch5.2/tr2"),
+                "tomb3.dll": require("./patches/patch5.2/tr3"),
+            }
+        },
         "patch5.1": {
-            "name": "31 March 2026 - Challenge Mode Update 2",
+            "name": "31 March 2026 - Challenge Mode Update 1",
             "patch": "c5b02aefd4b684a0282d721c380440017f2d6843fabbaa0121136690044c2610",
             "memory": {
                 "executable": require("./patches/patch5.1/executable"),
@@ -48,7 +58,7 @@ module.exports = {
                 "tomb3.dll": require("./patches/patch4.1/tr3"),
             }
         },
-        "patch4":  {
+        "patch4": {
             "name": "4 November 2024 - No title",
             "patch": "c3d2a0188ad359a243c270c759dff142a131f302fa634fca404482875970673d",
             "memory": {
