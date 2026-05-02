@@ -312,13 +312,13 @@ module.exports = {
         },
         RenderSkidoo: {
             Address: "0x74480",
-            Params: ['pointer', 'pointer', 'pointer', 'pointer'],
+            Params: ['pointer'],
             Return: 'void',
             Disable: false
         },
         RenderBoat: {
             Address: "0x177b0",
-            Params: ['pointer', 'pointer', 'pointer', 'pointer'],
+            Params: ['pointer'],
             Return: 'void',
             Disable: false
         },
