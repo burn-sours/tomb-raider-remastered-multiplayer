@@ -167,39 +167,39 @@ module.exports = {
             Type: "UInt16",
         },
         CameraRightX: {
-            Address: "0x1460f8",
+            Address: "0x304160",
             Type: "Int32",
         },
         CameraRightY: {
-            Address: "0x1460fc",
+            Address: "0x304164",
             Type: "Int32",
         },
         CameraRightZ: {
-            Address: "0x146100",
+            Address: "0x304168",
             Type: "Int32",
         },
         CameraUpX: {
-            Address: "0x146108",
+            Address: "0x304170",
             Type: "Int32",
         },
         CameraUpY: {
-            Address: "0x14610c",
+            Address: "0x304174",
             Type: "Int32",
         },
         CameraUpZ: {
-            Address: "0x146110",
+            Address: "0x304178",
             Type: "Int32",
         },
         CameraForwardX: {
-            Address: "0x146118",
+            Address: "0x304180",
             Type: "Int32",
         },
         CameraForwardY: {
-            Address: "0x14611c",
+            Address: "0x304184",
             Type: "Int32",
         },
         CameraForwardZ: {
-            Address: "0x146120",
+            Address: "0x304188",
             Type: "Int32",
         },
         CameraFov: {
