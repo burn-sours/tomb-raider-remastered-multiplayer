@@ -35,8 +35,8 @@ class TRRServer {
     setupSocketHandlers() {
         this.socket.on('listening', () => {
             const address = this.socket.address();
-            console.log(`TRR Multiplayer Server listening on ${address.address}:${address.port}`);
-            console.log(`Version: ${config.major} (${config.majorHash})`);
+            console.log(`Tomb Raider Remastered Multiplayer Server - listening on ${address.address}:${address.port}`);
+            console.log(`Server version: ${config.major} (${config.majorHash})`);
         });
 
         this.socket.on('message', (msg, rinfo) => this.handleMessage(msg, rinfo));
@@ -60,7 +60,7 @@ class TRRServer {
 
         if (packetType !== netcode.PACKET_TYPE_GLOBAL_REQ) {
             if (!this.validateCriticalKeys(_v, _seq)) {
-                this.sendOutdated(rinfo).then(() => {});
+                this.sendOutdated(rinfo).then(() => { });
                 return;
             }
         }
@@ -92,7 +92,7 @@ class TRRServer {
                     console.error(`Unknown packet type: ${packetType}`);
             }
         } catch (err) {
-            console.warn('Failed to handle packet', remoteAddr, err);
+            console.warn('Error handling packet', remoteAddr, err);
         }
     }
 
@@ -112,7 +112,7 @@ class TRRServer {
             return true;
         }
 
-        console.log('Rate limit exceeded:', remoteAddr);
+        console.warn('Rate limit exceeded:', remoteAddr);
         return false;
     }
 
@@ -333,7 +333,7 @@ class TRRServer {
                     bundleId: p.bundleId
                 }))
             };
-            fs.writeFile('./player-stats.json', JSON.stringify(stats), () => {});
+            fs.writeFile('./player-stats.json', JSON.stringify(stats), () => { });
 
             // Private lobby stats (no lobby codes exposed)
             const privatePlayers = Array.from(this.players.values())
@@ -349,7 +349,7 @@ class TRRServer {
                     lobby: p.lobby
                 }))
             };
-            fs.writeFile('./player-stats-lobbies.json', JSON.stringify(lobbyStats), () => {});
+            fs.writeFile('./player-stats-lobbies.json', JSON.stringify(lobbyStats), () => { });
         }, COUNT_INTERVAL_MS);
     }
 

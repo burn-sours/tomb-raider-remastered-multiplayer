@@ -67,7 +67,7 @@ class BaseGameClient {
         return false;
     }
 
-    sendToServer (message) {
+    sendToServer(message) {
         if (this.exiting || !this.socket.remoteAddress) return;
         this.socket.send(message, (err) => {
             if (err && !this.exiting) {
@@ -135,7 +135,7 @@ class BaseGameClient {
 
     async setupGameScript(launcherOptions) {
         if (!!this.gameScript) return;
-        const manifest = (({patches, ...o}) => o)(this.manifest);
+        const manifest = (({ patches, ...o }) => o)(this.manifest);
 
         const supportedFeatures = featureManifests.features
             .filter(f => f.supportedGames.includes(manifest.id))
@@ -200,7 +200,6 @@ class BaseGameClient {
                         if (!this.exiting) console.error('Error handling multiplayer event:', err, err.stack);
                     }
                 }
-
             } else if (event.type === 'error') {
                 if (!this.exiting) console.error('Error from game script:', event);
             }
@@ -212,7 +211,7 @@ class BaseGameClient {
     }
 
     async updateGame(launchOptions) {
-        this.launchOptions = {...this.launchOptions, ...launchOptions};
+        this.launchOptions = { ...this.launchOptions, ...launchOptions };
 
         await this.gameFunctions.setLara(false);
 
@@ -225,7 +224,7 @@ class BaseGameClient {
 
     async launchMultiplayer() {
         this.socket.on('error', async (err) => {
-            console.error('Error from TRR Multiplayer.', err);
+            console.error('Error from Multiplayer.', err);
             if (!this.connectedId) {
                 await this.handleConnectionFailure();
             }
@@ -298,9 +297,9 @@ class BaseGameClient {
                 }
 
                 if (!reconnected) {
-                    this.frameLoop().then(r => {});
-                    this.updateLoop().then(r => {});
-                    this.tickLoop().then(r => {});
+                    this.frameLoop().then(r => { });
+                    this.updateLoop().then(r => { });
+                    this.tickLoop().then(r => { });
                 }
                 break;
 
@@ -322,7 +321,7 @@ class BaseGameClient {
                         );
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in playerdata gamescript: ', err);
+                    if (!this.exiting) console.error('Error in receivePlayerData: ', err);
                 }
                 break;
 
@@ -338,7 +337,7 @@ class BaseGameClient {
                         );
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in receiveAudio gamescript: ', err);
+                    if (!this.exiting) console.error('Error in receiveAudio: ', err);
                 }
                 break;
 
@@ -356,7 +355,7 @@ class BaseGameClient {
                         }
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in receivePVP gamescript: ', err);
+                    if (!this.exiting) console.error('Error in receivePVP: ', err);
                 }
                 break;
 
@@ -373,7 +372,7 @@ class BaseGameClient {
                         );
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in chat gamescript: ', err);
+                    if (!this.exiting) console.error('Error in receiveChat: ', err);
                 }
                 break;
 
@@ -390,7 +389,7 @@ class BaseGameClient {
                         await this.gameFunctions.setupMenuPlayersText(globalData);
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in globalplayers gamescript: ', err);
+                    if (!this.exiting) console.error('Error in globalplayers: ', err);
                 }
                 break;
 
@@ -402,12 +401,12 @@ class BaseGameClient {
                         await this.gameFunctions.receivePlayerDisconnect(disconnectEvent.id);
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in disconnect gamescript: ', err);
+                    if (!this.exiting) console.error('Error in receivePlayerDisconnect: ', err);
                 }
                 break;
 
             default:
-                console.error(`Unknown: ${packetType}`);
+                console.error(`Unknown multiplayer packet: ${packetType}`);
         }
     }
 
@@ -488,7 +487,7 @@ class BaseGameClient {
             try {
                 await this.gameFunctions.updateLoop();
             } catch (err) {
-                if (!this.exiting) console.error('Error in updateLoop gamescript: ', err);
+                if (!this.exiting) console.error('Error in updateLoop: ', err);
             }
         } else if (await this.gameFunctions.isInMenu()) {
             // In menu - send global request to get player lists
@@ -653,7 +652,7 @@ class BaseGameClient {
                     this.pvpDamage[2] = 0;
                 }
             } catch (err) {
-                if (!this.exiting) console.error("Error in tickLoop gamescript: ", err);
+                if (!this.exiting) console.error("Error in tickLoop: ", err);
             }
         }
 
@@ -730,12 +729,12 @@ class BaseGameClient {
 
             this.socket.send(disconnectPacket, (err) => {
                 if (err && !this.exiting) {
-                    console.error('Failed to send disconnect packet:', err);
+                    console.error('Failed to send disconnect:', err);
                 }
             });
         } catch (err) {
             if (!this.exiting) {
-                console.error('Error sending disconnect packet:', err);
+                console.error('Error sending disconnect:', err);
             }
         }
     }

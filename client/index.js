@@ -2,8 +2,10 @@ const { app, dialog, shell, ipcMain } = require('electron');
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) app.exit();
 
-const {spawn} = require("child_process");
 const path = require('path');
+const logsDir = path.join(app.getPath('userData'), 'logs');
+const logger = require('../shared/logger')(logsDir);
+const { spawn } = require("child_process");
 const dgram = require('dgram');
 let socket = dgram.createSocket('udp4');
 const userdata = require('./userdata');
@@ -31,7 +33,7 @@ let exiting = false;
 let activeGameClient = null;
 let activeUserData = {};
 
-ui.setupApplicationMenu();
+ui.setupApplicationMenu({ logsDir });
 
 app.on('before-quit', () => app.releaseSingleInstanceLock());
 app.on('second-instance', () => ui.focus());
@@ -43,7 +45,7 @@ ui.setupEvents({
     "log": (e, m) => console.log(...m),
     "errorBox": (e, m) => dialog.showErrorBox(...m),
     "openMultiplayerTool": () => ui.createMultiplayerWindow(activeUserData),
-    "featureAction": (e, {feature, action, data}) => activeGameClient?.gameFunctions?.callFeatureAction(feature, action, data),
+    "featureAction": (e, { feature, action, data }) => activeGameClient?.gameFunctions?.callFeatureAction(feature, action, data),
     "getFeatureManifests": () => featureManifests,
     "openExternal": (e, url) => shell.openExternal(url)
 });
@@ -85,30 +87,28 @@ process.on('SIGINT', async () => await cleanup() && app?.quit());
 
 process.on('uncaughtException', async (err) => {
     console.error('Unhandled exception:', err);
-    console.log('Multiplayer Mod is no longer running. [1]');
     await cleanup();
     process.exit(1);
 });
 
 process.on('unhandledRejection', async (err) => {
     console.error('Unhandled rejection:', err);
-    console.log('Multiplayer Mod is no longer running. [2]');
     await cleanup();
     process.exit(1);
 });
 
 async function launchGame(launchOptions) {
-    activeUserData = {...activeUserData, ...launchOptions};
+    activeUserData = { ...activeUserData, ...launchOptions };
 
-    ui.broadcast('modInjecting', {customExePath: launchOptions.customExePath});
+    ui.broadcast('modInjecting', { customExePath: launchOptions.customExePath });
 
     if (activeUserData.multiplayer && (!activeUserData.name || activeUserData.name.trim().length < 1)) {
-        ui.broadcast('requiredInputFailed', {name: activeUserData.name});
+        ui.broadcast('requiredInputFailed', { name: activeUserData.name });
         return;
     }
 
     if (activeUserData.multiplayer && activeUserData.privateSession && (!activeUserData.lobbyCode || activeUserData.lobbyCode.trim().length < 1)) {
-        ui.broadcast('requiredInputFailed', {lobbyCode: activeUserData.lobbyCode});
+        ui.broadcast('requiredInputFailed', { lobbyCode: activeUserData.lobbyCode });
         return;
     }
 
@@ -116,13 +116,13 @@ async function launchGame(launchOptions) {
         const gameManifest = gameManifests.games.find(g => g.id === activeUserData.game);
         const selectedExe = path.basename(activeUserData.customExePath);
         if (gameManifest && selectedExe.toLowerCase() !== gameManifest.executable.toLowerCase()) {
-            ui.broadcast('requiredInputFailed', {customExePath: activeUserData.customExePath});
+            ui.broadcast('requiredInputFailed', { customExePath: activeUserData.customExePath });
             dialog.showErrorBox('Invalid Executable', `Selected game is ${gameManifest.name} which requires ${gameManifest.executable}, but you selected ${selectedExe}`);
             return;
         }
     }
 
-    const optionsToSave = {...activeUserData};
+    const optionsToSave = { ...activeUserData };
     delete optionsToSave.manualPatch;
     userdata.writeOptions(optionsToSave);
 
@@ -133,23 +133,23 @@ async function launchGame(launchOptions) {
         ui.broadcast('modInjected');
 
         await activeGameClient.launchGame(activeUserData);
-    } catch (err) {}
+    } catch (err) { }
 }
 
 async function updateGame(launchOptions) {
-    activeUserData = {...activeUserData, ...launchOptions};
+    activeUserData = { ...activeUserData, ...launchOptions };
 
     if (activeUserData.multiplayer && (!activeUserData.name || activeUserData.name.trim().length < 1)) {
-        ui.broadcast('requiredInputFailed', {name: activeUserData.name});
+        ui.broadcast('requiredInputFailed', { name: activeUserData.name });
         return;
     }
 
     if (activeUserData.multiplayer && activeUserData.privateSession && (!activeUserData.lobbyCode || activeUserData.lobbyCode.trim().length < 1)) {
-        ui.broadcast('requiredInputFailed', {lobbyCode: activeUserData.lobbyCode});
+        ui.broadcast('requiredInputFailed', { lobbyCode: activeUserData.lobbyCode });
         return;
     }
 
-    const optionsToSave = {...activeUserData};
+    const optionsToSave = { ...activeUserData };
     delete optionsToSave.manualPatch;
     userdata.writeOptions(optionsToSave);
 
@@ -183,7 +183,7 @@ async function stopMods() {
         await activeGameClient.cleanup();
         activeGameClient = null;
 
-        console.log('Mods stopped and cleaned up successfully');
+        console.log('Mods stopped and cleaned up');
     }
 
     ui.broadcast('modStopped');
@@ -193,7 +193,7 @@ async function setupFrida() {
     if (!activeGameClient) {
         activeGameClient = gameClients.find(c => c.id === activeUserData.game)?.client;
         if (!activeGameClient) {
-            console.error("Invalid game client for:", activeUserData.game);
+            console.error("Invalid game client:", activeUserData.game);
             return false;
         }
         activeGameClient.exiting = false;
@@ -215,7 +215,7 @@ async function setupFrida() {
         }
     }
 
-    console.log('Attach to game process...');
+    console.log('Attaching to game...');
 
     while (!activeGameClient.session) {
         try {
@@ -234,7 +234,7 @@ async function setupFrida() {
         }
     }
 
-    console.log('Setting up game script...');
+    console.log('Setting up scripts...');
 
     await activeGameClient.setupGameScript(activeUserData);
 
@@ -255,6 +255,6 @@ async function cleanup() {
     }
 }
 
-async function delay (t) {
+async function delay(t) {
     return await new Promise(resolve => setTimeout(resolve, t));
 }

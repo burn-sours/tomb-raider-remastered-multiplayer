@@ -559,10 +559,11 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     currentLevel = game.readMemoryVariable("Level", manifest.executable);
 
                     console.log("Lara =", laraPointer);
+                    console.log("Level =", currentLevel);
 
                     return laraPointer;
                 } catch (err) {
-                    console.error("Unable to detect Lara", err);
+                    console.error("Error detecting Lara", err);
                     return null;
                 }
             },
@@ -688,7 +689,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         hairRightPointer: cloneLaraHairRightPointer
                     };
                 } catch (err) {
-                    console.error("Failed to clone Lara", err);
+                    console.error("Error cloning Lara", err);
                 }
 
                 return null;
@@ -1601,7 +1602,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                 game.cleanupFeatures(supportedFeatures);
                 await game.cleanupHooks();
-                console.log('TRR-45 game cleanup complete');
+                console.log('Cleanup complete');
             }
         };
 
@@ -1795,7 +1796,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         if (!initiatedChat) {
                             initiatedChat = true;
                             chatMessages = [
-                                {time: Date.now(), name: null, text: "Welcome to Tomb Raider Multiplayer.  [ko-fi.com/burn_sours]"},
+                                {time: Date.now(), name: null, text: "Welcome to Tomb Raider Multiplayer"},
                                 {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93 & @gizzy_91"},
                                 {time: Date.now(), name: null, text: "[F2] Menu, [F4] Confirm, [F8] Chat"}
                             ];
@@ -2146,7 +2147,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         gunFlagsBackupRight.writeS16(game.readMemoryVariable("LaraGunFlagsRight", module));
                         gunTypesBackup.writeS16(game.readMemoryVariable("LaraGunType", module));
                     } catch (err) {
-                        console.warn("Cannot prepare lara render: ", err.message, err.stack);
+                        console.warn("Error preparing lara render: ", err.message, err.stack);
                         return; // cannot continue
                     }
 
@@ -2269,7 +2270,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             // Render her
                             game.runFunction(module, "RenderLara", playerConnection.laraPointer);
                         } catch (err) {
-                            console.warn("Cannot render other lara: ", err.message, err.stack);
+                            console.warn("Error rendering other lara: ", err.message, err.stack);
                         }
                     }
 
@@ -2300,7 +2301,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         // Render
                         game.runFunction(module, "RenderLara", lara);
                     } catch (err) {
-                        console.warn("Cannot render lara: ", err.message, "module:", module, "lara:", lara, "stack:", err.stack);
+                        console.warn("Error rendering lara: ", err.message, "module:", module, "lara:", lara, "stack:", err.stack);
                     }
 
                     isRendering = false;

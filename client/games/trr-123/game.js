@@ -556,7 +556,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     return laraPointer;
                 } catch (err) {
-                    console.error("Unable to detect Lara", err);
+                    console.error("Error detecting Lara", err);
                     return null;
                 }
             },
@@ -675,7 +675,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         hairLeftPointer: cloneLaraHairLeftPointer
                     };
                 } catch (err) {
-                    console.error("Failed to clone Lara", err);
+                    console.error("Error cloning Lara", err);
                 }
 
                 return null;
@@ -1473,7 +1473,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     playerConnection.vehicle = cloned.vehicle;
                     playerConnection.hairLeftPointer = cloned.hairLeftPointer;
 
-                    console.log('spawned other player', playerId, playerConnection.laraPointer)
+                    console.log('Spawned other player', playerId, playerConnection.laraPointer);
                 } else {
                     if (playerData._seq !== undefined && playerConnection._seq !== undefined) {
                         const diff = (playerConnection._seq - playerData._seq) & 0xFF;
@@ -1860,7 +1860,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                 game.cleanupFeatures(supportedFeatures);
                 await game.cleanupHooks();
-                console.log('TRR-123 game cleanup complete');
+                console.log('Cleanup complete');
             }
         };
 
@@ -2221,7 +2221,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             EndLevelSeq: {
                 before: (module, p1, p2, p3, p4) => {
-                    console.log("EndLevelSeq", module, p1, currentLevel);
+                    console.log("End Level", module, p1, currentLevel);
                 }
             },
 
@@ -2239,13 +2239,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     currentLevel = game.readMemoryVariable("Level", manifest.executable);
 
-                    console.log("LoadedLevel", module, p1, currentLevel);
+                    console.log("Loaded Level", module, p1, currentLevel);
                 }
             },
 
             LoadLevelAssets: {
                 after: (module) => {
-                    console.log("LoadLevelAssets");
+                    console.log("Load Level Assets");
                     game.setLara();
 
                     if (userData.multiplayer) {
@@ -2264,7 +2264,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                 {
                                     time: Date.now(),
                                     name: null,
-                                    text: "Welcome to Tomb Raider Multiplayer.  [ko-fi.com/burn_sours]"
+                                    text: "Welcome to Tomb Raider Multiplayer."
                                 },
                                 {
                                     time: Date.now(),
@@ -2525,7 +2525,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         game.runFunction(module, "Clone", gunFlagsBackup, gunFlagsPointer, LARA_GUNFLAG_SIZE);
                         game.runFunction(module, "Clone", gunTypesBackup, gunTypesPointer, LARA_GUNFLAG_SIZE);
                     } catch (err) {
-                        console.warn("Cannot prepare lara render: ", err.message);
+                        console.warn("Error preparing lara render: ", err.message);
                         return;
                     }
 
@@ -2658,7 +2658,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             }
                             game.runFunction(module, "RenderLara", ...otherRenderArgs);
                         } catch (err) {
-                            console.warn("Cannot render other lara: ", err.message);
+                            console.warn("Error rendering other lara: ", err.message);
                         }
                     }
 
@@ -2678,7 +2678,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         // Render
                         game.runFunction(module, "RenderLara", ...renderArgs);
                     } catch (err) {
-                        console.warn("Cannot render lara: ", err.message);
+                        console.warn("Error rendering lara: ", err.message);
                     }
 
                     isRendering = false;

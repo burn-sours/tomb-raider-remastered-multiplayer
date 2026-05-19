@@ -1,5 +1,5 @@
 const path = require('path');
-const {Menu, shell, ipcMain, BrowserWindow, app} = require("electron");
+const { Menu, shell, ipcMain, BrowserWindow, app } = require("electron");
 
 module.exports = new class {
     constructor() {
@@ -10,7 +10,7 @@ module.exports = new class {
     /**
      * Setup the main application menu
      */
-    setupApplicationMenu() {
+    setupApplicationMenu({ logsDir }) {
         Menu.setApplicationMenu(Menu.buildFromTemplate([
             {
                 label: 'About',
@@ -52,6 +52,15 @@ module.exports = new class {
                     {
                         label: 'Ko-fi.com/burn_sours',
                         click: () => shell.openExternal('https://ko-fi.com/burn_sours'),
+                    },
+                ]
+            },
+            {
+                label: 'Help',
+                submenu: [
+                    {
+                        label: 'Logs',
+                        click: () => shell.openPath(logsDir),
                     },
                 ]
             }

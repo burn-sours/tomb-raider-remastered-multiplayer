@@ -12,10 +12,29 @@ module.exports = {
         let currentLevel = null;
         let featureLoopTimeouts = {};
 
+        Process.setExceptionHandler((details) => {
+            try {
+                const ctx = details.context || {};
+                const pc = ctx.rip || ctx.pc || ptr(0);
+                const fmt = (addr) => {
+                    const mod = Process.findModuleByAddress(addr);
+                    return mod ? mod.name + "+0x" + addr.sub(mod.base).toString(16) : addr.toString();
+                };
+                let header = "[NATIVE EXC] " + details.type + " @ " + fmt(pc);
+                if (details.memory && details.memory.address) header += " accessing=" + details.memory.address;
+                console.error(header);
+                const frames = Thread.backtrace(ctx, Backtracer.ACCURATE);
+                for (let i = 0; i < frames.length && i < 16; i++) {
+                    console.error("  [" + i + "] " + fmt(frames[i]));
+                }
+            } catch (e) {}
+            return false;
+        });
+
         let chatOpened = false;
         let chatMessage = "";
         let chatMessages = [
-            {time: Date.now(), name: null, text: "Welcome to Tomb Raider Multiplayer.  [ko-fi.com/burn_sours]"},
+            {time: Date.now(), name: null, text: "Welcome to Tomb Raider Multiplayer"},
             {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93 & @gizzy_91"},
             {time: Date.now(), name: null, text: "[F2] Menu, [F4] Confirm, [F8] Chat"}
         ];
