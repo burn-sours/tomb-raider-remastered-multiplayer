@@ -22,3 +22,4 @@ temp/
 /releases/
 server/discord-bot.js
 player-stats.json
+player-stats-lobbies.json

@@ -2,6 +2,7 @@ const { app, dialog, shell, ipcMain } = require('electron');
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) app.exit();
 
+const fs = require('fs');
 const path = require('path');
 const logsDir = path.join(app.getPath('userData'), 'logs');
 const logger = require('../shared/logger')(logsDir);
@@ -10,6 +11,8 @@ const dgram = require('dgram');
 let socket = dgram.createSocket('udp4');
 const userdata = require('./userdata');
 const ui = require('./ui');
+const tr6ContentManager = require('./games/trr-6/content-manager');
+const tr6MapsDir = () => path.join(app.getPath('userData'), 'maps', 'trr-6');
 
 const gameManifests = require("./games/manifest");
 const gameClients = gameManifests.games.map(manifest => ({
@@ -59,6 +62,36 @@ ipcMain.handle('selectExeFile', async () => {
     return result.canceled ? null : result.filePaths[0];
 });
 
+tr6ContentManager.setMapsDir(tr6MapsDir());
+
+ipcMain.handle('getTr6ContentStatus', async () => tr6ContentManager.getStatus());
+
+ipcMain.handle('revalidateTr6Content', async () => tr6ContentManager.getStatus({
+    onProgress: (payload) => ui.broadcast('tr6ContentProgress', payload)
+}));
+
+ipcMain.handle('openTr6MapsFolder', async () => {
+    const dir = tr6MapsDir();
+    try { fs.mkdirSync(dir, { recursive: true }); } catch (err) { }
+    await shell.openPath(dir);
+});
+
+ipcMain.handle('downloadTr6Content', async () => {
+    if (tr6ContentManager.isDownloadActive()) {
+        return { started: false, reason: 'already-running' };
+    }
+    const started = tr6ContentManager.startDownload({
+        onProgress: (payload) => ui.broadcast('tr6ContentProgress', payload),
+        onComplete: (status) => ui.broadcast('tr6ContentDownloadComplete', status),
+        onError: (err) => ui.broadcast('tr6ContentDownloadError', err)
+    });
+    return { started };
+});
+
+ipcMain.handle('cancelTr6Download', async () => {
+    return { cancelled: tr6ContentManager.cancelDownload() };
+});
+
 app.whenReady().then(async () => {
     activeUserData = userdata.readOptions({
         game: 'trr-123',
@@ -92,6 +125,7 @@ process.on('uncaughtException', async (err) => {
 });
 
 process.on('unhandledRejection', async (err) => {
+    if (err && err.message === 'Script is destroyed') return;
     console.error('Unhandled rejection:', err);
     await cleanup();
     process.exit(1);
@@ -122,6 +156,14 @@ async function launchGame(launchOptions) {
         }
     }
 
+    if (activeUserData.multiplayer && activeUserData.game === 'trr-6') {
+        const contentStatus = await tr6ContentManager.getStatus();
+        if (contentStatus.state !== 'installed') {
+            ui.broadcast('requiredInputFailed', { tr6Content: contentStatus });
+            return;
+        }
+    }
+
     const optionsToSave = { ...activeUserData };
     delete optionsToSave.manualPatch;
     userdata.writeOptions(optionsToSave);
@@ -137,6 +179,10 @@ async function launchGame(launchOptions) {
 }
 
 async function updateGame(launchOptions) {
+    if (!activeGameClient) {
+        return await launchGame(launchOptions);
+    }
+
     activeUserData = { ...activeUserData, ...launchOptions };
 
     if (activeUserData.multiplayer && (!activeUserData.name || activeUserData.name.trim().length < 1)) {

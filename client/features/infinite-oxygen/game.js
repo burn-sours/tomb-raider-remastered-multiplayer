@@ -15,10 +15,32 @@ module.exports = {
             if (!userData['infinite-oxygen']) return;
 
             const lara = game.getLara();
-            if (infiniteOxygenTrackingDisabled || !lara || lara.isNull()) return;
+            if (!lara || lara.isNull()) return;
 
             try {
-                game.writeMemoryVariable("LaraOxygen", 1900, game.getGameModule());
+                const module = game.getGameModule();
+                if (module === "tomb6.dll" && infiniteOxygenTrackingDisabled) {
+                    infiniteOxygenTrackingDisabled = false;
+                }
+                if (infiniteOxygenTrackingDisabled) return;
+
+                if (module === "tomb6.dll") {
+                    let animId = -1;
+                    try {
+                        const laraPtr = game.getMemoryVariable("MainPlayerEntity", module).readPointer();
+                        if (laraPtr && !laraPtr.isNull()) {
+                            const statePtr = laraPtr.add(0x178).readPointer();
+                            if (statePtr && !statePtr.isNull()) {
+                                animId = statePtr.readU32();
+                            }
+                        }
+                    } catch (e) {}
+                    if (animId !== 109 && animId !== 117 && animId !== 118) return;
+                    game.writeMemoryVariable("PlayerOxygen", 1.9, module);
+                    return;
+                }
+                    
+                game.writeMemoryVariable("PlayerOxygen", 1900, module);
             } catch (err) {
                 console.error("Infinite Oxygen error:", err);
             }

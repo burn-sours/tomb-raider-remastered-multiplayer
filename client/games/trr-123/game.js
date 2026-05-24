@@ -70,25 +70,24 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let otherPlayers = [];
         let lastCapturedSFX = {};
         let topLeftLabel = null;
-        let multiplayerText = "Burn's Multiplayer v2.3";
-        let modsText = "Burn's Mods v2.3";
-        let permaDamageText = "Burn's Perma-damage v2.3";
+        let multiplayerText = "Burn's Multiplayer v2.5";
+        let modsText = "Burn's Mods v2.5";
+        let permaDamageText = "Burn's Perma-damage v2.5";
         let topCenterLabel = null;
 
         // Mod menu system state
         let modMenuState = {
             isOpen: false,
             selectedIndex: 0,
-            activeSubmenu: null,        // null | menu item id
+            activeSubmenu: null,
             submenuSelectedIndex: 0,
-            submenuLastIndex: {},       // Remembers last index per submenu id
+            submenuLastIndex: {},
             lastInteraction: 0
         };
         const MOD_MENU_TIMEOUT = 3000;
         const MOD_MENU_CONFIRM_TIMEOUT = 2000;
         let modMenuLabels = [];
         let modMenuHintLabels = [null, null]; // F2 hint, F4 hint
-        let modMenuScrollLabels = [null, null]; // Up arrow, Down arrow
         const MOD_MENU_MAX_VISIBLE = 5;
         let modMenuConfirmMessage = null;
         let modMenuConfirmTime = 0;
@@ -241,7 +240,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             game.runFunction(module, "SoundEffect", 0x74, ptr(0x0), 2);
                             return "Health filled";
                         case "oxygen":
-                            game.writeMemoryVariable("LaraOxygen", 1800, module);
+                            game.writeMemoryVariable("PlayerOxygen", 1800, module);
                             game.runFunction(module, "SoundEffect", 0x24, game.getMemoryVariable("CameraFixedX", module), 2);
                             return "Oxygen filled";
                     }
@@ -266,6 +265,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let hooks = {};
         ${gameCore}
         ${gameFeaturesCore}
+
+        chatMessages = [
+            {time: Date.now(), name: null, text: "Welcome to Tomb Raider Multiplayer"},
+            {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93 & @gizzy_91"},
+            {time: Date.now(), name: null, text: "[F2] Menu, [F4] Confirm, [F8] Chat"}
+        ];
 
         const game = {
             ...gameCoreFunctions,
@@ -537,7 +542,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 const module = game.getGameModule();
 
                 try {
-                    laraPointer = game.getMemoryVariable("LaraBase", module).readPointer();
+                    laraPointer = game.getMemoryVariable("MainPlayerEntity", module).readPointer();
 
                     if (!laraBackup) {
                         laraBackup = Memory.alloc(ENTITY_SIZE);
@@ -1060,7 +1065,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         menuLevelLabels.push(uiText);
                         uiText.writeS32(4097); // flag settings
                         uiText.add(0x50).writeS32(11000); // font size
-                        uiText.add(0x40).writeS32(0x00011111); // color
+                        uiText.add(0x40).writeS32(module === "tomb3.dll" ? 0x20001111 : 0x22002000); // color
                         game.updateString(
                             uiText.add(0x48).readPointer(),
                             "[" + levelName + "]: " + Number(lvl.players) + " players"
@@ -1096,10 +1101,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     game.deleteUiText(modMenuHintLabels[i]);
                     modMenuHintLabels[i] = null;
                 }
-                for (let i = 0; i < modMenuScrollLabels.length; i++) {
-                    game.deleteUiText(modMenuScrollLabels[i]);
-                    modMenuScrollLabels[i] = null;
-                }
                 modMenuState.isOpen = false;
 
                 game.deleteChatTexts();
@@ -1126,10 +1127,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 for (let i = 0; i < modMenuHintLabels.length; i++) {
                     game.deleteUiText(modMenuHintLabels[i]);
                     modMenuHintLabels[i] = null;
-                }
-                for (let i = 0; i < modMenuScrollLabels.length; i++) {
-                    game.deleteUiText(modMenuScrollLabels[i]);
-                    modMenuScrollLabels[i] = null;
                 }
             },
 
@@ -1171,8 +1168,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 const screenX = game.readMemoryVariable("UiDrawX", module);
                 const centerX = screenX + ((screenWidth - screenX) / 2);
 
-                const menuWidth = 90, itemHeight = 12, padding = 3;
-                const titleHeight = 19;
+                const menuWidth = 75, itemHeight = 8, padding = 1;
+                const titleHeight = 8;
 
                 let items = [], title = "Multiplayer Menu";
                 if (modMenuState.activeSubmenu) {
@@ -1192,76 +1189,50 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                 const selectedIdx = modMenuState.activeSubmenu ? modMenuState.submenuSelectedIndex : modMenuState.selectedIndex;
 
-                // Scrolling: calculate visible window
                 const visibleCount = Math.min(items.length, MOD_MENU_MAX_VISIBLE);
                 const needsScroll = items.length > MOD_MENU_MAX_VISIBLE;
-                const arrowHeight = needsScroll ? 8 : 0; // Space for scroll arrows
                 let scrollOffset = 0;
                 if (needsScroll) {
-                    // Keep selected item visible, roughly centered
                     scrollOffset = Math.max(0, Math.min(selectedIdx - 2, items.length - MOD_MENU_MAX_VISIBLE));
                 }
 
-                const totalHeight = titleHeight + arrowHeight + (visibleCount * itemHeight) + arrowHeight + padding;
+                const totalHeight = titleHeight + (visibleCount * itemHeight) + padding;
                 const menuX = centerX - (menuWidth / 2), menuY = 14;
-                const labelYOffset = 6; // Labels render higher than DrawRect, offset to align
+                const labelYOffset = 5;
 
-                // Background - header (pure black), items (translucent grey)
                 const titleY = menuY + titleHeight;
-                game.runFunction(module, "DrawRect", menuX, menuY, menuX + menuWidth, titleY, 0xFF000000, 0xFF000000);
-                game.runFunction(module, "DrawRect", menuX, titleY, menuX + menuWidth, menuY + totalHeight, 0xCC1a1a1a, 0xCC1a1a1a);
-
-                // Border (4 lines)
-                const border = 0xFF3a3a3a;
-                game.runFunction(module, "DrawRect", menuX, menuY, menuX + menuWidth, menuY, border, border);
-                game.runFunction(module, "DrawRect", menuX, menuY + totalHeight, menuX + menuWidth, menuY + totalHeight, border, border);
-                game.runFunction(module, "DrawRect", menuX, menuY, menuX, menuY + totalHeight, border, border);
-                game.runFunction(module, "DrawRect", menuX + menuWidth, menuY, menuX + menuWidth, menuY + totalHeight, border, border);
-
-                // Title separator
-                game.runFunction(module, "DrawRect", menuX, titleY, menuX + menuWidth, titleY, border, border);
-
-                // Selection highlight (relative to scroll offset, after arrow space)
-                const itemsStartY = titleY + arrowHeight + padding;
+                game.runFunction(module, "DrawRect", menuX, menuY, menuX + menuWidth, menuY + totalHeight, 0x66000000, 0x66000000);
+                const itemsStartY = titleY + padding;
                 if (items.length > 0 && selectedIdx < items.length) {
                     const relativeIdx = selectedIdx - scrollOffset;
                     const highlightY = itemsStartY + (relativeIdx * itemHeight);
-                    game.runFunction(module, "DrawRect", menuX + 2, highlightY - 1, menuX + menuWidth - 2, highlightY + itemHeight - 2, 0x80555555, 0x80555555);
+                    game.runFunction(module, "DrawRect", menuX + 1, highlightY, menuX + menuWidth - 1, highlightY + itemHeight - 1, 0xAA000000, 0xAA000000);
                 }
 
-                // Title label - bigger font, white
+                const labelX = menuX - screenX + 2;
+
+                // Title label
                 if (!modMenuLabels[0] || modMenuLabels[0].isNull()) {
                     modMenuLabels[0] = ptr(game.runFunction(module, "AddText", 0, 0, 0x38, game.allocString(title)));
-                    modMenuLabels[0].writeS32(4113);
-                    modMenuLabels[0].add(0x50).writeS32(20000);
-                    modMenuLabels[0].add(0x40).writeS32(0x0); // White
+                    modMenuLabels[0].writeS32(4097);
+                    modMenuLabels[0].add(0x50).writeS32(12000);
+                    modMenuLabels[0].add(0x40).writeS32(0x0);
                 }
-                modMenuLabels[0].add(0xc).writeFloat(0);
-                modMenuLabels[0].add(0x10).writeFloat(menuY + 3 + labelYOffset);
+                modMenuLabels[0].add(0xc).writeFloat(labelX);
+                modMenuLabels[0].add(0x10).writeFloat(menuY + labelYOffset);
                 game.updateString(modMenuLabels[0].add(0x48).readPointer(), title);
 
-                // F2/F4 hint labels
-                const hintY = menuY + 9 + labelYOffset;
-                // F2 hint (left side)
+                // F2/F4 hint
+                const hintY = menuY + totalHeight + 2 + labelYOffset;
                 if (!modMenuHintLabels[0] || modMenuHintLabels[0].isNull()) {
                     modMenuHintLabels[0] = ptr(game.runFunction(module, "AddText", 0, 0, 0x38, game.allocString("F2")));
                 }
-                modMenuHintLabels[0].writeS32(4113);
-                modMenuHintLabels[0].add(0x50).writeS32(12000);
+                modMenuHintLabels[0].writeS32(4097);
+                modMenuHintLabels[0].add(0x50).writeS32(11000);
                 modMenuHintLabels[0].add(0x40).writeS32(0x0);
-                modMenuHintLabels[0].add(0xc).writeFloat(-20);
+                modMenuHintLabels[0].add(0xc).writeFloat(labelX);
                 modMenuHintLabels[0].add(0x10).writeFloat(hintY);
-                game.updateString(modMenuHintLabels[0].add(0x48).readPointer(), "F2 \x14");
-                // F4 hint (right side)
-                if (!modMenuHintLabels[1] || modMenuHintLabels[1].isNull()) {
-                    modMenuHintLabels[1] = ptr(game.runFunction(module, "AddText", 0, 0, 0x38, game.allocString("F4")));
-                }
-                modMenuHintLabels[1].writeS32(4113);
-                modMenuHintLabels[1].add(0x50).writeS32(12000);
-                modMenuHintLabels[1].add(0x40).writeS32(0x0);
-                modMenuHintLabels[1].add(0xc).writeFloat(20);
-                modMenuHintLabels[1].add(0x10).writeFloat(hintY);
-                game.updateString(modMenuHintLabels[1].add(0x48).readPointer(), "F4 <on-icon>");
+                game.updateString(modMenuHintLabels[0].add(0x48).readPointer(), "F2 navigate    F4 confirm");
 
                 // Item labels (only visible items)
                 for (let v = 0; v < visibleCount; v++) {
@@ -1272,51 +1243,17 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     if (!modMenuLabels[labelIdx] || modMenuLabels[labelIdx].isNull()) {
                         modMenuLabels[labelIdx] = ptr(game.runFunction(module, "AddText", 0, 0, 0x38, game.allocString(item.text)));
                     }
-                    modMenuLabels[labelIdx].writeS32(item.disabled ? (4113 | 0x4000) : 4113);
-                    modMenuLabels[labelIdx].add(0x50).writeS32(16000);
-                    modMenuLabels[labelIdx].add(0x40).writeS32(0x0); // White
-                    modMenuLabels[labelIdx].add(0xc).writeFloat(0);
+                    modMenuLabels[labelIdx].writeS32(item.disabled ? (4097 | 0x4000) : 4097);
+                    modMenuLabels[labelIdx].add(0x50).writeS32(12000);
+                    modMenuLabels[labelIdx].add(0x40).writeS32(0x0);
+                    modMenuLabels[labelIdx].add(0xc).writeFloat(labelX);
                     modMenuLabels[labelIdx].add(0x10).writeFloat(itemY + labelYOffset);
-                    game.updateString(modMenuLabels[labelIdx].add(0x48).readPointer(), item.text + (item.hasSubmenu ? " \x12" : ""));
+                    game.updateString(modMenuLabels[labelIdx].add(0x48).readPointer(), item.text + (item.hasSubmenu ? " >" : ""));
                 }
 
                 // Cleanup excess item labels
                 for (let i = visibleCount + 1; i < modMenuLabels.length; i++) game.deleteUiText(modMenuLabels[i]);
                 modMenuLabels.length = visibleCount + 1;
-
-                // Scroll arrows (only if needed)
-                if (needsScroll) {
-                    const canScrollUp = scrollOffset > 0;
-                    const canScrollDown = scrollOffset + MOD_MENU_MAX_VISIBLE < items.length;
-                    const upArrowY = titleY + labelYOffset;
-                    const downArrowY = itemsStartY + (visibleCount * itemHeight) + labelYOffset;
-                    // Up arrow
-                    if (!modMenuScrollLabels[0] || modMenuScrollLabels[0].isNull()) {
-                        modMenuScrollLabels[0] = ptr(game.runFunction(module, "AddText", 0, 0, 0x38, game.allocString("\x10")));
-                    }
-                    modMenuScrollLabels[0].writeS32(canScrollUp ? 4113 : (4113 | 0x4000)); // Dim if at top
-                    modMenuScrollLabels[0].add(0x50).writeS32(10000);
-                    modMenuScrollLabels[0].add(0x40).writeS32(0x0);
-                    modMenuScrollLabels[0].add(0xc).writeFloat(0);
-                    modMenuScrollLabels[0].add(0x10).writeFloat(upArrowY);
-                    // Down arrow
-                    if (!modMenuScrollLabels[1] || modMenuScrollLabels[1].isNull()) {
-                        modMenuScrollLabels[1] = ptr(game.runFunction(module, "AddText", 0, 0, 0x38, game.allocString("\x14")));
-                    }
-                    modMenuScrollLabels[1].writeS32(canScrollDown ? 4113 : (4113 | 0x4000)); // Dim if at bottom
-                    modMenuScrollLabels[1].add(0x50).writeS32(10000);
-                    modMenuScrollLabels[1].add(0x40).writeS32(0x0);
-                    modMenuScrollLabels[1].add(0xc).writeFloat(0);
-                    modMenuScrollLabels[1].add(0x10).writeFloat(downArrowY);
-                } else {
-                    // Clean up scroll arrows if not needed
-                    for (let i = 0; i < modMenuScrollLabels.length; i++) {
-                        if (modMenuScrollLabels[i] && !modMenuScrollLabels[i].isNull()) {
-                            game.deleteUiText(modMenuScrollLabels[i]);
-                            modMenuScrollLabels[i] = null;
-                        }
-                    }
-                }
             },
 
             deletePlayerInfoTexts: () => {
@@ -2882,7 +2819,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             topCenterLabel.writeS32(4113);
                             topCenterLabel.add(0x50).writeS32(25000);
                             topCenterLabel.add(0x10).writeFloat(10);
-                            topCenterLabel.add(0x40).writeS32(0x00011111);
+                            topCenterLabel.add(0x40).writeS32(module === "tomb3.dll" ? 0x20001111 : 0x22002000);
                         }
                         game.updateString(topCenterLabel.add(0x48).readPointer(), modMenuConfirmMessage);
                     } else {
@@ -2896,66 +2833,22 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     // Chat
                     const screenX = 5 + game.readMemoryVariable("UiDrawX", module);
                     const screenHeight = game.readMemoryVariable("UiDrawHeight", module);
+                    const chatWidth = 150;
                     if (chatOpened) {
                         game.runFunction(
                             module,
                             "DrawRect",
-                            screenX + 1,
-                            screenHeight - 54,
-                            screenX + 149,
-                            screenHeight - 14,
-                            0x90000000,
-                            0x90000000
+                            screenX - 1, screenHeight - 56,
+                            screenX + chatWidth + 1, screenHeight - 4,
+                            0x66000000, 0x66000000
                         );
+                        // Darker rect over the input row to highlight focus.
                         game.runFunction(
                             module,
                             "DrawRect",
-                            screenX,
-                            screenHeight - 54,
-                            screenX,
-                            screenHeight - 15,
-                            0xFF000000,
-                            0xFF000000
-                        );
-                        game.runFunction(
-                            module,
-                            "DrawRect",
-                            screenX + 150,
-                            screenHeight - 54,
-                            screenX + 150,
-                            screenHeight - 15,
-                            0xFF000000,
-                            0xFF000000
-                        );
-                        game.runFunction(
-                            module,
-                            "DrawRect",
-                            screenX,
-                            screenHeight - 55,
-                            screenX + 150,
-                            screenHeight - 55,
-                            0xFF000000,
-                            0xFF000000
-                        );
-                        game.runFunction(
-                            module,
-                            "DrawRect",
-                            screenX,
-                            screenHeight - 14,
-                            screenX + 150,
-                            screenHeight - 5,
-                            0xFF000000,
-                            0xFF000000
-                        );
-                        game.runFunction(
-                            module,
-                            "DrawRect",
-                            screenX + 1,
-                            screenHeight - 13,
-                            screenX + 149,
-                            screenHeight - 6,
-                            0x701a1a1a,
-                            0x701a1a1a
+                            screenX + 1, screenHeight - 12,
+                            screenX + chatWidth - 1, screenHeight - 6,
+                            0xAA000000, 0xAA000000
                         );
                     }
 
@@ -2966,7 +2859,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             chatTopLabel.add(0x50).writeS32(12000);
                             chatTopLabel.add(0xc).writeFloat(7);
                             chatTopLabel.add(0x10).writeFloat(screenHeight - 50);
-                            chatTopLabel.add(0x40).writeS32(0x00011111);
+                            chatTopLabel.add(0x40).writeS32(0x0);
                         } else if (!chatOpened && chatMessages.length === 0 && chatTopLabel && !chatTopLabel.isNull()) {
                             game.deleteUiText(chatTopLabel);
                             chatTopLabel = null;
@@ -2983,7 +2876,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         }
                         if (chatMessageLabel && !chatMessageLabel.isNull()) {
                             chatMessageLabel.add(0xc).writeFloat(8);
-                            chatMessageLabel.add(0x10).writeFloat(screenHeight - 8);
+                            chatMessageLabel.add(0x10).writeFloat(screenHeight - 7);
                             game.updateString(
                                 chatMessageLabel.add(0x48).readPointer(),
                                 userData.name.substring(0, 20) + ": " + chatMessage

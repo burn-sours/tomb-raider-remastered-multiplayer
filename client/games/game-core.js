@@ -3,6 +3,7 @@ module.exports = {
     template: `
         const functions = {};
         const moduleBaseAddresses = {};
+        const moduleObjects = {};
         let executableBase = null;
         let replacedGameFunctions = [];
         let attachedGameFunctions = [];
@@ -33,11 +34,7 @@ module.exports = {
 
         let chatOpened = false;
         let chatMessage = "";
-        let chatMessages = [
-            {time: Date.now(), name: null, text: "Welcome to Tomb Raider Multiplayer"},
-            {time: Date.now(), name: null, text: "Type /quiz for trivia - credits to @joef93 & @gizzy_91"},
-            {time: Date.now(), name: null, text: "[F2] Menu, [F4] Confirm, [F8] Chat"}
-        ];
+        let chatMessages = [];
 
         const QUIZZES = [
             { question: "How many crumble tiles are in Tomb of Qualopec?", answer: "6" },
@@ -120,9 +117,9 @@ module.exports = {
                 }, QUIZ_ANSWER_DELAY);
             },
 
-            findBaseAddress: (module) => {
+            findModule: (module) => {
                 try {
-                    return Process.getModuleByName(module)?.base;
+                    return Process.getModuleByName(module) || null;
                 } catch (e) {
                     return null;
                 }
@@ -326,10 +323,12 @@ module.exports = {
                 game.writeMemoryValue(baseAddress, addressInfo.Address, addressInfo.Pointer, 'Pointer', value);
             },
 
-            registerFunction: (module, name, _offset, _return, _params) => {
+            registerFunction: (module, name, fn) => {
                 functions[module] = functions[module] || {};
-                const baseAddress = moduleBaseAddresses[module];
-                functions[module][name] = new NativeFunction(baseAddress.add(_offset), _return, _params);
+                const target = fn.Name
+                    ? moduleObjects[module].findExportByName(fn.Name)
+                    : moduleBaseAddresses[module].add(fn.Address);
+                functions[module][name] = new NativeFunction(target, fn.Return, fn.Params);
             },
 
             hasFunction: (module, name) => {
@@ -344,14 +343,16 @@ module.exports = {
                 return functions[module][name](...params);
             },
 
-            hookFunction: (module, name, _offset, _return, _params, _disable) => {
-                const actualAddress = moduleBaseAddresses[module].add(_offset);
+            hookFunction: (module, name, fn) => {
+                const actualAddress = fn.Name
+                    ? moduleObjects[module].findExportByName(fn.Name)
+                    : moduleBaseAddresses[module].add(fn.Address);
                 const hookActions = hooks[module];
                 if (!hookActions) return;
 
-                if (_disable) {
+                if (fn.Disable) {
                     Interceptor.replace(actualAddress, new NativeCallback((...args) => {
-                        const logArgs = _params.map((p, i) => args[i]);
+                        const logArgs = fn.Params.map((p, i) => args[i]);
 
                         if (name in hookActions) {
                             if (logArgs.length) {
@@ -364,13 +365,13 @@ module.exports = {
                         }
 
                         return ptr('0x0');
-                    }, _return, _params));
+                    }, fn.Return, fn.Params));
 
                     replacedGameFunctions.push(actualAddress);
                 } else {
                     const attached = Interceptor.attach(actualAddress, {
                         onEnter(args) {
-                            this.logArgs = _params.map((p, i) => args[i]);
+                            this.logArgs = fn.Params.map((p, i) => args[i]);
 
                             if (name in hookActions) {
                                 try {
@@ -411,12 +412,13 @@ module.exports = {
 
             setupGame: async () => {
                 for (let module of [manifest.executable, ...Object.keys(manifest.modules)]) {
-                    let moduleBaseAddress = game.findBaseAddress(module);
-                    while (!moduleBaseAddress) {
+                    let moduleObj = game.findModule(module);
+                    while (!moduleObj) {
                         await game.delay(100);
-                        moduleBaseAddress = game.findBaseAddress(module);
+                        moduleObj = game.findModule(module);
                     }
-                    moduleBaseAddresses[module] = moduleBaseAddress;
+                    moduleObjects[module] = moduleObj;
+                    moduleBaseAddresses[module] = moduleObj.base;
                 }
 
                 executableBase = moduleBaseAddresses[manifest.executable];
@@ -427,9 +429,7 @@ module.exports = {
                     const moduleAddresses = game.getModuleAddresses(module);
                     for (let fnName of Object.keys(moduleAddresses.hooks)) {
                         const fn = moduleAddresses.hooks[fnName];
-                        game.registerFunction(
-                            module, fnName, fn.Address, fn.Return, fn.Params
-                        );
+                        game.registerFunction(module, fnName, fn);
                     }
                 }
 
@@ -442,7 +442,7 @@ module.exports = {
                     for (let fnName of Object.keys(moduleAddresses.hooks)) {
                         if (fnName in hooksExecution) {
                             const fn = moduleAddresses.hooks[fnName];
-                            game.hookFunction(module, fnName, fn.Address, fn.Return, fn.Params, fn.Disable);
+                            game.hookFunction(module, fnName, fn);
                         }
                     }
                 }

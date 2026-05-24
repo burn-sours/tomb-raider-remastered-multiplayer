@@ -172,6 +172,45 @@ const LEVEL_NAMES = {
         12: "Escape with Iris",
         13: "Security Breach",
         14: "Red Alert!"
+    },
+    // TR6: bundleId=2, version=2
+    '2_2': {
+        '-1': "Main Menu",
+        0:  "Back Streets",
+        1:  "Apartment Block",
+        2:  "Carvier's Apt",
+        3:  "Rooftops",
+        4:  "Ghetto",
+        5:  "Ghetto 2",
+        6:  "Ghetto 3",
+        7:  "Serpent Rouge",
+        8:  "Pawnshop",
+        9:  "Herbalist",
+        10: "Aicard's Church",
+        11: "Cafe Metro",
+        12: "Graveyard",
+        13: "Bouchard's",
+        14: "Storm Drains",
+        15: "Louvre",
+        16: "Galleries",
+        17: "Tomb of Ancients",
+        18: "Archaeo Dig",
+        19: "Von Croy's Apt",
+        20: "Crimescene",
+        21: "Strahov",
+        22: "Bio-Research",
+        23: "Aquatic Research",
+        24: "Sanitarium",
+        25: "Containment",
+        26: "Vault of Trophies",
+        27: "Boaz Returns",
+        28: "Eckhardt's Lab",
+        29: "Lost Domain",
+        30: "Hall of Seasons",
+        31: "Neptune's Hall",
+        32: "Wrath of Beast",
+        33: "Sanctuary of Flame",
+        34: "Breath of Hades"
     }
 };
 
@@ -180,7 +219,8 @@ const GAME_NAMES = {
     '0_1': 'Tomb Raider 2',
     '0_2': 'Tomb Raider 3',
     '1_0': 'Tomb Raider 4',
-    '1_1': 'Tomb Raider 5'
+    '1_1': 'Tomb Raider 5',
+    '2_2': 'Tomb Raider 6'
 };
 
 let client;

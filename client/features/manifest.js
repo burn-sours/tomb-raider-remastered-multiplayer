@@ -11,6 +11,7 @@ module.exports = {
         require("./perma-poison/manifest"),
         require("./infinite-oxygen/manifest"),
         require("./infinite-health/manifest"),
+        require("./infinite-strength/manifest"),
     ],
     categories: [
         {

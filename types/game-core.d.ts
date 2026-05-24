@@ -1,8 +1,8 @@
 export interface GameCoreFunctions {
     /**
-     * Finds the base address of a loaded module
+     * Finds a loaded module by name (returns the Frida Module object, which exposes .base, .findExportByName, etc.)
      */
-    findBaseAddress(module: string): NativePointer | null;
+    findModule(module: string): Module | null;
 
     /**
      * Reads a block of memory as a byte array
@@ -112,7 +112,7 @@ export interface GameCoreFunctions {
     /**
      * Registers a native function for later use
      */
-    registerFunction(module: string, name: string, offset: string, returnType: string, params: any[]): void;
+    registerFunction(module: string, name: string, fn: { Address?: string; Name?: string; Return: string; Params: any[]; Disable?: boolean }): void;
 
     /**
      * Checks if a function is registered
@@ -127,7 +127,7 @@ export interface GameCoreFunctions {
     /**
      * Hooks a native function with before/after callbacks
      */
-    hookFunction(module: string, name: string, offset: string, returnType: string, params: any[], disable: boolean): void;
+    hookFunction(module: string, name: string, fn: { Address?: string; Name?: string; Return: string; Params: any[]; Disable?: boolean }): void;
 
     /**
      * Sets up the game by loading modules and initializing hooks
@@ -170,8 +170,8 @@ export interface GameFunctions {
     isLevelMenu: (levelId: number) => boolean;
     isInGame: () => boolean; // player is in playable game level?
     isInMenu: () => boolean; // player is in main menu?
-    getScreenCenter: () => {x: number, y: number}; // returns 2d coords to the center of the screen
-    worldToScreenPos: (x: number, y: number, z: number, roomId: number) => {x: number, y: number}; // converts 3d coords to 2d screen coords
+    getScreenCenter: () => { x: number, y: number }; // returns 2d coords to the center of the screen
+    worldToScreenPos: (x: number, y: number, z: number, roomId: number) => { x: number, y: number }; // converts 3d coords to 2d screen coords
     openChat: () => void;
     closeChat: () => void;
     toggleChat: () => void;

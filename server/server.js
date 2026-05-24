@@ -19,7 +19,7 @@ class TRRServer {
         this.players = new Map();
         this.lastDataTimes = new Map();
         this.rateLimitBuckets = new Map();
-        this.levelsInfo = { "0": { "0": [], "1": [], "2": [] }, "1": { "0": [], "1": [], "2": [] } };
+        this.levelsInfo = { "0": { "0": [], "1": [], "2": [] }, "1": { "0": [], "1": [], "2": [] }, "2": { "0": [], "1": [], "2": [] } };
 
         this.setupSocketHandlers();
     }
@@ -51,6 +51,7 @@ class TRRServer {
         try {
             msg = await netcode.decompress(msg);
         } catch (err) {
+            console.warn('[DBG] decompress failed:', err.message);
             return;
         }
 
@@ -60,6 +61,7 @@ class TRRServer {
 
         if (packetType !== netcode.PACKET_TYPE_GLOBAL_REQ) {
             if (!this.validateCriticalKeys(_v, _seq)) {
+                console.warn('[DBG] version rejected:', _v, 'expected:', config.majorHash);
                 this.sendOutdated(rinfo).then(() => { });
                 return;
             }
@@ -72,6 +74,9 @@ class TRRServer {
                     break;
                 case netcode.PACKET_TYPE_SOUND:
                     await this.handleSoundState(netcode.decodeSound(msg), rinfo);
+                    break;
+                case netcode.PACKET_TYPE_VFX:
+                    await this.handleVfxState(netcode.decodeVfx(msg), rinfo);
                     break;
                 case netcode.PACKET_TYPE_PVP:
                     await this.handlePVPState(netcode.decodePVP(msg), rinfo);
@@ -195,6 +200,19 @@ class TRRServer {
         }
     }
 
+    async handleVfxState(decoded, rinfo) {
+        if (!decoded.id || !this.players.has(decoded.id)) return;
+
+        this.lastDataTimes.set(decoded.id, performance.now());
+        const encoded = await netcode.compress(netcode.encodeVfx(decoded));
+
+        for (const [otherId, otherPlayer] of this.players) {
+            if (otherId !== decoded.id && this.arePlayersInSameSession(otherPlayer, decoded)) {
+                this.socket.send(encoded, otherPlayer.port, otherPlayer.address);
+            }
+        }
+    }
+
     async handleChatState(decoded, rinfo) {
         const player = this.players.get(decoded.id);
         if (!decoded.id || !player) return;
@@ -301,10 +319,10 @@ class TRRServer {
 
     startCountLoop() {
         setInterval(() => {
-            const newLevelsInfo = { "0": { "0": [], "1": [], "2": [] }, "1": { "0": [], "1": [], "2": [] } };
+            const newLevelsInfo = { "0": { "0": [], "1": [], "2": [] }, "1": { "0": [], "1": [], "2": [] }, "2": { "0": [], "1": [], "2": [] } };
 
             for (const [playerId, player] of this.players) {
-                for (let x = 0; x < 2; x++) {
+                for (let x = 0; x < 3; x++) {
                     for (let i = 0; i < 3; i++) {
                         if (player.version !== i || player.bundleId !== x) continue;
                         let lvl = newLevelsInfo[String(x)][String(i)].find(l => l.lvl === player.level && l.lobby === player.lobby);

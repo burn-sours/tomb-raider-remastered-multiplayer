@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
     <meta charset="UTF-8" />
-    <title>Burn's Mods v2.3</title>
+    <title>Burn's Mods v2.5</title>
     <link rel="stylesheet" href="launcher.css">
 </head>
 <body>
@@ -37,6 +37,7 @@
     <select id="gameSelect" name="game" class="hidden">
         <option value="trr-123">Tomb Raider Remastered I-III</option>
         <option value="trr-45">Tomb Raider Remastered IV-V</option>
+        <option value="trr-6">Tomb Raider Remastered VI</option>
     </select>
 
     <div class="section patch hidden" id="patchSection">
@@ -50,6 +51,7 @@
             <div class="game-toggle" id="gameToggle">
                 <button class="game-toggle-btn active" data-game="trr-123">I-III</button>
                 <button class="game-toggle-btn" data-game="trr-45">IV-V</button>
+                <button class="game-toggle-btn" data-game="trr-6">VI</button>
             </div>
         </nav>
         <div class="content" id="tabPanels">
@@ -62,6 +64,23 @@
                     </label>
                 </div>
                 <div id="mpOptions" class="conditional hidden">
+                    <div id="tr6ContentSection" class="content-card hidden">
+                        <div class="content-card-header">
+                            <span class="content-card-title">Custom Maps Pack</span>
+                            <span class="content-card-status" id="tr6ContentStatus">Checking…</span>
+                        </div>
+                        <p class="content-card-message" id="tr6ContentMessage"></p>
+                        <div class="content-progress hidden" id="tr6ContentProgress">
+                            <div class="content-progress-bar"><div class="content-progress-bar-fill" id="tr6ContentProgressFill"></div></div>
+                            <div class="content-progress-info" id="tr6ContentProgressInfo"></div>
+                        </div>
+                        <div class="content-actions">
+                            <button id="tr6ContentPrimaryBtn" class="content-action-primary hidden" type="button"></button>
+                            <button id="tr6ContentCancelBtn" class="content-action-secondary hidden" type="button">Cancel</button>
+                            <button id="tr6ContentRevalidateBtn" class="content-action-link hidden" type="button">Re-verify</button>
+                            <button id="tr6ContentOpenFolderBtn" class="content-action-link" type="button">Open folder</button>
+                        </div>
+                    </div>
                     <div class="field-group">
                         <label class="field">
                             Server

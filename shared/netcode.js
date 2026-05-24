@@ -12,6 +12,7 @@ const PACKET_TYPE_CHAT = 0x09;
 const PACKET_TYPE_PVP = 0x0a;
 const PACKET_TYPE_KEEPALIVE = 0x0b;
 const PACKET_TYPE_DISCONNECT = 0x0c;
+const PACKET_TYPE_VFX = 0x0d;
 
 module.exports = {
     PACKET_TYPE_HIGHFREQ,
@@ -25,6 +26,7 @@ module.exports = {
     PACKET_TYPE_PVP,
     PACKET_TYPE_KEEPALIVE,
     PACKET_TYPE_DISCONNECT,
+    PACKET_TYPE_VFX,
 
     zStd: async () => {
         if (zStdInst) return zStdInst;
@@ -55,7 +57,7 @@ module.exports = {
         const nameLength = nameBuffer.length;
         const lobbyBuffer = Buffer.from(playerState.lobby || "_", 'utf-8');
         const lobbyLength = lobbyBuffer.length;
-    
+
         const buffer = Buffer.alloc(16 + idLength + nameLength + lobbyLength);
         let bufferX = 0;
         buffer.writeUInt8(packetType, 0);
@@ -75,7 +77,7 @@ module.exports = {
         bufferX = bufferX + 3;
         buffer.writeInt8(Number(playerState.bundleId), bufferX);
         bufferX += 1;
-    
+
         return buffer;
     },
 
@@ -89,9 +91,7 @@ module.exports = {
         bufferX = bufferX + 2 + idLength;
 
         const nameLength = buffer.readUInt16BE(bufferX);
-        const name = buffer.slice(bufferX + 2, bufferX + 2 + nameLength)
-                            .toString('utf-8')
-                            .substring(0, 20);
+        const name = buffer.slice(bufferX + 2, bufferX + 2 + nameLength).toString('utf-8').substring(0, 20);
         bufferX = bufferX + 2 + nameLength;
 
         const lobbyLength = buffer.readUInt16BE(bufferX);
@@ -104,9 +104,9 @@ module.exports = {
 
         const bundleId = buffer.readInt8(bufferX);
         bufferX += 1;
-        
+
         return {
-            data: { 
+            data: {
                 _v: modVersion,
                 _seq,
                 id,
@@ -121,6 +121,8 @@ module.exports = {
     },
 
     encodeHighFreq: (playerState) => {
+        if (playerState.bundleId === 2) return module.exports.encodeHighFreqTR6(playerState);
+
         const genericBuffer = module.exports.encodeGeneric(playerState, PACKET_TYPE_HIGHFREQ);
         const bonesBuffer = playerState.bones ? Buffer.from(playerState.bones) : null;
         const bonesBufferLength = bonesBuffer?.length || 0;
@@ -146,7 +148,7 @@ module.exports = {
 
         buffer.writeUInt32BE(playerState.gunTypes, bufferX);
         bufferX += 4;
-        
+
         buffer.writeInt8(playerState.gunFire1, bufferX);
         buffer.writeInt8(playerState.gunFire2, bufferX + 1);
         buffer.writeInt8(playerState.flareFire, bufferX + 2);
@@ -172,7 +174,7 @@ module.exports = {
             basicDataBuffer.copy(buffer, bufferX + 2);
         }
         bufferX = bufferX + 2 + basicDataBufferLength;
-        
+
         buffer.writeUInt16BE(shadowsBufferLength, bufferX);
         if (shadowsBufferLength > 0) {
             shadowsBuffer.copy(buffer, bufferX + 2);
@@ -199,6 +201,8 @@ module.exports = {
 
     decodeHighFreq: (buffer) => {
         const generic = module.exports.decodeGeneric(buffer);
+        if (generic.data.bundleId === 2) return module.exports.decodeHighFreqTR6(generic, buffer);
+
         let bufferX = generic.size;
 
         const bonesLength = buffer.readUInt16BE(bufferX);
@@ -237,7 +241,7 @@ module.exports = {
             positions = null;
         }
         bufferX = bufferX + 2 + positionsLength;
-        
+
         const basicDataLength = buffer.readUInt16BE(bufferX);
         let basicData;
         if (basicDataLength > 0) {
@@ -273,8 +277,8 @@ module.exports = {
 
         let pvpMode = !!buffer.readInt8(bufferX);
         bufferX = bufferX + 1;
-        
-        return { 
+
+        return {
             ...generic.data,
             bones,
             gunTypes,
@@ -306,10 +310,10 @@ module.exports = {
         buffer.writeUInt16BE(textLength, bufferX);
         textBuffer.copy(buffer, bufferX + 2);
         bufferX += 2 + textLength;
-    
+
         buffer.writeUInt8(chatState.chatAction ? 1 : 0, bufferX);
         bufferX += 1;
-    
+
         return buffer;
     },
 
@@ -319,16 +323,14 @@ module.exports = {
         let bufferX = generic.size;
 
         const textLength = buffer.readUInt16BE(bufferX);
-        const text = buffer.slice(bufferX + 2, bufferX + 2 + textLength)
-                            .toString('utf-8')
-                            .substring(0, 50);
+        const text = buffer.slice(bufferX + 2, bufferX + 2 + textLength).toString('utf-8').substring(0, 50);
         bufferX += 2 + textLength;
-        
+
         let chatAction = false;
         try {
             chatAction = buffer.readInt8(bufferX);
             bufferX = bufferX + 1;
-        } catch (err) {}
+        } catch (err) { }
 
         return {
             ...generic.data,
@@ -355,7 +357,7 @@ module.exports = {
         bufferX += 2;
 
         buffer.writeInt16BE(isNaN(pvpState.pvpWeapon) ? 0 : pvpState.pvpWeapon, bufferX);
-    
+
         return buffer;
     },
 
@@ -366,7 +368,7 @@ module.exports = {
 
         const pvpPlayerIdLength = buffer.readUInt16BE(bufferX);
         const pvpPlayer = buffer.slice(bufferX + 2, bufferX + 2 + pvpPlayerIdLength).toString('utf-8');
-        
+
         bufferX += 2 + pvpPlayerIdLength;
 
         const pvpDamage = buffer.readInt16BE(bufferX);
@@ -388,10 +390,10 @@ module.exports = {
         let bufferX = genericBuffer.length;
         buffer.writeInt32BE(isNaN(soundState.sound) ? -1 : soundState.sound, bufferX);
         buffer.writeInt32BE(isNaN(soundState.soundFactor) ? 0x0 : soundState.soundFactor, bufferX + 4);
-    
+
         return buffer;
     },
-    
+
     decodeSound: (buffer) => {
         const generic = module.exports.decodeGeneric(buffer);
 
@@ -399,14 +401,40 @@ module.exports = {
 
         const sound = buffer.readInt32BE(bufferX);
         const soundFactor = buffer.readInt32BE(bufferX + 4);
-        
-        return { 
+
+        return {
             ...generic.data,
             sound,
             soundFactor,
         };
     },
-    
+
+    encodeVfx: (vfxState) => {
+        const genericBuffer = module.exports.encodeGeneric(vfxState, PACKET_TYPE_VFX);
+        const descriptor = Buffer.from(vfxState.descriptor || []);
+        const descLen = descriptor.length;
+        const buffer = Buffer.alloc(genericBuffer.length + 2 + 1 + 4 + 4 + descLen);
+        genericBuffer.copy(buffer, 0);
+        let x = genericBuffer.length;
+        buffer.writeUInt16BE(descLen, x); x += 2;
+        buffer.writeUInt8((vfxState.type | 0) & 0xff, x); x += 1;
+        buffer.writeUInt32BE((vfxState.flags >>> 0), x); x += 4;
+        buffer.writeInt32BE(isNaN(vfxState.weaponId) ? 0 : (vfxState.weaponId | 0), x); x += 4;
+        descriptor.copy(buffer, x);
+        return buffer;
+    },
+
+    decodeVfx: (buffer) => {
+        const generic = module.exports.decodeGeneric(buffer);
+        let x = generic.size;
+        const descLen = buffer.readUInt16BE(x); x += 2;
+        const type = buffer.readUInt8(x); x += 1;
+        const flags = buffer.readUInt32BE(x); x += 4;
+        const weaponId = buffer.readInt32BE(x); x += 4;
+        const descriptor = Array.from(buffer.slice(x, x + descLen));
+        return { ...generic.data, type, descriptor, flags, weaponId };
+    },
+
     encodeGlobalReq: (globalReqState) => {
         return module.exports.encodeGeneric(globalReqState, PACKET_TYPE_GLOBAL_REQ);
     },
@@ -444,7 +472,7 @@ module.exports = {
             buffer.writeInt16BE(parseInt(level.players), bufferX + 2);
             bufferX += 4;
         }
-    
+
         return buffer;
     },
 
@@ -455,7 +483,7 @@ module.exports = {
         let bufferX = 6;
         if (globalSize > 0) {
             for (let i = 0; i < globalSize; i++) {
-                global.push({ 
+                global.push({
                     lvl: buffer.readInt16BE(bufferX),
                     players: buffer.readInt16BE(bufferX + 2),
                 });
@@ -474,5 +502,110 @@ module.exports = {
             }
         }
         return hex;
+    },
+
+    encodeHighFreqTR6: (playerState) => {
+        const genericBuffer = module.exports.encodeGeneric(playerState, PACKET_TYPE_HIGHFREQ);
+
+        const bonesBuffer = playerState.bones ? Buffer.from(playerState.bones) : null;
+        const bonesLen = bonesBuffer?.length || 0;
+        const positionsBuffer = playerState.positions ? Buffer.from(playerState.positions) : null;
+        const positionsLen = positionsBuffer?.length || 0;
+        const visArrayBuffer = playerState.visArray ? Buffer.from(playerState.visArray) : null;
+        const visArrayLen = visArrayBuffer?.length || 0;
+        const swapListsBuffer = playerState.swapLists ? Buffer.from(playerState.swapLists) : null;
+        const swapListsLen = swapListsBuffer?.length || 0;
+
+        const fixedSize = 10 + 8;
+        const buffer = Buffer.alloc(genericBuffer.length + fixedSize + bonesLen + positionsLen + visArrayLen + swapListsLen);
+        genericBuffer.copy(buffer, 0);
+
+        let bufferX = genericBuffer.length;
+
+        buffer.writeUInt16BE(bonesLen, bufferX);
+        if (bonesLen > 0) bonesBuffer.copy(buffer, bufferX + 2);
+        bufferX += 2 + bonesLen;
+
+        buffer.writeUInt16BE(positionsLen, bufferX);
+        if (positionsLen > 0) positionsBuffer.copy(buffer, bufferX + 2);
+        bufferX += 2 + positionsLen;
+
+        buffer.writeUInt16BE(visArrayLen, bufferX);
+        if (visArrayLen > 0) visArrayBuffer.copy(buffer, bufferX + 2);
+        bufferX += 2 + visArrayLen;
+
+        buffer.writeUInt16BE(swapListsLen, bufferX);
+        if (swapListsLen > 0) swapListsBuffer.copy(buffer, bufferX + 2);
+        bufferX += 2 + swapListsLen;
+
+        buffer.writeFloatBE(isNaN(playerState.health) ? 0 : playerState.health, bufferX);
+        bufferX += 4;
+
+        buffer.writeUInt32BE(isNaN(playerState.attachedFlag) ? 0 : playerState.attachedFlag, bufferX);
+        bufferX += 4;
+
+        buffer.writeInt8(playerState.pvpMode ? 1 : 0, bufferX);
+        bufferX += 1;
+
+        buffer.writeUInt8(isNaN(playerState.outfitId) ? 0 : (playerState.outfitId & 0xff), bufferX);
+        bufferX += 1;
+
+        const extra = Buffer.alloc(1);
+        extra.writeUInt8(isNaN(playerState.characterType) ? 0 : (playerState.characterType & 0xff), 0);
+        return Buffer.concat([buffer, extra]);
+    },
+
+    decodeHighFreqTR6: (generic, buffer) => {
+        let bufferX = generic.size;
+
+        const bonesLength = buffer.readUInt16BE(bufferX);
+        const bones = bonesLength > 0 ? buffer.slice(bufferX + 2, bufferX + 2 + bonesLength) : null;
+        bufferX += 2 + bonesLength;
+
+        const positionsLength = buffer.readUInt16BE(bufferX);
+        const positions = positionsLength > 0 ? buffer.slice(bufferX + 2, bufferX + 2 + positionsLength) : null;
+        bufferX += 2 + positionsLength;
+
+        const visArrayLength = buffer.readUInt16BE(bufferX);
+        const visArray = visArrayLength > 0 ? buffer.slice(bufferX + 2, bufferX + 2 + visArrayLength) : null;
+        bufferX += 2 + visArrayLength;
+
+        const swapListsLength = buffer.readUInt16BE(bufferX);
+        const swapLists = swapListsLength > 0 ? buffer.slice(bufferX + 2, bufferX + 2 + swapListsLength) : null;
+        bufferX += 2 + swapListsLength;
+
+        const health = buffer.readFloatBE(bufferX);
+        bufferX += 4;
+
+        const attachedFlag = buffer.readUInt32BE(bufferX);
+        bufferX += 4;
+
+        const pvpMode = !!buffer.readInt8(bufferX);
+        bufferX += 1;
+
+        let outfitId = 0;
+        if (bufferX < buffer.length) {
+            outfitId = buffer.readUInt8(bufferX);
+            bufferX += 1;
+        }
+
+        let characterType = 0;
+        if (bufferX < buffer.length) {
+            characterType = buffer.readUInt8(bufferX);
+            bufferX += 1;
+        }
+
+        return {
+            ...generic.data,
+            bones,
+            positions,
+            visArray,
+            swapLists,
+            health,
+            attachedFlag,
+            pvpMode,
+            outfitId,
+            characterType,
+        };
     },
 };

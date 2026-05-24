@@ -1,0 +1,12 @@
+{
+  "id": "infinite-strength",
+  "type": "feature",
+  "category": "vitals",
+  "name": "Infinite Strength",
+  "ui": {
+    "label": "Infinite strength?"
+  },
+  "supportedGames": [
+    "trr-6"
+  ]
+}

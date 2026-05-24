@@ -1,0 +1,194 @@
+{
+    "version": "1",
+    "displayVersion": "v1",
+    "archiveUrl": "https://github.com/burn-sours/tomb-raider-remastered-multiplayer/releases/download/v2.5.0/AOD_MAPS_V1.zip",
+    "archiveSha256": "a18e96e36fac5b1d5d6598878f3863c5ee2423a6b30bcb3362beeac44b54de02",
+    "archiveSizeBytes": 702575680,
+    "files": [
+        {
+            "name": "A_TEST.GMX",
+            "sha256": "8bc7e675de3e4ef3568194c3fe3d37fca87d3cd44bd9cfacc1c1e0e6215a79bf",
+            "sizeBytes": 33544528
+        },
+        {
+            "name": "PARIS1.GMX",
+            "sha256": "762d6bce71cf861074dd7362bb8293e3aee5e46c36847d96844ff04c48f4bd91",
+            "sizeBytes": 49939424
+        },
+        {
+            "name": "PARIS1A.GMX",
+            "sha256": "7e4e35365097a1ac909f2ca6737e1a4408255f166bc86314dbe1f5640216b0a5",
+            "sizeBytes": 32473712
+        },
+        {
+            "name": "PARIS1B.GMX",
+            "sha256": "d7198143e790c6cc268105ec0fb304800096e30f41e52dac694959e5a4f5f2e8",
+            "sizeBytes": 36003088
+        },
+        {
+            "name": "PARIS1C.GMX",
+            "sha256": "5fcc387f4808736606aeec1e5d9c1015a1d8788ed85fe8af877917e96b5d4f6e",
+            "sizeBytes": 27210512
+        },
+        {
+            "name": "PARIS2_1.GMX",
+            "sha256": "31fea1d2628b3018dae0e1cc9786fb671912c17e9f29e8893b7d917b717436fc",
+            "sizeBytes": 54263440
+        },
+        {
+            "name": "PARIS2_2.GMX",
+            "sha256": "7555d0393a890b996881647c2dc69030e8698dc09e0c2ae8a28143a766e23d22",
+            "sizeBytes": 40734544
+        },
+        {
+            "name": "PARIS2_3.GMX",
+            "sha256": "3eb5ba795bdcbb961b76828b33c75eadd7fab5de50ff0d8feb7c79906ab255aa",
+            "sizeBytes": 53709088
+        },
+        {
+            "name": "PARIS2B.GMX",
+            "sha256": "b53e249dd9e32ac8ff2d9b2196cb4c4a822528df3dc7d8c7b8c526706ccc7e3a",
+            "sizeBytes": 45394928
+        },
+        {
+            "name": "PARIS2C.GMX",
+            "sha256": "0cd18f87e61072fef84f230ccd0f29d51f3093e28561e4744c16a46e4ad41ec0",
+            "sizeBytes": 40332368
+        },
+        {
+            "name": "PARIS2D.GMX",
+            "sha256": "2480ee507a928acbf69c4f1432c2272aba3bc19fd68099cde391fcb0668585cb",
+            "sizeBytes": 19708256
+        },
+        {
+            "name": "PARIS2E.GMX",
+            "sha256": "d33b62a70670fd611c2baf09310469bdb4f49937bc1b2ffec5aeb3227a8d98b1",
+            "sizeBytes": 26829280
+        },
+        {
+            "name": "PARIS2F.GMX",
+            "sha256": "c0a2dfecce239fccda765e7c395790630be5f570cfb36b93bca05ba5f538f3c5",
+            "sizeBytes": 20707648
+        },
+        {
+            "name": "PARIS2G.GMX",
+            "sha256": "379f13b3276514bfaf476f6411e72028d076882d02c7f3a60f7d11155cae56c4",
+            "sizeBytes": 41660208
+        },
+        {
+            "name": "PARIS2H.GMX",
+            "sha256": "377567416e0be64c9afcaa34cc96f304666152b4bfcf7cb77fd2c87bebce434b",
+            "sizeBytes": 35969792
+        },
+        {
+            "name": "PARIS3.GMX",
+            "sha256": "5c32f85fdfade5bf6a037ee9ab55c7a946eca5b53fc07a49ea99f3e95256f305",
+            "sizeBytes": 46287344
+        },
+        {
+            "name": "PARIS4.GMX",
+            "sha256": "ea3eab3116cb32233b81b549407c07a7882150c96c6061b819e73c9eff8afe91",
+            "sizeBytes": 73849872
+        },
+        {
+            "name": "PARIS4A.GMX",
+            "sha256": "fa8d25e8c991361641abf9218d86dc2926f5687695d61ac67090f60026cf482b",
+            "sizeBytes": 62675904
+        },
+        {
+            "name": "PARIS5_1.GMX",
+            "sha256": "68e30864289ceef0eb18654fe92abd7c846744a2095304ab0dc5228507fe7bbc",
+            "sizeBytes": 55489696
+        },
+        {
+            "name": "PARIS5_2.GMX",
+            "sha256": "7315f2cfd4f1eeb6fecc604fb85ad22fd4877837f930230d9f836e136e953658",
+            "sizeBytes": 27904560
+        },
+        {
+            "name": "PARIS5_3.GMX",
+            "sha256": "2c03590d2df0876a8742b11504f23f187146c5032afc5784a521c095747dc897",
+            "sizeBytes": 27390992
+        },
+        {
+            "name": "PARIS5_4.GMX",
+            "sha256": "af6bfc2ff8dc1f5eb2b8165f58f2e073d16542777713a19d9dcd3213d6e1ba9d",
+            "sizeBytes": 21297632
+        },
+        {
+            "name": "PARIS5_5.GMX",
+            "sha256": "5bc9cedd4452840cb39766485185d0a13e3727845d401caf6b920e112941a8cd",
+            "sizeBytes": 19790288
+        },
+        {
+            "name": "PARIS5.GMX",
+            "sha256": "5cb90c30274379e55be504fcd69120c1f4188457466e3741237c0dec9b798ae4",
+            "sizeBytes": 36590176
+        },
+        {
+            "name": "PARIS5A.GMX",
+            "sha256": "568a4c7f12b16a56b5060307be9894d8fc606ca863feaa9585aff4b99fc05527",
+            "sizeBytes": 28359360
+        },
+        {
+            "name": "PARIS6.GMX",
+            "sha256": "331b7168ff15b8e159fc4386213a258af4669f42c19624b677259572edde7d5d",
+            "sizeBytes": 39237936
+        },
+        {
+            "name": "PRAGUE1.GMX",
+            "sha256": "1f772925ef610fb6756295cc57321c50c5c38ca02084189a62ccdb5e1d899bfe",
+            "sizeBytes": 60440064
+        },
+        {
+            "name": "PRAGUE2.GMX",
+            "sha256": "45535b9e475cd951b994cbf33aa6f55da2a2c78486b70f26bb0fac51ed51f3fb",
+            "sizeBytes": 59658112
+        },
+        {
+            "name": "PRAGUE3.GMX",
+            "sha256": "f82aaa830e908fe0bd622ef717f1d862753a768aefa7a6625a399cd3d2f947c6",
+            "sizeBytes": 69736368
+        },
+        {
+            "name": "PRAGUE3A.GMX",
+            "sha256": "813efc544c0b71fdd075403edf79cbbb1b5dada53e662c539f161f226323a1e0",
+            "sizeBytes": 54800112
+        },
+        {
+            "name": "PRAGUE4.GMX",
+            "sha256": "5146e58f3d1d32144d6099825159f1dbba005b56e22f18cddd83b9d431f904b0",
+            "sizeBytes": 69185040
+        },
+        {
+            "name": "PRAGUE4A.GMX",
+            "sha256": "a5eb9add78d04d84dfc77839865b85ae7532260b250f304ad0118c11b18d3f77",
+            "sizeBytes": 69135424
+        },
+        {
+            "name": "PRAGUE5.GMX",
+            "sha256": "bdaf52070bc69f6d25a97a9ea7c019f83d8f6033954378464786f60e81e59cf8",
+            "sizeBytes": 51512288
+        },
+        {
+            "name": "PRAGUE5A.GMX",
+            "sha256": "d28399e637d80341da70a43a56f71060fe9c5137947c040f143174a1463b3edb",
+            "sizeBytes": 27947248
+        },
+        {
+            "name": "PRAGUE6.GMX",
+            "sha256": "e3e2e8e3c1a372510ad3ca032b8ce86cb872e975c3f92d9cfba2a96e13c08762",
+            "sizeBytes": 40134080
+        },
+        {
+            "name": "PRAGUE6A.GMX",
+            "sha256": "58a97311e6f378742fa42dd547d5d6995d207f3901f8159d8585dcd2a98356bb",
+            "sizeBytes": 20838800
+        },
+        {
+            "name": "TESTROOM.GMX",
+            "sha256": "3382e64691420f269a9626b6fa04fe1c8fa2573034ec3759ff7604078b8a96f2",
+            "sizeBytes": 16814304
+        }
+    ]
+}

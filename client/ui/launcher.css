@@ -308,6 +308,33 @@ h3.subtitle {
     line-height: 1.4;
 }
 
+.tab-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 14px 0;
+}
+
+.tab-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid #2a2522;
+    color: #d1d5db;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.tab-action:hover {
+    color: #fb6010;
+    border-color: #fb6010;
+    background: rgba(251, 96, 16, 0.06);
+}
+
 .tab-panel .options {
     display: flex;
     flex-direction: column;
@@ -758,4 +785,180 @@ input[disabled], select[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
+}
+
+.content-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.content-card.state-installed {
+    border-color: rgba(82, 196, 121, 0.4);
+    background: rgba(82, 196, 121, 0.06);
+}
+
+.content-card.state-warning {
+    border-color: rgba(251, 96, 16, 0.45);
+    background: rgba(251, 96, 16, 0.06);
+}
+
+.content-card.state-error {
+    border-color: rgba(220, 38, 38, 0.55);
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.content-card.state-busy {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.content-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.content-card-title {
+    font-size: 12px;
+    font-family: system-ui;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #f5f3f0;
+}
+
+.content-card-status {
+    font-size: 11px;
+    font-family: system-ui;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #9ca3af;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+}
+
+.content-card.state-installed .content-card-status {
+    color: #6ed28b;
+    background: rgba(82, 196, 121, 0.12);
+}
+
+.content-card.state-warning .content-card-status {
+    color: #fb6010;
+    background: rgba(251, 96, 16, 0.12);
+}
+
+.content-card.state-error .content-card-status {
+    color: #f87171;
+    background: rgba(220, 38, 38, 0.14);
+}
+
+.content-card-message {
+    font-size: 12px;
+    color: #d1d5db;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.content-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.content-progress.hidden {
+    display: none;
+}
+
+.content-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.content-progress-bar-fill {
+    height: 100%;
+    background: #fb6010;
+    border-radius: inherit;
+    width: 0%;
+    transition: width 0.25s ease;
+}
+
+.content-progress-info {
+    font-size: 11px;
+    color: #9ca3af;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.content-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.content-action-primary {
+    background: #fb6010;
+    border: 1px solid #fb6010;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.content-action-primary:hover {
+    background: #ff7430;
+    border-color: #ff7430;
+}
+
+.content-action-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #d1d5db;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.content-action-secondary:hover {
+    color: #f5f3f0;
+    border-color: #fb6010;
+}
+
+.content-action-link {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 4px 6px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.content-action-link:hover {
+    color: #f5f3f0;
+}
+
+.content-action-primary.hidden,
+.content-action-secondary.hidden,
+.content-action-link.hidden {
+    display: none;
 }

@@ -4,12 +4,13 @@
 
 > **Experience Classic Tomb Raider Like Never Before**
 
-This is a free, open-source launcher that brings **multiplayer** and **customizable mods** to Tomb Raider Remastered (I-V). See other players exploring in real-time, battle in PVP combat, chat in-game, and enhance your gameplay with mods — from super jump to hardcore permadeath mode.
+This is a free, open-source launcher that brings **multiplayer** and **customizable mods** to Tomb Raider Remastered (I-VI). See other players exploring in real-time, battle in PVP combat, chat in-game, and enhance your gameplay with mods — from super jump to hardcore permadeath mode.
 
 **🎮 Supported Games:**
 - Tomb Raider I, II, III (Remastered)
 - Tomb Raider IV: The Last Revelation (Remastered)
 - Tomb Raider V: Chronicles (Remastered)
+- Tomb Raider VI: Angel of Darkness  (Remastered)
 
 ---
 

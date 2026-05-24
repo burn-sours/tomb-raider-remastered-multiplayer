@@ -15,12 +15,27 @@ module.exports = {
             if (!userData['infinite-health']) return;
 
             const lara = game.getLara();
-            if (infiniteHealthTrackingDisabled || !lara || lara.isNull()) return;
+            if (!lara || lara.isNull()) return;
 
             try {
                 const module = game.getGameModule();
-                const moduleAddresses = game.getModuleAddresses(module);
-                
+
+                // TR6 doesn't expose LoadLevelAssets, so the LoadedLevel.before
+                // disable above never gets cleared. Self-recover once lara is
+                // valid again (level fully loaded).
+                if (module === "tomb6.dll" && infiniteHealthTrackingDisabled) {
+                    infiniteHealthTrackingDisabled = false;
+                }
+                if (infiniteHealthTrackingDisabled) return;
+
+                if (module === "tomb6.dll") {
+                    const currentHealth = game.readMemoryVariable("PlayerHealth", module);
+                    if (typeof currentHealth === 'number' && currentHealth > 0) {
+                        game.writeMemoryVariable("PlayerHealth", 200, module);
+                    }
+                    return;
+                }
+
                 const currentHealth = lara.add(ENTITY_HEALTH).readS16();
                 if (currentHealth > 0) {
                     lara.add(ENTITY_HEALTH).writeS16(2000);

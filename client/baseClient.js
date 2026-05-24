@@ -41,7 +41,7 @@ class BaseGameClient {
     constructor(socket, bundleId, bundleIdInteger = null) {
         this.socket = socket;
         this.bundleId = bundleId;
-        this.bundleIdInteger = bundleIdInteger || (bundleId === "trr-123" ? 0 : 1);
+        this.bundleIdInteger = bundleIdInteger || ({ "trr-123": 0, "trr-45": 1, "trr-6": 2 }[bundleId] ?? 1);
         this.manifest = gameManifests.games.find(manifest => manifest.id === bundleId);
     }
 
@@ -65,6 +65,16 @@ class BaseGameClient {
     async isLevelChanging() {
         // IMPLEMENTED BY GAME CLIENT
         return false;
+    }
+
+    _handleGameFnError(label, err) {
+        if (this.exiting) return;
+        if (err && err.message === 'Script is destroyed') {
+            this.exiting = true;
+            return;
+        }
+
+        console.error(label, err);
     }
 
     sendToServer(message) {
@@ -321,7 +331,7 @@ class BaseGameClient {
                         );
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in receivePlayerData: ', err);
+                    this._handleGameFnError('Error in receivePlayerData: ', err);
                 }
                 break;
 
@@ -337,7 +347,25 @@ class BaseGameClient {
                         );
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in receiveAudio: ', err);
+                    this._handleGameFnError('Error in receiveAudio: ', err);
+                }
+                break;
+
+            case netcode.PACKET_TYPE_VFX:
+                if (!checkKeys()) return;
+                try {
+                    const vfxEvent = netcode.decodeVfx(msg);
+                    if (await this.gameFunctions.isInGame()) {
+                        await this.gameFunctions.receiveVfx(
+                            vfxEvent.type,
+                            vfxEvent.descriptor,
+                            vfxEvent.flags,
+                            vfxEvent.weaponId,
+                            vfxEvent.id
+                        );
+                    }
+                } catch (err) {
+                    this._handleGameFnError('Error in receiveVfx gamescript: ', err);
                 }
                 break;
 
@@ -355,7 +383,7 @@ class BaseGameClient {
                         }
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in receivePVP: ', err);
+                    this._handleGameFnError('Error in receivePVP: ', err);
                 }
                 break;
 
@@ -372,7 +400,7 @@ class BaseGameClient {
                         );
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in receiveChat: ', err);
+                    this._handleGameFnError('Error in receiveChat: ', err);
                 }
                 break;
 
@@ -389,7 +417,7 @@ class BaseGameClient {
                         await this.gameFunctions.setupMenuPlayersText(globalData);
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in globalplayers: ', err);
+                    this._handleGameFnError('Error in globalplayers: ', err);
                 }
                 break;
 
@@ -401,7 +429,7 @@ class BaseGameClient {
                         await this.gameFunctions.receivePlayerDisconnect(disconnectEvent.id);
                     }
                 } catch (err) {
-                    if (!this.exiting) console.error('Error in receivePlayerDisconnect: ', err);
+                    this._handleGameFnError('Error in receivePlayerDisconnect: ', err);
                 }
                 break;
 
@@ -410,9 +438,18 @@ class BaseGameClient {
         }
     }
 
+    async _resolveNetworkLevelId() {
+        if (this.bundleId === "trr-6") {
+            if (await this.gameFunctions.isInMenu()) return -1;
+            const module = await this.gameFunctions.getGameModule();
+            return await this.gameFunctions.readMemoryVariable("Level", module);
+        }
+        return await this.gameFunctions.readMemoryVariable("Level", this.manifest.executable);
+    }
+
     async handleMultiplayerEvent(message) {
         const gameVersion = await this.gameFunctions.readMemoryVariable("GameVersion", this.manifest.executable);
-        const levelId = await this.gameFunctions.readMemoryVariable("Level", this.manifest.executable);
+        const levelId = await this._resolveNetworkLevelId();
 
         const eventType = message.payload?.event;
         if (!eventType || !eventType.startsWith("multiplayer:")) return;
@@ -431,6 +468,25 @@ class BaseGameClient {
                         level: levelId,
                         sound: parseInt(message.payload.args.sound, 16),
                         soundFactor: parseInt(message.payload.args.soundFactor, 16),
+                    }))
+                );
+                break;
+
+            case "sendVfx":
+                this.sendToServer(
+                    await netcode.compress(netcode.encodeVfx({
+                        _v: config.client.major,
+                        _seq: this.seq,
+                        id: this.connectedId,
+                        name: this.launchOptions.name,
+                        lobby: this.launchOptions.lobbyCode,
+                        version: gameVersion,
+                        bundleId: this.bundleIdInteger,
+                        level: levelId,
+                        type: message.payload.args.type,
+                        descriptor: message.payload.args.descriptor,
+                        flags: message.payload.args.flags,
+                        weaponId: message.payload.args.weaponId,
                     }))
                 );
                 break;
@@ -481,13 +537,13 @@ class BaseGameClient {
         if (this.exiting) return;
 
         const gameVersion = await this.gameFunctions.readMemoryVariable("GameVersion", this.manifest.executable);
-        const levelId = await this.gameFunctions.readMemoryVariable("Level", this.manifest.executable);
+        const levelId = await this._resolveNetworkLevelId();
 
         if (force || await this.gameFunctions.isInGame()) {
             try {
                 await this.gameFunctions.updateLoop();
             } catch (err) {
-                if (!this.exiting) console.error('Error in updateLoop: ', err);
+                this._handleGameFnError('Error in updateLoop: ', err);
             }
         } else if (await this.gameFunctions.isInMenu()) {
             // In menu - send global request to get player lists
@@ -524,64 +580,114 @@ class BaseGameClient {
     async frameLoop(loop = true, force = false) {
         if (this.exiting) return;
 
-        const inGame = await this.gameFunctions.isInGame();
+        try {
+            const inGame = await this.gameFunctions.isInGame();
+            if (force || inGame) {
+                const module = await this.gameFunctions.getGameModule();
+                const gameVersion = await this.gameFunctions.readMemoryVariable("GameVersion", this.manifest.executable);
+                const levelId = await this._resolveNetworkLevelId();
 
-        if (force || inGame) {
-            const module = await this.gameFunctions.getGameModule();
-            const gameVersion = await this.gameFunctions.readMemoryVariable("GameVersion", this.manifest.executable);
-            const levelId = await this.gameFunctions.readMemoryVariable("Level", this.manifest.executable);
+                if (this.bundleId === "trr-6") {
+                    // TR6: send bones, positions, visArray, health, attachedFlag, swapLists
+                    const laraBones = await this.gameFunctions.getLaraBonesBackup();
+                    const laraPositions = await this.gameFunctions.getLaraPositionsBackup();
+                    const visArray = await this.gameFunctions.getVisArrayBackup();
+                    const health = await this.gameFunctions.getHealthBackup();
+                    const attachedFlag = await this.gameFunctions.getAttachedFlagBackup();
+                    let outfitId = 0;
+                    try {
+                        outfitId = await this.gameFunctions.getOutfitIdBackup();
+                    } catch (e) { /* older script without outfit support */ }
+                    let characterType = 0;
+                    try {
+                        characterType = await this.gameFunctions.getCharacterTypeBackup();
+                    } catch (e) { /* older script without character type support */ }
+                    let swapLists = null;
+                    try {
+                        swapLists = await this.gameFunctions.getSwapListsBackup();
+                    } catch (e) {
+                        if (!this._swapErr) { this._swapErr = true; console.error('[TR6 PKT] getSwapListsBackup error:', e.message); }
+                    }
 
-            let vehicleId, vehicleBones;
-            if ((this.bundleId === "trr-123" && gameVersion < 1) || (this.bundleId === "trr-45" && gameVersion === 1)) {
-                // TR1 & TR5 no vehicles
-                vehicleBones = undefined;
-                vehicleId = -1;
-            } else {
-                const vehicle = inGame && await this.gameFunctions.getVehicleBonesBackup();
-                if (vehicle) {
-                    vehicleBones = vehicle[1] || undefined;
-                    vehicleId = isNaN(vehicle[0]) ? -1 : vehicle[0];
+                    const rawPacket = netcode.encodeHighFreq({
+                        _v: config.client.major,
+                        _seq: this.seq = (this.seq + 1) & 0xFF,
+                        id: this.connectedId,
+                        name: this.launchOptions.name,
+                        lobby: this.launchOptions.lobbyCode,
+                        version: gameVersion,
+                        bundleId: this.bundleIdInteger,
+                        level: levelId,
+                        bones: laraBones,
+                        positions: laraPositions,
+                        visArray,
+                        health,
+                        attachedFlag,
+                        outfitId,
+                        characterType,
+                        swapLists,
+                        pvpMode: this.pvpMode,
+                    });
+
+                    const compressed = await netcode.compress(rawPacket);
+                    this.sendToServer(compressed);
                 } else {
-                    vehicleBones = undefined;
-                    vehicleId = -1;
+                    // TR1-5: existing packet format
+                    const laraBones = await this.gameFunctions.getLaraBonesBackup();
+                    const laraGunTypes = await this.gameFunctions.getGunTypesBackup();
+                    const laraPositions = await this.gameFunctions.getLaraPositionsBackup();
+                    const laraShadows = await this.gameFunctions.getLaraCircleShadowBackup();
+
+                    let vehicleId, vehicleBones;
+                    if ((this.bundleId === "trr-123" && gameVersion < 1) || (this.bundleId === "trr-45" && gameVersion === 1)) {
+                        vehicleBones = undefined;
+                        vehicleId = -1;
+                    } else {
+                        const vehicle = inGame && await this.gameFunctions.getVehicleBonesBackup();
+                        if (vehicle) {
+                            vehicleBones = vehicle[1] || undefined;
+                            vehicleId = isNaN(vehicle[0]) ? -1 : vehicle[0];
+                        } else {
+                            vehicleBones = undefined;
+                            vehicleId = -1;
+                        }
+                    }
+
+                    const laraBasic = await this.gameFunctions.getLaraBasicDataBackup();
+                    const laraRoom = await this.gameFunctions.getLaraRoomIdBackup();
+                    const laraAppearance = await this.gameFunctions.getAppearanceBackup();
+                    const roomType = await this.gameFunctions.readMemoryVariable("RoomType", module);
+
+                    this.sendToServer(
+                        await netcode.compress(netcode.encodeHighFreq({
+                            _v: config.client.major,
+                            _seq: this.seq = (this.seq + 1) & 0xFF,
+                            id: this.connectedId,
+                            name: this.launchOptions.name,
+                            lobby: this.launchOptions.lobbyCode,
+                            version: gameVersion,
+                            bundleId: this.bundleIdInteger,
+                            level: levelId,
+                            bones: laraBones,
+                            gunTypes: laraGunTypes,
+                            gunFire1: this.lastFiringLeft,
+                            gunFire2: this.lastFiringRight,
+                            flareFire: this.lastFiringFlare,
+                            vehicleId,
+                            vehicleBones,
+                            positions: laraPositions,
+                            basicData: laraBasic,
+                            shadows: laraShadows,
+                            room: laraRoom,
+                            appearance: laraAppearance,
+                            roomType,
+                            pvpMode: this.pvpMode,
+                        }))
+                    );
                 }
             }
-
-            const laraBones = await this.gameFunctions.getLaraBonesBackup();
-            const laraGunTypes = await this.gameFunctions.getGunTypesBackup();
-            const laraPositions = await this.gameFunctions.getLaraPositionsBackup();
-            const laraBasic = await this.gameFunctions.getLaraBasicDataBackup();
-            const laraShadows = await this.gameFunctions.getLaraCircleShadowBackup();
-            const laraRoom = await this.gameFunctions.getLaraRoomIdBackup();
-            const laraAppearance = await this.gameFunctions.getAppearanceBackup();
-            const roomType = await this.gameFunctions.readMemoryVariable("RoomType", module);
-
-            this.sendToServer(
-                await netcode.compress(netcode.encodeHighFreq({
-                    _v: config.client.major,
-                    _seq: this.seq = (this.seq + 1) & 0xFF,
-                    id: this.connectedId,
-                    name: this.launchOptions.name,
-                    lobby: this.launchOptions.lobbyCode,
-                    version: gameVersion,
-                    bundleId: this.bundleIdInteger,
-                    level: levelId,
-                    bones: laraBones,
-                    gunTypes: laraGunTypes,
-                    gunFire1: this.lastFiringLeft,
-                    gunFire2: this.lastFiringRight,
-                    flareFire: this.lastFiringFlare,
-                    vehicleId,
-                    vehicleBones,
-                    positions: laraPositions,
-                    basicData: laraBasic,
-                    shadows: laraShadows,
-                    room: laraRoom,
-                    appearance: laraAppearance,
-                    roomType,
-                    pvpMode: this.pvpMode,
-                }))
-            );
+        } catch (err) {
+            this._handleGameFnError("Error in frameLoop: ", err);
         }
 
         if (loop && !this.exiting) {
@@ -594,27 +700,30 @@ class BaseGameClient {
 
         if (force || await this.gameFunctions.isInGame()) {
             const gameVersion = await this.gameFunctions.readMemoryVariable("GameVersion", this.manifest.executable);
-            const levelId = await this.gameFunctions.readMemoryVariable("Level", this.manifest.executable);
+            const levelId = await this._resolveNetworkLevelId();
 
             try {
                 const time = Date.now();
-                const laraGunFlags = await this.gameFunctions.getGunFlagsBackup();
 
-                if (Array.isArray(laraGunFlags)) {
-                    if (laraGunFlags[0]) this.lastFiredLeft = time;
-                    this.lastFiringLeft = (time - this.lastFiredLeft) < 100 ? laraGunFlags[0] : 0;
-                    if (laraGunFlags[1]) this.lastFiredRight = time;
-                    this.lastFiringRight = (time - this.lastFiredRight) < 100 ? laraGunFlags[1] : 0;
-                } else {
-                    // noinspection JSBitwiseOperatorUsage
-                    if (laraGunFlags & 4) this.lastFiredLeft = time;
-                    this.lastFiringLeft = (time - this.lastFiredLeft) < 100 ? 1 : 0;
-                    // noinspection JSBitwiseOperatorUsage
-                    if (laraGunFlags & 8) this.lastFiredRight = time;
-                    this.lastFiringRight = (time - this.lastFiredRight) < 100 ? 1 : 0;
-                    // noinspection JSBitwiseOperatorUsage
-                    if (laraGunFlags & 0x10) this.lastFiredFlare = time;
-                    this.lastFiringFlare = (time - this.lastFiredFlare) < 100 ? 1 : 0;
+                if (this.bundleId !== "trr-6") {
+                    const laraGunFlags = await this.gameFunctions.getGunFlagsBackup();
+
+                    if (Array.isArray(laraGunFlags)) {
+                        if (laraGunFlags[0]) this.lastFiredLeft = time;
+                        this.lastFiringLeft = (time - this.lastFiredLeft) < 100 ? laraGunFlags[0] : 0;
+                        if (laraGunFlags[1]) this.lastFiredRight = time;
+                        this.lastFiringRight = (time - this.lastFiredRight) < 100 ? laraGunFlags[1] : 0;
+                    } else {
+                        // noinspection JSBitwiseOperatorUsage
+                        if (laraGunFlags & 4) this.lastFiredLeft = time;
+                        this.lastFiringLeft = (time - this.lastFiredLeft) < 100 ? 1 : 0;
+                        // noinspection JSBitwiseOperatorUsage
+                        if (laraGunFlags & 8) this.lastFiredRight = time;
+                        this.lastFiringRight = (time - this.lastFiredRight) < 100 ? 1 : 0;
+                        // noinspection JSBitwiseOperatorUsage
+                        if (laraGunFlags & 0x10) this.lastFiredFlare = time;
+                        this.lastFiringFlare = (time - this.lastFiredFlare) < 100 ? 1 : 0;
+                    }
                 }
 
                 const photomode = await this.gameFunctions.readMemoryVariable("IsPhotoMode", this.manifest.executable);
@@ -652,7 +761,7 @@ class BaseGameClient {
                     this.pvpDamage[2] = 0;
                 }
             } catch (err) {
-                if (!this.exiting) console.error("Error in tickLoop: ", err);
+                this._handleGameFnError("Error in tickLoop: ", err);
             }
         }
 
@@ -701,9 +810,9 @@ class BaseGameClient {
         }
     }
 
-    async handleConnectionFailure() {
+    async handleConnectionFailure(reason = 'connectionFailed') {
         if (this.exiting) return;
-        ui.broadcast('connectionFailed');
+        ui.broadcast(reason);
         ipcMain.emit('stopMods');
     }
 
@@ -714,7 +823,7 @@ class BaseGameClient {
 
         try {
             const gameVersion = await this.gameFunctions.readMemoryVariable("GameVersion", this.manifest.executable);
-            const levelId = await this.gameFunctions.readMemoryVariable("Level", this.manifest.executable);
+            const levelId = await this._resolveNetworkLevelId();
 
             const disconnectPacket = await netcode.compress(netcode.encodeDisconnect({
                 _v: config.client.major,

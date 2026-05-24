@@ -38,11 +38,11 @@ module.exports = {
             Address: "0x39dce0",
             Type: "Int16"
         },
-        LaraBase: {
+        MainPlayerEntity: {
             Address: "0x39de90",
             Type: "UInt64"
         },
-        LaraOxygen: {
+        PlayerOxygen: {
             Address: "0x39DCF6",
             Type: "Int16"
         },

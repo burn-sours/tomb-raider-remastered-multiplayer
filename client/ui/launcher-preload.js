@@ -48,6 +48,26 @@ contextBridge.exposeInMainWorld('api', {
         return await ipcRenderer.invoke('selectExeFile');
     },
 
+    getTr6ContentStatus: async () => {
+        return await ipcRenderer.invoke('getTr6ContentStatus');
+    },
+
+    revalidateTr6Content: async () => {
+        return await ipcRenderer.invoke('revalidateTr6Content');
+    },
+
+    downloadTr6Content: async () => {
+        return await ipcRenderer.invoke('downloadTr6Content');
+    },
+
+    cancelTr6Download: async () => {
+        return await ipcRenderer.invoke('cancelTr6Download');
+    },
+
+    openTr6MapsFolder: async () => {
+        return await ipcRenderer.invoke('openTr6MapsFolder');
+    },
+
     stopMods: () => {
         ipcRenderer.send('stopMods');
     },

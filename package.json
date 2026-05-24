@@ -1,7 +1,7 @@
 {
     "name": "tomb-raider-remastered-launcher",
-    "version": "2.3.1",
-    "description": "Burn's Mods & Multiplayer for TRR I-V",
+    "version": "2.5.0",
+    "description": "Burn's Mods & Multiplayer for TRR I-VI",
     "license": "GPL-3.0-only",
     "author": "burn_sours",
     "main": "client/index.js",
@@ -14,6 +14,7 @@
     },
     "dependencies": {
         "discord.js": "^14.25.1",
+        "extract-zip": "^2.0.1",
         "frida": "^17.7.3",
         "zstd-codec": "^0.1.5"
     },
