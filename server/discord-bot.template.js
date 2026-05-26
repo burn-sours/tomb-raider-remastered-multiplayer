@@ -176,16 +176,16 @@ const LEVEL_NAMES = {
     // TR6: bundleId=2, version=2
     '2_2': {
         '-1': "Main Menu",
-        0:  "Back Streets",
-        1:  "Apartment Block",
-        2:  "Carvier's Apt",
-        3:  "Rooftops",
-        4:  "Ghetto",
-        5:  "Ghetto 2",
-        6:  "Ghetto 3",
-        7:  "Serpent Rouge",
-        8:  "Pawnshop",
-        9:  "Herbalist",
+        0: "Back Streets",
+        1: "Apartment Block",
+        2: "Carvier's Apt",
+        3: "Rooftops",
+        4: "Ghetto",
+        5: "Ghetto 2",
+        6: "Ghetto 3",
+        7: "Serpent Rouge",
+        8: "Pawnshop",
+        9: "Herbalist",
         10: "Aicard's Church",
         11: "Cafe Metro",
         12: "Graveyard",
@@ -234,7 +234,8 @@ async function main() {
     const { Client, GatewayIntentBits } = require('discord.js');
 
     client = new Client({
-        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+        rest: { rejectOnRateLimit: () => true }
     });
 
     client.once('clientReady', async () => {
