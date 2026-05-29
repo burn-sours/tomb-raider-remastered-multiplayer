@@ -541,7 +541,7 @@ module.exports = {
         buffer.writeFloatBE(isNaN(playerState.health) ? 0 : playerState.health, bufferX);
         bufferX += 4;
 
-        buffer.writeUInt32BE(isNaN(playerState.attachedFlag) ? 0 : playerState.attachedFlag, bufferX);
+        buffer.writeUInt32BE(isNaN(playerState.faceExpressionId) ? 0 : playerState.faceExpressionId, bufferX);
         bufferX += 4;
 
         buffer.writeInt8(playerState.pvpMode ? 1 : 0, bufferX);
@@ -577,7 +577,7 @@ module.exports = {
         const health = buffer.readFloatBE(bufferX);
         bufferX += 4;
 
-        const attachedFlag = buffer.readUInt32BE(bufferX);
+        const faceExpressionId = buffer.readUInt32BE(bufferX);
         bufferX += 4;
 
         const pvpMode = !!buffer.readInt8(bufferX);
@@ -602,7 +602,7 @@ module.exports = {
             visArray,
             swapLists,
             health,
-            attachedFlag,
+            faceExpressionId,
             pvpMode,
             outfitId,
             characterType,

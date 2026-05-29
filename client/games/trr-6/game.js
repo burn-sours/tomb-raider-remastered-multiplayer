@@ -52,11 +52,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         const ENTITY_MESH_DESC = 0x50;
         const ENTITY_FLAGS_PTR = 0x60;
         const ENTITY_BONE_MATRICES = 0x68;
+        const ENTITY_ANIM_HASH_TABLE = 0x08;
         const ENTITY_SKELETON = 0x78;
         const ENTITY_VIS_ARRAY = 0x100;
         const ENTITY_NULL_130 = 0x130;
         const ENTITY_ATTR_PTR = 0x178;
-        const ENTITY_ATTACHED_FLAG = 0x1F8;
+        const ENTITY_FACE_EXPRESSION_ID = 0x180;
         const ENTITY_RENDER_DATA = 0x1200;
         const RENDER_DATA_SIZE = 0x1000;
         const RENDER_DATA_ENTITY_BACKREF = 0x300;
@@ -68,6 +69,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         const SCENE_TYPE = 0x1E0;
         const SCENE_FLAGS = 0x1FC;
         const SCENE_ENTITY_PTR = 0x208;
+        const SCENE_ANIM_ARCHIVE = 0x210;
         const DONOR_SCENE_SIZE = 0x300;
         const MESH_DESC_PART_COUNT = 0x04;
         const MAX_VALID_PTR = ptr("0x7fffffffffff");
@@ -78,6 +80,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         const SKEL_GROUP_ARRAY = 0x80;
         const SKEL_LEGACY_MESH = 0xE8;
         const SKEL_HD_MESH = 0xF0;
+        const SKELETON_SIZE = 0xF8;
+        const GAME_STATE_PLAYING = 1;
+        const GAME_STATE_DIALOG = 3;
+        const GAME_STATE_PAUSED = 8;
+        const GAME_STATE_MAIN_MENU = 10;
+
+        const ENTITY_ANIM_DB = 0x58;
 
         const ATTR_MODULAR_OUTFIT_BIT = 0x3C;
 
@@ -85,6 +94,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         const FLAGS_NULL_08 = 0x8;
         const FLAGS_NULL_160 = 0x160;
         const FLAGS_NULL_198 = 0x198;
+        const FLAGS_ANIM_STATE = 0x140;
+        const ANIM_STATE_HASH = 0x7C;
         const FLAGS_POS_X = 0x200;
         const FLAGS_POS_Y = 0x204;
         const FLAGS_POS_Z = 0x208;
@@ -156,11 +167,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let levelLaraVariant = 0x16;
 
         let pendingSwapType = null;
+        let primeReturnType = null;
+        let preBuildIntendedType = null;
         let preferredCharSide = null;
-        let _textWidthOut = Memory.alloc(4);
 
-        const moddedAnsiBuffers = {};
-        const moddedUtf16Buffers = {};
+        const backupsCache = {};
+        const audioQueue = [];
+        const vfxQueue = [];
 
         let laraEntity = null;
         let laraType = 0;
@@ -171,6 +184,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         let kurtisType = 0x18;
         let kurtisSlotIndex = -1;
         let kurtisSavedPos = null;
+
+        let laraSwapSkeleton = null;
+        let kurtisSwapSkeleton = null;
 
         const CC_SLOT_SIZE = 0x40;
         const POSITION_BLOCK_BYTES = 0x20;
@@ -199,6 +215,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 label: () => "Skip Level",
                 hasSubmenu: false,
                 onConfirm: (module) => {
+                    if (game.readMemoryVariable("GameState", "tomb6.dll") !== GAME_STATE_PLAYING) {
+                        return "Can't skip levels during dialog";
+                    }
                     const cur = (typeof currentLevel === 'number' ? currentLevel : 0);
                     const next = cur + 1;
                     game.writeMemoryVariable("PreviousLevel", cur, module);
@@ -218,6 +237,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 },
                 onSubmenuConfirm: (submenuItem, module) => {
                     if (!submenuItem) return;
+                    if (game.readMemoryVariable("GameState", "tomb6.dll") !== GAME_STATE_PLAYING) {
+                        return "Can't skip levels during dialog";
+                    }
                     game.writeMemoryVariable("PreviousLevel", submenuItem.id, module);
                     game.writeMemoryVariable("Level", submenuItem.id, module);
                     game.writeMemoryVariable("PendingStateTransition", 6, module);
@@ -356,126 +378,155 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
             },
 
-            allocLaraBackups: () => {},
+            allocLaraBackups: () => {
+                laraSwapSkeleton = game.allocMemory(SKELETON_SIZE);
+                kurtisSwapSkeleton = game.allocMemory(SKELETON_SIZE);
+            },
 
             _ptrLooksValid: (p) => {
                 if (!p || p.isNull()) return false;
+
                 const s = p.toString();
                 if (s.length >= 18 && s.startsWith('0xffff')) return false;
                 return true;
             },
 
-            isPaused: () => {
-                try {
-                    return game.readMemoryVariable("GameState", "tomb6.dll") === 8;
-                } catch (e) { return false; }
+            isPaused: () => game.readMemoryVariable("GameState", "tomb6.dll") === 8,
+
+            isGameplayStable: () => {
+                const gs = game.readMemoryVariable("GameState", "tomb6.dll");
+                return (gs === GAME_STATE_PLAYING || gs === GAME_STATE_DIALOG)
+                    && game.readMemoryVariable("PendingStateTransition", "tomb6.dll") === 0;
             },
 
-            getLaraBonesBackup: () => {
+            _readBackupCached: (field, fn) => {
                 try {
-                    if (game.isPaused()) return null;
-                    const lara = game.getLara();
-                    if (!game._ptrLooksValid(lara)) return null;
-                    const boneMatPtr = lara.add(ENTITY_BONE_MATRICES).readPointer();
-                    if (!game._ptrLooksValid(boneMatPtr)) return null;
-                    const count = game.getFullBoneCount(lara);
-                    if (count <= 0 || count > MAX_BONE_COUNT) return null;
-
-                    // Read entity world position for local-space conversion
-                    const flags = lara.add(ENTITY_FLAGS_PTR).readPointer();
-                    if (!game._ptrLooksValid(flags)) return null;
-                    const worldX = flags.add(FLAGS_POS_X).readFloat();
-                    const worldY = flags.add(FLAGS_POS_Y).readFloat();
-                    const worldZ = flags.add(FLAGS_POS_Z).readFloat();
-
-                    const result = new ArrayBuffer(count * BONE_ENCODED_SIZE);
-                    const out = new DataView(result);
-                    for (let i = 0; i < count; i++) {
-                        const src = new DataView(boneMatPtr.add(i * BONE_MATRIX_STRIDE).readByteArray(BONE_MATRIX_SIZE));
-                        const o = i * BONE_ENCODED_SIZE;
-                        out.setInt16(o + 0,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x00, true) * ROT_SCALE))), true); // R00
-                        out.setInt16(o + 2,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x04, true) * ROT_SCALE))), true); // R10
-                        out.setInt16(o + 4,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x08, true) * ROT_SCALE))), true); // R20
-                        out.setInt16(o + 6,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x10, true) * ROT_SCALE))), true); // R01
-                        out.setInt16(o + 8,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x14, true) * ROT_SCALE))), true); // R11
-                        out.setInt16(o + 10, Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x18, true) * ROT_SCALE))), true); // R21
-                        out.setInt16(o + 12, Math.max(-32767, Math.min(32767, Math.round((src.getFloat32(0x30, true) - worldX) * POS_SCALE))), true);
-                        out.setInt16(o + 14, Math.max(-32767, Math.min(32767, Math.round((src.getFloat32(0x34, true) - worldY) * POS_SCALE))), true);
-                        out.setInt16(o + 16, Math.max(-32767, Math.min(32767, Math.round((src.getFloat32(0x38, true) - worldZ) * POS_SCALE))), true);
+                    const value = fn();
+                    if (value != null) { 
+                        backupsCache[field] = value; 
+                        return value;
                     }
-                    return result;
-                } catch (e) { return null; }
+                } catch (e) {
+                    console.warn("[TR6 MP] backup read failed field=" + field + ":", e.message);
+                }
+                return backupsCache[field];
             },
 
-            getLaraPositionsBackup: () => {
-                try {
-                    const lara = game.getLara();
-                    if (!game._ptrLooksValid(lara)) return null;
-                    const flags = lara.add(ENTITY_FLAGS_PTR).readPointer();
-                    if (!game._ptrLooksValid(flags)) return null;
-                    return game.readByteArray(flags.add(POSITION_BLOCK_OFFSET), POSITION_BLOCK_SIZE);
-                } catch (e) { return null; }
-            },
+            getLaraBonesBackup: () => game._readBackupCached('bones', () => {
+                if (!game.isGameplayStable()) return null;
 
-            getVisArrayBackup: () => {
-                try {
-                    if (game.isPaused()) return null;
-                    const lara = game.getLara();
-                    if (!game._ptrLooksValid(lara)) return null;
-                    const visPtr = lara.add(ENTITY_VIS_ARRAY).readPointer();
-                    if (!game._ptrLooksValid(visPtr)) return null;
-                    const actual = game.getVisArraySize(lara);
-                    const size = (actual > 0 && actual < VIS_ARRAY_SIZE) ? actual : VIS_ARRAY_SIZE;
-                    return game.readByteArray(visPtr, size);
-                } catch (e) { return null; }
-            },
+                const lara = game.getLara();
+                if (!game._ptrLooksValid(lara)) return null;
 
-            getHealthBackup: () => {
-                try {
-                    return game.readMemoryVariable("PlayerHealth", "tomb6.dll");
-                } catch (e) { return 0; }
-            },
+                const boneMatPtr = lara.add(ENTITY_BONE_MATRICES).readPointer();
+                if (!game._ptrLooksValid(boneMatPtr)) return null;
 
-            getAttachedFlagBackup: () => {
-                try {
-                    const lara = game.getLara();
-                    if (!game._ptrLooksValid(lara)) return 0;
-                    return lara.add(ENTITY_ATTACHED_FLAG).readU32();
-                } catch (e) { return 0; }
-            },
+                const count = game.getFullBoneCount(lara);
+                if (count <= 0 || count > MAX_BONE_COUNT) return null;
 
-            getOutfitIdBackup: () => {
-                try {
-                    const inPhoto = game.readMemoryVariable("IsPhotoMode", manifest.executable);
-                    const varName = (inPhoto && inPhoto !== 0) ? "PhotoModeAppliedOutfitId" : "ActiveOutfitId";
-                    const v = game.readMemoryVariable(varName, "tomb6.dll");
-                    return (typeof v === 'number' && !isNaN(v)) ? (v & 0xff) : 0;
-                } catch (e) { return 0; }
-            },
+                // Read entity world position for local-space conversion
+                const flags = lara.add(ENTITY_FLAGS_PTR).readPointer();
+                if (!game._ptrLooksValid(flags)) return null;
 
-            getSwapListsBackup: () => {
-                try {
-                    if (game.isPaused()) return null;
-                    const lara = game.getLara();
-                    if (!game._ptrLooksValid(lara)) return null;
-                    const skeleton = lara.add(ENTITY_SKELETON).readPointer();
-                    if (!game._ptrLooksValid(skeleton)) return null;
-                    const legacyBase = skeleton.add(SKEL_LEGACY_MESH).readPointer();
-                    const hdBase = skeleton.add(SKEL_HD_MESH).readPointer();
-                    const legacyControl = lara.add(ENTITY_LEGACY_SWAPS).readPointer();
-                    const hdControl = lara.add(ENTITY_HD_SWAPS).readPointer();
-                    const legacyOffsets = game.serializeSwapList(legacyControl, legacyBase);
-                    const hdOffsets = game.serializeSwapList(hdControl, hdBase);
-                    const buf = new ArrayBuffer(2 + (legacyOffsets.length + hdOffsets.length) * 4);
-                    const view = new DataView(buf);
-                    let pos = 0;
-                    view.setUint8(pos, legacyOffsets.length); pos += 1;
-                    for (const off of legacyOffsets) { view.setInt32(pos, off, true); pos += 4; }
-                    view.setUint8(pos, hdOffsets.length); pos += 1;
-                    for (const off of hdOffsets) { view.setInt32(pos, off, true); pos += 4; }
-                    return buf;
-                } catch (e) { return null; }
-            },
+                const worldX = flags.add(FLAGS_POS_X).readFloat();
+                const worldY = flags.add(FLAGS_POS_Y).readFloat();
+                const worldZ = flags.add(FLAGS_POS_Z).readFloat();
+
+                const result = new ArrayBuffer(count * BONE_ENCODED_SIZE);
+                const out = new DataView(result);
+                for (let i = 0; i < count; i++) {
+                    const src = new DataView(boneMatPtr.add(i * BONE_MATRIX_STRIDE).readByteArray(BONE_MATRIX_SIZE));
+                    const o = i * BONE_ENCODED_SIZE;
+                    out.setInt16(o + 0,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x00, true) * ROT_SCALE))), true); // R00
+                    out.setInt16(o + 2,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x04, true) * ROT_SCALE))), true); // R10
+                    out.setInt16(o + 4,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x08, true) * ROT_SCALE))), true); // R20
+                    out.setInt16(o + 6,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x10, true) * ROT_SCALE))), true); // R01
+                    out.setInt16(o + 8,  Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x14, true) * ROT_SCALE))), true); // R11
+                    out.setInt16(o + 10, Math.max(-32767, Math.min(32767, Math.round(src.getFloat32(0x18, true) * ROT_SCALE))), true); // R21
+                    out.setInt16(o + 12, Math.max(-32767, Math.min(32767, Math.round((src.getFloat32(0x30, true) - worldX) * POS_SCALE))), true);
+                    out.setInt16(o + 14, Math.max(-32767, Math.min(32767, Math.round((src.getFloat32(0x34, true) - worldY) * POS_SCALE))), true);
+                    out.setInt16(o + 16, Math.max(-32767, Math.min(32767, Math.round((src.getFloat32(0x38, true) - worldZ) * POS_SCALE))), true);
+                }
+                return result;
+            }),
+
+            getLaraPositionsBackup: () => game._readBackupCached('positions', () => {
+                if (!game.isGameplayStable()) return null;
+
+                const lara = game.getLara();
+                if (!game._ptrLooksValid(lara)) return null;
+
+                const flags = lara.add(ENTITY_FLAGS_PTR).readPointer();
+                if (!game._ptrLooksValid(flags)) return null;
+
+                return game.readByteArray(flags.add(POSITION_BLOCK_OFFSET), POSITION_BLOCK_SIZE);
+            }),
+
+            getVisArrayBackup: () => game._readBackupCached('visArray', () => {
+                if (!game.isGameplayStable()) return null;
+
+                const lara = game.getLara();
+                if (!game._ptrLooksValid(lara)) return null;
+
+                const visPtr = lara.add(ENTITY_VIS_ARRAY).readPointer();
+                if (!game._ptrLooksValid(visPtr)) return null;
+
+                const actual = game.getVisArraySize(lara);
+                const size = (actual > 0 && actual < VIS_ARRAY_SIZE) ? actual : VIS_ARRAY_SIZE;
+                return game.readByteArray(visPtr, size);
+            }),
+
+            getHealthBackup: () => game._readBackupCached('health', () => {
+                if (!game.isGameplayStable()) return null;
+
+                return game.readMemoryVariable("PlayerHealth", "tomb6.dll");
+            }),
+
+            getFaceExpressionIdBackup: () => game._readBackupCached('faceExpressionId', () => {
+                if (!game.isGameplayStable()) return null;
+
+                const lara = game.getLara();
+                if (!game._ptrLooksValid(lara)) return null;
+
+                return lara.add(ENTITY_FACE_EXPRESSION_ID).readU32();
+            }),
+
+            getOutfitIdBackup: () => game._readBackupCached('outfitId', () => {
+                if (!game.isGameplayStable()) return null;
+
+                const inPhoto = game.readMemoryVariable("IsPhotoMode", manifest.executable);
+                const varName = (inPhoto && inPhoto !== 0) ? "PhotoModeAppliedOutfitId" : "ActiveOutfitId";
+                const v = game.readMemoryVariable(varName, "tomb6.dll");
+
+                return (typeof v === 'number' && !isNaN(v)) ? (v & 0xff) : null;
+            }),
+
+            getSwapListsBackup: () => game._readBackupCached('swapLists', () => {
+                if (!game.isGameplayStable()) return null;
+
+                const lara = game.getLara();
+                if (!game._ptrLooksValid(lara)) return null;
+
+                const skeleton = lara.add(ENTITY_SKELETON).readPointer();
+                if (!game._ptrLooksValid(skeleton)) return null;
+
+                const legacyBase = skeleton.add(SKEL_LEGACY_MESH).readPointer();
+                const hdBase = skeleton.add(SKEL_HD_MESH).readPointer();
+                const legacyControl = lara.add(ENTITY_LEGACY_SWAPS).readPointer();
+                const hdControl = lara.add(ENTITY_HD_SWAPS).readPointer();
+                const legacyOffsets = game.serializeSwapList(legacyControl, legacyBase);
+                const hdOffsets = game.serializeSwapList(hdControl, hdBase);
+                const buf = new ArrayBuffer(2 + (legacyOffsets.length + hdOffsets.length) * 4);
+                const view = new DataView(buf);
+                let pos = 0;
+
+                view.setUint8(pos, legacyOffsets.length); pos += 1;
+                for (const off of legacyOffsets) { view.setInt32(pos, off, true); pos += 4; }
+                view.setUint8(pos, hdOffsets.length); pos += 1;
+                for (const off of hdOffsets) { view.setInt32(pos, off, true); pos += 4; }
+
+                return buf;
+            }),
 
             setupLaraSlots: () => {
                 for (let n = 0; n < MAX_PLAYERS; n++) {
@@ -489,6 +540,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         visArray: game.allocMemory(VIS_ARRAY_SIZE),
                         boneArray: game.allocMemory(MAX_BONE_BUFFER),
                         boneMatrixBuf: game.allocMemory(MAX_BONE_COUNT * BONE_MATRIX_STRIDE),
+                        skeleton: game.allocMemory(SKELETON_SIZE),
                         renderData: renderData,
                         sfxScratch: game.allocMemory(0x10),
                         vfxScratch: game.allocMemory(0xa0),
@@ -498,8 +550,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         savedHDMesh: ptr(0),
                         savedLegacySwaps: null,
                         savedHDSwaps: null,
-                        savedAttachedFlag: 0,
-                        savedAttachedPtr: ptr(0),
+                        savedFaceExpressionId: undefined,
+                        attrState: game.allocMemory(ATTR_STATE_SIZE),
                     });
                 }
             },
@@ -527,62 +579,67 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             receiveAudio: (sound, soundFactor, playerId) => {
                 if (exiting || !userData.multiplayer) return;
-                if (game.isPaused()) return;
-                const conn = otherPlayers.find(o => o.id === playerId);
-                if (!conn || !conn.laraPointer || !conn.isLoaded) return;
+                if (!game.isGameplayStable()) return;
+                if (audioQueue.length >= 64) return;
 
-                const hash = sound >>> 0;
-                const attach = (soundFactor || 0) & 0xff;
-
-                const req = conn.slot.sfxScratch;
-                req.writeU32(attach << 16);   // +0x00 packed; attach is at byte 2
-                req.add(0x4).writeU32(2);      // +0x04 event type = 2 (sound)
-                req.add(0x8).writeU32(hash);   // +0x08 sound hash
-
-                // Force direct-hash playback path (iVar2 == 0 branch).
-                conn.laraPointer.add(ENTITY_CUE_HANDLE).writeU32(0);
-
-                const module = game.getGameModule();
-                isReplayingSound = true;
-                try {
-                    game.runFunction(module, "PlayEntitySound", req, conn.laraPointer);
-                } catch (e) {
-                    if (!conn._sfxErr) {
-                        conn._sfxErr = true;
-                        console.error("[SFX] receive playback failed:", e.message);
-                    }
-                } finally {
-                    isReplayingSound = false;
-                }
+                audioQueue.push({ playerId, hash: sound >>> 0, attach: (soundFactor || 0) & 0xff });
             },
 
             receiveVfx: (type, descriptor, flags, weaponId, playerId) => {
                 if (exiting || !userData.multiplayer) return;
-                if (game.isPaused()) return;
-
-                const conn = otherPlayers.find(o => o.id === playerId);
-                if (!conn || !conn.laraPointer || !conn.isLoaded) return;
+                if (!game.isGameplayStable()) return;
                 if (!descriptor || !descriptor.length) return;
+                if (vfxQueue.length >= 64) return;
 
-                const buf = conn.slot.vfxScratch;
-                buf.writeByteArray(descriptor);
+                vfxQueue.push({ playerId, weaponId: weaponId | 0, flags: flags >>> 0, descriptor });
+            },
 
+            drainAudioQueue: () => {
+                if (audioQueue.length === 0) return;
+                const module = game.getGameModule();
+                while (audioQueue.length > 0) {
+                    const ev = audioQueue.shift();
+                    const conn = otherPlayers.find(o => o.id === ev.playerId);
+                    if (!conn || !conn.laraPointer || !conn.isLoaded) continue;
+
+                    const req = conn.slot.sfxScratch;
+                    req.writeU32(ev.attach << 16);
+                    req.add(0x4).writeU32(2);
+                    req.add(0x8).writeU32(ev.hash);
+                    conn.laraPointer.add(ENTITY_CUE_HANDLE).writeU32(0);
+                    isReplayingSound = true;
+                    try {
+                        game.runFunction(module, "PlayEntitySound", req, conn.laraPointer);
+                    } catch (e) {
+                        console.error("[SFX] drain playback failed for " + ev.playerId + ":", e.message);
+                    } finally {
+                        isReplayingSound = false;
+                    }
+                }
+            },
+
+            drainVfxQueue: () => {
+                if (vfxQueue.length === 0) return;
                 const module = game.getGameModule();
                 const weaponIdVar = game.getMemoryVariable("ActiveWeaponId", module);
-                const savedWeapon = weaponIdVar.readS32();
+                while (vfxQueue.length > 0) {
+                    const ev = vfxQueue.shift();
+                    const conn = otherPlayers.find(o => o.id === ev.playerId);
+                    if (!conn || !conn.laraPointer || !conn.isLoaded) continue;
 
-                weaponIdVar.writeS32(weaponId | 0);
-                isReplayingVfx = true;
-                try {
-                    game.runFunction(module, "SpawnVfxByType", conn.laraPointer, buf, flags >>> 0);
-                } catch (e) {
-                    if (!conn._vfxErr) {
-                        conn._vfxErr = true;
-                        console.error("[VFX] receive playback failed:", e.message);
+                    const buf = conn.slot.vfxScratch;
+                    buf.writeByteArray(ev.descriptor);
+                    const savedWeapon = weaponIdVar.readS32();
+                    weaponIdVar.writeS32(ev.weaponId);
+                    isReplayingVfx = true;
+                    try {
+                        game.runFunction(module, "SpawnVfxByType", conn.laraPointer, buf, ev.flags);
+                    } catch (e) {
+                        console.error("[VFX] drain playback failed for " + ev.playerId + ":", e.message);
+                    } finally {
+                        isReplayingVfx = false;
+                        weaponIdVar.writeS32(savedWeapon);
                     }
-                } finally {
-                    isReplayingVfx = false;
-                    weaponIdVar.writeS32(savedWeapon);
                 }
             },
 
@@ -669,15 +726,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             teleportToPlayer: (playerConnection) => {
                 const module = game.getGameModule();
                 if (!playerConnection) return;
+
                 const posData = playerConnection.lastPositionBytes;
                 if (!posData) return;
-                try {
-                    const laraScene = game.getMemoryVariable("PlayerSceneObject", module).readPointer();
-                    if (!laraScene || laraScene.isNull()) return;
-                    laraScene.add(SCENE_POS).writeByteArray(posData.slice(0, 12));
-                } catch (e) {
-                    return;
-                }
+
+                const laraScene = game.getMemoryVariable("PlayerSceneObject", module).readPointer();
+                if (!laraScene || laraScene.isNull()) return;
+                laraScene.add(SCENE_POS).writeByteArray(posData.slice(0, 12));
                 send({
                     event: "multiplayer:sendChat",
                     args: { text: userData.name + " teleported to " + playerConnection.name, chatAction: true }
@@ -720,7 +775,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     if (laraPointer && !donorsReady && !game.isInMenu()) {
                         try {
-                            game.setupDonorEntities();
+                            game.createDonorEntities();
                         } catch (e) {
                             console.warn("[TR6 MP] donor setup failed:", e.message);
                         }
@@ -736,29 +791,83 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             getLara: () => laraPointer,
 
             detectLocalCharacterType: () => {
-                try {
-                    const module = game.getGameModule();
-                    const scene = game.getMemoryVariable("PlayerSceneObject", module).readPointer();
-                    if (!scene || scene.isNull()) return 0;
-                    const t = scene.add(SCENE_TYPE).readU32();
-                    if (t === 0x18) return 0x18;
-                    return 0x16;
-                } catch (e) { return 0; }
+                const module = game.getGameModule();
+                const scene = game.getMemoryVariable("PlayerSceneObject", module).readPointer();
+                if (!scene || scene.isNull()) return 0;
+                const t = scene.add(SCENE_TYPE).readU32();
+                return t === 0x18 ? 0x18 : 0x16;
             },
 
-            spawnDonorEntity: (donorType) => {
-                const module = game.getGameModule();
+            restoreDialog: (oldEntity) => {
                 try {
-                    donorScene = Memory.alloc(DONOR_SCENE_SIZE);
+                    if (!oldEntity || oldEntity.isNull()) return;
+                    if (game.readMemoryVariable("GameState", "tomb6.dll") !== GAME_STATE_DIALOG) return;
+
+                    const playerScene = game.getMemoryVariable("PlayerSceneObject", "tomb6.dll").readPointer();
+                    if (playerScene.isNull()) return;
+
+                    const cscA = game.getMemoryVariable("CutsceneEntityA", "tomb6.dll").readPointer();
+                    const cscB = game.getMemoryVariable("CutsceneEntityB", "tomb6.dll").readPointer();
+                    const isA = cscA.equals(playerScene);
+                    const isB = !isA && cscB.equals(playerScene);
+                    if (!isA && !isB) return;
+
+                    const savedName = isA ? "CutsceneAnimDB_A" : "CutsceneAnimDB_B";
+                    const savedAnimDB = game.getMemoryVariable(savedName, "tomb6.dll").readPointer();
+                    if (savedAnimDB.isNull()) return;
+
+                    oldEntity.add(ENTITY_ANIM_DB).writePointer(savedAnimDB);
+                } catch (e) {
+                    console.warn("[TR6 MP] dialog unmarry failed:", e.message);
+                }
+            },
+
+            updateDialog: () => {
+                try {
+                    if (game.readMemoryVariable("GameState", "tomb6.dll") !== GAME_STATE_DIALOG) return;
+
+                    const playerScene = game.getMemoryVariable("PlayerSceneObject", "tomb6.dll").readPointer();
+                    if (playerScene.isNull()) return;
+
+                    const cscA = game.getMemoryVariable("CutsceneEntityA", "tomb6.dll").readPointer();
+                    const cscB = game.getMemoryVariable("CutsceneEntityB", "tomb6.dll").readPointer();
+                    const isA = cscA.equals(playerScene);
+                    const isB = !isA && cscB.equals(playerScene);
+                    if (!isA && !isB) return;
+
+                    const newEntity = playerScene.add(SCENE_ENTITY_PTR).readPointer();
+                    if (newEntity.isNull()) return;
+
+                    const newAnimDB = newEntity.add(ENTITY_ANIM_DB).readPointer();
+                    const renderData = newEntity.add(ENTITY_FLAGS_PTR).readPointer();
+                    if (renderData.isNull()) return;
+
+                    const animState = renderData.add(FLAGS_ANIM_STATE).readPointer();
+                    if (animState.isNull()) return;
+
+                    const newAnimHash = animState.add(ANIM_STATE_HASH).readU32();
+                    const dbName = isA ? "CutsceneAnimDB_A" : "CutsceneAnimDB_B";
+                    const hashName = isA ? "CutsceneAnimHash_A" : "CutsceneAnimHash_B";
+                    game.getMemoryVariable(dbName, "tomb6.dll").writePointer(newAnimDB);
+                    game.writeMemoryVariable(hashName, newAnimHash, "tomb6.dll");
+                } catch (e) {
+                    console.warn("[TR6 MP] dialog state sync failed:", e.message);
+                }
+            },
+
+            createDonorEntity: (donorType) => {
+                try {
+                    donorScene = game.allocMemory(DONOR_SCENE_SIZE);
                     donorScene.writeByteArray(new Uint8Array(DONOR_SCENE_SIZE));
-                    const lara = game.getMemoryVariable("PlayerSceneObject", module).readPointer();
+                    const lara = game.getMemoryVariable("PlayerSceneObject", "tomb6.dll").readPointer();
                     if (lara && !lara.isNull()) {
                         const pose = lara.add(SCENE_POS).readByteArray(POSITION_BLOCK_BYTES);
                         donorScene.add(SCENE_POS).writeByteArray(pose);
                     }
                     donorScene.add(SCENE_POS_Z).writeFloat(-1000000.0);
                     donorScene.add(SCENE_TYPE).writeU32(donorType);
-                    game.runFunction(module, "LoadCharacterEntity", donorScene);
+                    game.runFunction("tomb6.dll", "LoadCharacterEntity", donorScene);
+
                     const ent = donorScene.add(SCENE_ENTITY_PTR).readPointer();
                     if (!ent || ent.isNull() || ent.compare(MAX_VALID_PTR) > 0) {
                         console.warn("[TR6 MP] donor type=0x" + donorType.toString(16) +
@@ -768,8 +877,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     const skel = ent.add(ENTITY_SKELETON).readPointer();
                     const parts = skel.isNull() ? 0 : skel.add(SKEL_MESH_PART_COUNT).readU32();
-                    console.log("[TR6 MP] donor type=0x" + donorType.toString(16) +
-                                " entity=" + ent + " skel=" + skel + " parts=" + parts);
+                    console.log("[TR6 MP] donor type=0x" + donorType.toString(16) + " entity=" + ent);
+
                     return ent;
                 } catch (e) {
                     console.warn("[TR6 MP] donor type=0x" + donorType.toString(16) +
@@ -778,7 +887,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
             },
 
-            setupDonorEntities: () => {
+            createDonorEntities: () => {
                 donorLaraEntity = null;
                 donorKurtisEntity = null;
                 donorScene = null;
@@ -790,39 +899,36 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 if (localCharacterType === 0x18) {
                     donorKurtisEntity = local;
                     const laraType = levelLaraVariant || 0x16;
-                    donorLaraEntity = game.spawnDonorEntity(laraType);
-                    console.log("[TR6 MP] local=Kurtis donorLara=" + donorLaraEntity +
-                                " (type=0x" + laraType.toString(16) + ")");
+                    donorLaraEntity = game.createDonorEntity(laraType);
+                    console.log("[TR6 MP] local=Kurtis donorLara=" + donorLaraEntity + " (type=0x" + laraType.toString(16) + ")");
                 } else {
                     donorLaraEntity = local;
-                    try {
-                        const module = game.getGameModule();
-                        const scene = game.getMemoryVariable("PlayerSceneObject", module).readPointer();
-                        if (scene && !scene.isNull()) {
-                            levelLaraVariant = scene.add(SCENE_TYPE).readU32();
-                        }
-                    } catch (e) {}
-                    donorKurtisEntity = game.spawnDonorEntity(0x18);
-                    console.log("[TR6 MP] local=Lara(0x" + localCharacterType.toString(16) +
-                                ") donorKurtis=" + donorKurtisEntity);
+                    const scene = game.getMemoryVariable("PlayerSceneObject", "tomb6.dll").readPointer();
+                    if (scene && !scene.isNull()) {
+                        levelLaraVariant = scene.add(SCENE_TYPE).readU32();
+                    }
+                    donorKurtisEntity = game.createDonorEntity(0x18);
+                    console.log("[TR6 MP] local=Lara(0x" + localCharacterType.toString(16) + ") donorKurtis=" + donorKurtisEntity);
                 }
 
                 const donorsReady = donorLaraEntity !== null && donorKurtisEntity !== null;
-                if (donorsReady && preferredCharSide !== null) {
+                if (donorsReady) {
                     const naturalIsKurtis = (localCharacterType === 0x18);
-                    const preferIsKurtis = (preferredCharSide === 0x18);
-                    if (naturalIsKurtis !== preferIsKurtis) {
-                        const targetType = preferIsKurtis ? 0x18 : (levelLaraVariant || 0x16);
-                        pendingSwapType = targetType;
-                        console.log("[CHAR SWAP] auto-restoring preferred char on level load: target=0x" +
-                                    targetType.toString(16));
-                    }
+                    const laraType = levelLaraVariant || 0x16;
+                    const naturalType = naturalIsKurtis ? 0x18 : laraType;
+                    const otherType = naturalIsKurtis ? laraType : 0x18;
+                    const finalType = (preferredCharSide === null) ? naturalType : (preferredCharSide === 0x18 ? 0x18 : laraType);
+                    pendingSwapType = otherType;
+                    primeReturnType = (finalType !== otherType) ? finalType : null;
+                    preBuildIntendedType = finalType;
+                    console.log("[CHAR SWAP] pre-building characters: build=0x" + otherType.toString(16) + " final=0x" + finalType.toString(16));
                 }
             },
 
             findControllerSlot: (entity) => {
                 const module = game.getGameModule();
                 if (!entity || entity.isNull()) return -1;
+
                 const ccArr = game.getMemoryVariable("CharacterControllerArray", module);
                 const ccCount = game.readMemoryVariable("CharacterControllerCount", module) | 0;
                 for (let i = 0; i < ccCount && i < 0x40; i++) {
@@ -854,6 +960,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         return false;
                     }
 
+                    game.restoreDialog(currentEntity);
+
                     const currentPos = scene.add(SCENE_POS).readByteArray(POSITION_BLOCK_BYTES);
                     if (currentIsKurtis) {
                         kurtisSavedPos = currentPos;
@@ -882,6 +990,15 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                         game.runFunction(module, "LoadCharacterEntity", scene);
 
+                        const swapEnt = scene.add(SCENE_ENTITY_PTR).readPointer();
+                        const swapDonor = targetIsKurtis ? donorKurtisEntity : donorLaraEntity;
+                        if (!swapEnt.isNull() && swapDonor && !swapDonor.isNull()) {
+                            const donorAnimDb = swapDonor.add(ENTITY_ANIM_DB).readPointer();
+                            if (!donorAnimDb.isNull()) {
+                                swapEnt.add(ENTITY_ANIM_DB).writePointer(donorAnimDb);
+                            }
+                        }
+
                         const cicBefore = game.readMemoryVariable("CharacterInitCount", module);
                         game.runFunction(module, "InitEntitySpawn", scene, ptr(0), ptr(0), 0);
                         game.writeMemoryVariable("CharacterInitCount", cicBefore, module);
@@ -907,7 +1024,13 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         if (donorEnt && !donorEnt.isNull() && !donorEnt.equals(newEntity)) {
                             const donorSkel = donorEnt.add(ENTITY_SKELETON).readPointer();
                             if (!donorSkel.isNull()) {
-                                newEntity.add(ENTITY_SKELETON).writePointer(donorSkel);
+                                if (targetIsKurtis) {
+                                    game.runFunction(module, "Clone", kurtisSwapSkeleton, donorSkel, SKELETON_SIZE);
+                                    newEntity.add(ENTITY_SKELETON).writePointer(kurtisSwapSkeleton);
+                                } else {
+                                    game.runFunction(module, "Clone", laraSwapSkeleton, donorSkel, SKELETON_SIZE);
+                                    newEntity.add(ENTITY_SKELETON).writePointer(laraSwapSkeleton);
+                                }
                             }
                         }
                     } else {
@@ -951,6 +1074,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     game.setLara();
 
+                    game.updateDialog();
+
                     const postFlags = scene.add(SCENE_FLAGS).readU32();
                     const postGameState = game.readMemoryVariable("GameState", module);
                     console.log("[CHAR SWAP] post: entity=" + entity +
@@ -960,7 +1085,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     preferredCharSide = targetIsKurtis ? 0x18 : 0x16;
                     return true;
                 } catch (e) {
-                    console.error("[CHAR SWAP] failed: " + e.message);
+                    console.error("[CHAR SWAP] failed: " + e.message + " | stack=" + e.stack);
                     return false;
                 }
             },
@@ -996,7 +1121,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     cloneEntity.add(ENTITY_FLAGS_PTR).writePointer(cloneFlags);
                     cloneFlags.add(FLAGS_BACK_REF).writePointer(cloneEntity);
 
-                    if (!slot.attrState) slot.attrState = Memory.alloc(ATTR_STATE_SIZE);
+                    const laraSkel = lara.add(ENTITY_SKELETON).readPointer();
+                    if (!laraSkel.isNull()) {
+                        game.runFunction(module, "Clone", slot.skeleton, laraSkel, SKELETON_SIZE);
+                        cloneEntity.add(ENTITY_SKELETON).writePointer(slot.skeleton);
+                    }
+
                     const localMain = game.getLara();
                     const localAttr = (localMain && !localMain.isNull())
                         ? localMain.add(ENTITY_ATTR_PTR).readPointer() : null;
@@ -1022,26 +1152,21 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     slot.boneCount = game.getFullBoneCount(lara);
 
                     const meshDesc = cloneEntity.add(ENTITY_MESH_DESC).readPointer();
-                    if (game.hasFunction(module, "SetupEntityRenderData")) {
-                        game.runFunction(module, "SetupEntityRenderData", cloneFlags, meshDesc);
+                    game.runFunction(module, "SetupEntityRenderData", cloneFlags, meshDesc);
 
-                        const mainFlagsBase = mainFlags.add(0x08).readPointer();
-                        const cloneFlagsBase = cloneFlags.add(0x08).readPointer();
-                        if (!mainFlagsBase.isNull() && !cloneFlagsBase.isNull()) {
-                            const meshPartCount = meshDesc.add(MESH_DESC_PART_COUNT).readU32();
-                            const bufSize = meshPartCount * 0x20;
-                            cloneFlagsBase.writeByteArray(mainFlagsBase.readByteArray(bufSize));
-                        }
+                    const mainFlagsBase = mainFlags.add(0x08).readPointer();
+                    const cloneFlagsBase = cloneFlags.add(0x08).readPointer();
+                    if (!mainFlagsBase.isNull() && !cloneFlagsBase.isNull()) {
+                        const meshPartCount = meshDesc.add(MESH_DESC_PART_COUNT).readU32();
+                        const bufSize = meshPartCount * 0x20;
+                        cloneFlagsBase.writeByteArray(mainFlagsBase.readByteArray(bufSize));
                     }
 
-                    if (game.hasFunction(module, "FinalizeEntitySetup")) {
-                        game.runFunction(module, "FinalizeEntitySetup", cloneEntity);
-                    }
+                    game.runFunction(module, "FinalizeEntitySetup", cloneEntity);
 
                     const mainBonePtr = lara.add(ENTITY_BONE_MATRICES).readPointer();
                     if (!mainBonePtr.isNull()) {
-                        slot.boneMatrixBuf.writeByteArray(
-                            mainBonePtr.readByteArray(MAX_BONE_COUNT * BONE_MATRIX_STRIDE));
+                        slot.boneMatrixBuf.writeByteArray(mainBonePtr.readByteArray(MAX_BONE_COUNT * BONE_MATRIX_STRIDE));
                     }
                     cloneEntity.add(ENTITY_BONE_MATRICES).writePointer(slot.boneMatrixBuf);
 
@@ -1063,9 +1188,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         slot.savedHDMesh = skeleton.add(SKEL_HD_MESH).readPointer();
                     }
 
-                    slot.savedAttachedFlag = undefined;
-                    slot.savedAttachedPtr = ptr(0);
-
                     console.log("[TR6 MP] Clone spawned at slot", laraSlots.indexOf(slot));
                     return slot;
                 } catch (err) {
@@ -1077,6 +1199,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             receivePlayerData: (playerId, playerData) => {
                 if (exiting || !userData.multiplayer) return;
                 if (!laraPointer || laraPointer.isNull()) return;
+                if (!game.isGameplayStable()) return;
 
                 const incomingType = (playerData.characterType === 0x18) ? 0x18 : 0x16;
 
@@ -1141,41 +1264,30 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     }
                 }
 
-                if (typeof playerData.attachedFlag !== 'undefined') {
-                    conn.slot.savedAttachedFlag = playerData.attachedFlag;
+                if (typeof playerData.faceExpressionId === 'number') {
+                    conn.slot.savedFaceExpressionId = playerData.faceExpressionId;
                 }
 
-                let _isOutfittedChar = false;
-                if (conn.characterType !== 0x18) {
-                    try {
-                        const _e178 = entity.add(ENTITY_ATTR_PTR).readPointer();
-                        _isOutfittedChar = !_e178.isNull() && (_e178.add(ATTR_MODULAR_OUTFIT_BIT).readU8() & 1) !== 0;
-                    } catch (e) { }
-                }
-
-                if (_isOutfittedChar
+                if (conn.characterType !== 0x18
                     && typeof playerData.outfitId === 'number'
                     && playerData.outfitId >= 0 && playerData.outfitId < 16
                     && playerData.outfitId !== conn._lastOutfitId) {
                     conn._lastOutfitId = playerData.outfitId;
-                    try {
-                        const tableBase = game.getMemoryVariable("OutfitDefinitionTable", "tomb6.dll");
-                        if (tableBase && !tableBase.isNull()) {
-                            const entryAddr = tableBase.add(playerData.outfitId * OUTFIT_ENTRY_SIZE);
-                            const legacyMesh = entryAddr.add(OUTFIT_LEGACY_MESH).readPointer();
-                            const hdMesh     = entryAddr.add(OUTFIT_HD_MESH).readPointer();
-                            const partArray  = entryAddr.add(OUTFIT_PART_ARRAY).readPointer();
-                            const partCount  = entryAddr.add(OUTFIT_PART_COUNT).readU32();
-                            if (!legacyMesh.isNull() && !hdMesh.isNull() && !partArray.isNull() && partCount > 0) {
-                                conn.slot.savedLegacyMesh = legacyMesh;
-                                conn.slot.savedHDMesh     = hdMesh;
-                                conn.slot.outfitPartArray = partArray;
-                                conn.slot.outfitPartCount = partCount;
-                                const outfitVisSize = Math.min(partCount * 8, VIS_ARRAY_SIZE);
-                                if (outfitVisSize > 0) conn.slot.visArraySize = outfitVisSize;
-                            }
+                    const tableBase = game.getMemoryVariable("OutfitDefinitionTable", "tomb6.dll");
+                    if (tableBase && !tableBase.isNull()) {
+                        const entryAddr = tableBase.add(playerData.outfitId * OUTFIT_ENTRY_SIZE);
+                        const legacyMesh = entryAddr.add(OUTFIT_LEGACY_MESH).readPointer();
+                        const hdMesh     = entryAddr.add(OUTFIT_HD_MESH).readPointer();
+                        const partArray  = entryAddr.add(OUTFIT_PART_ARRAY).readPointer();
+                        const partCount  = entryAddr.add(OUTFIT_PART_COUNT).readU32();
+                        if (!legacyMesh.isNull() && !hdMesh.isNull() && !partArray.isNull() && partCount > 0) {
+                            conn.slot.savedLegacyMesh = legacyMesh;
+                            conn.slot.savedHDMesh     = hdMesh;
+                            conn.slot.outfitPartArray = partArray;
+                            conn.slot.outfitPartCount = partCount;
+                            conn.slot.visArraySize = Math.min(partCount * 8, VIS_ARRAY_SIZE);
                         }
-                    } catch (e) { }
+                    }
                 }
 
                 if (playerData.swapLists && playerData.swapLists !== conn._lastSwapHex) {
@@ -1311,73 +1423,47 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
             getVisArraySize: (entityPtr) => {
                 if (!entityPtr || entityPtr.isNull()) return 0;
-                try {
-                    const flagsPtr = entityPtr.add(ENTITY_FLAGS_PTR).readPointer();
-                    if (flagsPtr.isNull()) return 0;
-                    if ((flagsPtr.readU32() & 0x80000) !== 0) {
-                        const meshDesc = entityPtr.add(ENTITY_MESH_DESC).readPointer();
-                        return meshDesc.isNull() ? 0 : meshDesc.add(4).readU32() * 4;
-                    }
-                    const ent178 = entityPtr.add(ENTITY_ATTR_PTR).readPointer();
-                    if (!ent178.isNull() && (ent178.add(ATTR_MODULAR_OUTFIT_BIT).readU8() & 1) !== 0) return 0x7a * 4;
-                    const skeleton = entityPtr.add(ENTITY_SKELETON).readPointer();
-                    return skeleton.isNull() ? 0 : (skeleton.add(SKEL_MESH_PART_COUNT).readU32() & 0x7fffffff) * 8;
-                } catch (e) { return 0; }
+
+                const flagsPtr = entityPtr.add(ENTITY_FLAGS_PTR).readPointer();
+                if (flagsPtr.isNull()) return 0;
+
+                if ((flagsPtr.readU32() & 0x80000) !== 0) {
+                    const meshDesc = entityPtr.add(ENTITY_MESH_DESC).readPointer();
+                    return meshDesc.isNull() ? 0 : meshDesc.add(4).readU32() * 4;
+                }
+
+                const ent178 = entityPtr.add(ENTITY_ATTR_PTR).readPointer();
+                if (!ent178.isNull() && (ent178.add(ATTR_MODULAR_OUTFIT_BIT).readU8() & 1) !== 0) {
+                    return 0x7a * 4;
+                }
+
+                const skeleton = entityPtr.add(ENTITY_SKELETON).readPointer();
+                return skeleton.isNull() ? 0 : (skeleton.add(SKEL_MESH_PART_COUNT).readU32() & 0x7fffffff) * 8;
             },
 
             getFullBoneCount: (entityPtr) => {
-                try {
-                    const meshDesc = entityPtr.add(ENTITY_MESH_DESC).readPointer();
-                    if (meshDesc.isNull()) return 0;
-                    const mainBones = meshDesc.add(MESH_DESC_PART_COUNT).readS32();
+                const meshDesc = entityPtr.add(ENTITY_MESH_DESC).readPointer();
+                if (meshDesc.isNull()) return 0;
 
-                    const skeleton = entityPtr.add(ENTITY_SKELETON).readPointer();
-                    if (skeleton.isNull()) return mainBones + 4;
+                const mainBones = meshDesc.add(MESH_DESC_PART_COUNT).readS32();
+                const skeleton = entityPtr.add(ENTITY_SKELETON).readPointer();
+                if (skeleton.isNull()) return mainBones + 4;
 
-                    const groupCount = skeleton.add(SKEL_BONE_COUNT).readU32();
-                    let attachedBones = 0;
-                    if (groupCount > 0) {
-                        const groupData = skeleton.add(SKEL_GROUP_ARRAY).readPointer();
-                        for (let i = 0; i < groupCount; i++) {
-                            attachedBones += groupData.add(i * 0x20 + 4).readS32();
-                        }
+                const groupCount = skeleton.add(SKEL_BONE_COUNT).readU32();
+                let attachedBones = 0;
+                if (groupCount > 0) {
+                    const groupData = skeleton.add(SKEL_GROUP_ARRAY).readPointer();
+                    for (let i = 0; i < groupCount; i++) {
+                        attachedBones += groupData.add(i * 0x20 + 4).readS32();
                     }
-                    return mainBones + 4 + attachedBones;
-                } catch (e) { return 0; }
-            },
-
-            gmxBasename: (p) => {
-                const u = p.toUpperCase();
-                const i = Math.max(u.lastIndexOf('\\\\'), u.lastIndexOf('/'));
-                return (i >= 0) ? u.substring(i + 1) : u;
-            },
-
-            gmxRedirectDecision: (origPath, tag) => {
-                if (!origPath) return null;
-                const upper = origPath.toUpperCase();
-                if (!upper.endsWith('.GMX')) return null;
-                const basename = game.gmxBasename(origPath);
-                const moddedPath = moddedLevels[basename] || null;
-                const enabled = !!userData.multiplayer;
-                if (!moddedPath || !enabled) {
-                    return null;
                 }
-                console.log("[" + tag + "] " + origPath +
-                    " | basename=" + basename +
-                    " => REDIRECT to " + moddedPath);
-                return { basename, moddedPath };
-            },
 
-            gmxLogResult: (tag, retval, redirectedPath) => {
-                const h = retval.toString();
-                const failed = (h === "-1" || h.toLowerCase().endsWith("ffffffff") ||
-                                h.toLowerCase().endsWith("ffffffffffffffff"));
-                console.log("[" + tag + "] handle=" + h +
-                    (failed ? " INVALID_HANDLE (file missing or unreadable?)" : " OK") +
-                    " for " + redirectedPath);
+                return mainBones + 4 + attachedBones;
             },
 
             getCharacterTypeBackup: () => game.detectLocalCharacterType(),
+
+            isBuildingCharacters: () => preBuildIntendedType !== null,
 
             receivePVP: (playerId, damage, weapon) => {},
             enterPhotoMode: () => {},
@@ -1470,7 +1556,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 after: (module, sceneArg) => {
                     if (exiting || !userData.multiplayer) return;
                     if (!sceneArg) return;
-                    if (game.isPaused() || game.isInMenu()) return;
+                    if (!game.isGameplayStable()) return;
 
                     try {
                         const scene = ptr(sceneArg);
@@ -1490,6 +1576,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                             conn.slot = slot;
                             conn.laraPointer = slot.pointer;
                             conn.characterType = type;
+                            conn._lastOutfitId = undefined;
+                            conn._lastSwapHex = undefined;
                         }
 
                         for (let conn of otherPlayers) {
@@ -1537,17 +1625,10 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
 
                     const template = game.getTemplateEntityFor(conn.characterType);
                     if (!template || template.isNull()) return;
-                    const templateSkeleton = template.add(ENTITY_SKELETON).readPointer();
-                    entity.add(ENTITY_SKELETON).writePointer(templateSkeleton);
 
                     const skeleton = entity.add(ENTITY_SKELETON).readPointer();
                     if (skeleton.isNull()) return;
                     const mainPlayer = template;
-
-                    const savedLM    = skeleton.add(SKEL_LEGACY_MESH).readPointer();
-                    const savedHM    = skeleton.add(SKEL_HD_MESH).readPointer();
-                    const savedParts = skeleton.add(SKEL_MESH_PART_ARRAY).readPointer();
-                    const savedCount = skeleton.add(SKEL_MESH_PART_COUNT).readU32();
 
                     if (slot.savedLegacyMesh && !slot.savedLegacyMesh.isNull())
                         skeleton.add(SKEL_LEGACY_MESH).writePointer(slot.savedLegacyMesh);
@@ -1565,8 +1646,9 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     if (!mainHDSwaps.isNull())
                         entity.add(ENTITY_HD_SWAPS).writePointer(mainHDSwaps);
 
-                    if (typeof slot.savedAttachedFlag !== 'undefined')
-                        entity.add(ENTITY_ATTACHED_FLAG).writeU32(slot.savedAttachedFlag);
+                    if (typeof slot.savedFaceExpressionId === 'number') {
+                        entity.add(ENTITY_FACE_EXPRESSION_ID).writeU32(slot.savedFaceExpressionId);
+                    }
 
                     if (conn._hasBoneData && slot.boneCount > 0) {
                         const engineBonePtr = entity.add(ENTITY_BONE_MATRICES).readPointer();
@@ -1627,11 +1709,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     isRendering = true;
                     game.runFunction(module, "DrawVisibleEntity", entity);
                     isRendering = false;
-
-                    skeleton.add(SKEL_LEGACY_MESH).writePointer(savedLM);
-                    skeleton.add(SKEL_HD_MESH).writePointer(savedHM);
-                    skeleton.add(SKEL_MESH_PART_ARRAY).writePointer(savedParts);
-                    skeleton.add(SKEL_MESH_PART_COUNT).writeU32(savedCount);
                 }
             },
 
@@ -1768,10 +1845,12 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     if (exiting) return;
 
                     const inMenu = game.isInMenu();
+                    if (!game.isGameplayStable() && !game.isPaused() && !inMenu) return;
+
                     const lara = game.getLara();
                     const haveLara = lara && !lara.isNull();
                     if (!inMenu && !haveLara) return;
-                    
+
                     const inPhotoMode = game.readMemoryVariable("IsPhotoMode", manifest.executable) === 1;
                     if (inPhotoMode) return;
 
@@ -1978,7 +2057,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                                     if (isAboveHead) {
                                         const proj = game.worldToScreenPos(wx, wy, wz + 700);
                                         if (!proj) continue;
-                                        const textW = game.runFunction(module, "MeasureTextWidth", conn._nameBuffer, 0, _textWidthOut);
+                                        const textW = game.runFunction(module, "MeasureTextWidth", conn._nameBuffer, 0, Memory.alloc(4));
                                         textX = Math.floor(proj.x - textW / 2);
                                         textY = Math.floor(proj.y);
                                         if (playerNamesMode === 2) {
@@ -2105,7 +2184,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
             ProcessGameState: {
                 after: (module) => {
                     const scene = game.getMemoryVariable("PlayerSceneObject", module).readPointer();
-                    if (!scene || scene.isNull()) return false;
+                    if (!scene || scene.isNull() || !game.isGameplayStable()) return;
 
                     const liveType = scene.add(SCENE_TYPE).readU32();
                     if (liveType !== 0x18) levelLaraVariant = liveType;
@@ -2114,7 +2193,16 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         const char = pendingSwapType;
                         pendingSwapType = null;
                         game.performCharacterSwap(char);
+                        if (primeReturnType !== null) {
+                            const back = primeReturnType;
+                            primeReturnType = null;
+                            game.performCharacterSwap(back);
+                        }
+                        preBuildIntendedType = null;
                     }
+
+                    game.drainAudioQueue();
+                    game.drainVfxQueue();
                 }
             },
 
@@ -2126,6 +2214,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     donorKurtisEntity = null;
                     donorScene = null;
                     pendingSwapType = null;
+                    primeReturnType = null;
+                    preBuildIntendedType = null;
                     laraEntity = null;
                     laraType = 0;
                     laraSlotIndex = -1;
@@ -2134,6 +2224,8 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     kurtisType = 0x18;
                     kurtisSlotIndex = -1;
                     kurtisSavedPos = null;
+                    audioQueue.length = 0;
+                    vfxQueue.length = 0;
                     game.cleanupLaraSlots();
                 }
             },
@@ -2223,10 +2315,7 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         "91": ["backspace", "backspace"]
                     };
 
-                    let isShift = 0;
-                    try {
-                        isShift = game.getMemoryVariable("KeyIsPressed", manifest.executable).add(0x8).readS8();
-                    } catch (e) {}
+                    const isShift = game.getMemoryVariable("KeyIsPressed", manifest.executable).add(0x8).readS8();
                     const key = charMap[keycode]?.[isShift ? 1 : 0];
                     if (!key) return;
 
@@ -2258,50 +2347,33 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 }
             },
 
-            CreateFileA: {
-                after: (module, lpFileName, dwAccess, dwShare, lpSecAttr, dwCreation, dwFlags, hTemplate) => {
-                    let finalPath = lpFileName;
-                    let redirected = null;
-                    try {
-                        if (lpFileName && !ptr(lpFileName).isNull()) {
-                            const origPath = ptr(lpFileName).readAnsiString();
-                            const decision = game.gmxRedirectDecision(origPath, "GMX-A");
-                            if (decision) {
-                                if (!moddedAnsiBuffers[decision.basename]) {
-                                    moddedAnsiBuffers[decision.basename] = Memory.allocAnsiString(decision.moddedPath);
-                                }
-                                finalPath = moddedAnsiBuffers[decision.basename];
-                                redirected = decision.moddedPath;
-                            }
-                        }
-                    } catch (e) {}
-
-                    const result = game.runFunction(module, "CreateFileA", finalPath, dwAccess, dwShare, lpSecAttr, dwCreation, dwFlags, hTemplate);
-                    if (redirected) game.gmxLogResult("GMX-A", result, redirected);
-                    return result;
-                }
-            },
-
             CreateFileW: {
                 after: (module, lpFileName, dwAccess, dwShare, lpSecAttr, dwCreation, dwFlags, hTemplate) => {
                     let finalPath = lpFileName;
-                    let redirected = null;
-                    try {
-                        if (lpFileName && !ptr(lpFileName).isNull()) {
-                            const origPath = ptr(lpFileName).readUtf16String();
-                            const decision = game.gmxRedirectDecision(origPath, "GMX-W");
-                            if (decision) {
-                                if (!moddedUtf16Buffers[decision.basename]) {
-                                    moddedUtf16Buffers[decision.basename] = Memory.allocUtf16String(decision.moddedPath);
+                    let redirectedPath = null;
+                    if (userData.multiplayer && lpFileName && !ptr(lpFileName).isNull()) {
+                        const origPath = ptr(lpFileName).readUtf16String();
+                        if (origPath) {
+                            const upper = origPath.toUpperCase();
+                            if (upper.endsWith('.GMX')) {
+                                const i = Math.max(upper.lastIndexOf('\\\\'), upper.lastIndexOf('/'));
+                                const basename = (i >= 0) ? upper.substring(i + 1) : upper;
+                                const moddedPath = moddedLevels[basename];
+                                if (moddedPath) {
+                                    console.log("[GMX] " + origPath + " | basename=" + basename + " => REDIRECT to " + moddedPath);
+                                    finalPath = Memory.allocUtf16String(moddedPath);
+                                    redirectedPath = moddedPath;
                                 }
-                                finalPath = moddedUtf16Buffers[decision.basename];
-                                redirected = decision.moddedPath;
                             }
                         }
-                    } catch (e) {}
+                    }
 
                     const result = game.runFunction(module, "CreateFileW", finalPath, dwAccess, dwShare, lpSecAttr, dwCreation, dwFlags, hTemplate);
-                    if (redirected) game.gmxLogResult("GMX-W", result, redirected);
+                    if (redirectedPath) {
+                        const h = result.toString();
+                        const failed = (h === "-1" || h.toLowerCase().endsWith("ffffffff") || h.toLowerCase().endsWith("ffffffffffffffff"));
+                        console.log("[GMX] handle=" + h + (failed ? " INVALID_HANDLE (file missing or unreadable?)" : " OK") + " for " + redirectedPath);
+                    }
                     return result;
                 }
             },

@@ -244,6 +244,12 @@ module.exports = {
             },
 
             allocMemory: (size) => {
+                const module = game.getGameModule();
+                if (game.hasFunction(module, "Alloc")) {
+                    const ptr = game.runFunction(module, "Alloc", size);
+                    ptr.writeByteArray(new Uint8Array(size));
+                    return ptr;
+                }
                 return Memory.alloc(size);
             },
 

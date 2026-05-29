@@ -324,7 +324,8 @@ class BaseGameClient {
                 if (!checkKeys()) return;
                 try {
                     const playerData = netcode.decodeHighFreq(msg);
-                    if (await this.gameFunctions.isInGame()) {
+                    const myLevel = await this._resolveNetworkLevelId();
+                    if (await this.gameFunctions.isInGame() && playerData.level === myLevel) {
                         await this.gameFunctions.receivePlayerData(
                             playerData.id,
                             netcode.convertBuffersToHexStrings(playerData)
@@ -339,7 +340,8 @@ class BaseGameClient {
                 if (!checkKeys()) return;
                 try {
                     const soundEvent = netcode.decodeSound(msg);
-                    if (await this.gameFunctions.isInGame()) {
+                    const myLevel = await this._resolveNetworkLevelId();
+                    if (await this.gameFunctions.isInGame() && soundEvent.level === myLevel) {
                         await this.gameFunctions.receiveAudio(
                             soundEvent.sound,
                             soundEvent.soundFactor,
@@ -355,7 +357,8 @@ class BaseGameClient {
                 if (!checkKeys()) return;
                 try {
                     const vfxEvent = netcode.decodeVfx(msg);
-                    if (await this.gameFunctions.isInGame()) {
+                    const myLevel = await this._resolveNetworkLevelId();
+                    if (await this.gameFunctions.isInGame() && vfxEvent.level === myLevel) {
                         await this.gameFunctions.receiveVfx(
                             vfxEvent.type,
                             vfxEvent.descriptor,
@@ -588,49 +591,27 @@ class BaseGameClient {
                 const levelId = await this._resolveNetworkLevelId();
 
                 if (this.bundleId === "trr-6") {
-                    // TR6: send bones, positions, visArray, health, attachedFlag, swapLists
-                    const laraBones = await this.gameFunctions.getLaraBonesBackup();
-                    const laraPositions = await this.gameFunctions.getLaraPositionsBackup();
-                    const visArray = await this.gameFunctions.getVisArrayBackup();
-                    const health = await this.gameFunctions.getHealthBackup();
-                    const attachedFlag = await this.gameFunctions.getAttachedFlagBackup();
-                    let outfitId = 0;
-                    try {
-                        outfitId = await this.gameFunctions.getOutfitIdBackup();
-                    } catch (e) { /* older script without outfit support */ }
-                    let characterType = 0;
-                    try {
-                        characterType = await this.gameFunctions.getCharacterTypeBackup();
-                    } catch (e) { /* older script without character type support */ }
-                    let swapLists = null;
-                    try {
-                        swapLists = await this.gameFunctions.getSwapListsBackup();
-                    } catch (e) {
-                        if (!this._swapErr) { this._swapErr = true; console.error('[TR6 PKT] getSwapListsBackup error:', e.message); }
+                    if (!(await this.gameFunctions.isBuildingCharacters())) {
+                        this.sendToServer(await netcode.compress(netcode.encodeHighFreq({
+                            _v: config.client.major,
+                            _seq: this.seq = (this.seq + 1) & 0xFF,
+                            id: this.connectedId,
+                            name: this.launchOptions.name,
+                            lobby: this.launchOptions.lobbyCode,
+                            version: gameVersion,
+                            bundleId: this.bundleIdInteger,
+                            level: levelId,
+                            bones: await this.gameFunctions.getLaraBonesBackup(),
+                            positions: await this.gameFunctions.getLaraPositionsBackup(),
+                            visArray: await this.gameFunctions.getVisArrayBackup(),
+                            health: await this.gameFunctions.getHealthBackup(),
+                            faceExpressionId: await this.gameFunctions.getFaceExpressionIdBackup(),
+                            outfitId: await this.gameFunctions.getOutfitIdBackup(),
+                            characterType: await this.gameFunctions.getCharacterTypeBackup(),
+                            swapLists: await this.gameFunctions.getSwapListsBackup(),
+                            pvpMode: this.pvpMode,
+                        })));
                     }
-
-                    const rawPacket = netcode.encodeHighFreq({
-                        _v: config.client.major,
-                        _seq: this.seq = (this.seq + 1) & 0xFF,
-                        id: this.connectedId,
-                        name: this.launchOptions.name,
-                        lobby: this.launchOptions.lobbyCode,
-                        version: gameVersion,
-                        bundleId: this.bundleIdInteger,
-                        level: levelId,
-                        bones: laraBones,
-                        positions: laraPositions,
-                        visArray,
-                        health,
-                        attachedFlag,
-                        outfitId,
-                        characterType,
-                        swapLists,
-                        pvpMode: this.pvpMode,
-                    });
-
-                    const compressed = await netcode.compress(rawPacket);
-                    this.sendToServer(compressed);
                 } else {
                     // TR1-5: existing packet format
                     const laraBones = await this.gameFunctions.getLaraBonesBackup();
