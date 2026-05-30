@@ -516,7 +516,7 @@ module.exports = {
         const swapListsBuffer = playerState.swapLists ? Buffer.from(playerState.swapLists) : null;
         const swapListsLen = swapListsBuffer?.length || 0;
 
-        const fixedSize = 10 + 8;
+        const fixedSize = 10 + 4;
         const buffer = Buffer.alloc(genericBuffer.length + fixedSize + bonesLen + positionsLen + visArrayLen + swapListsLen);
         genericBuffer.copy(buffer, 0);
 
@@ -539,9 +539,6 @@ module.exports = {
         bufferX += 2 + swapListsLen;
 
         buffer.writeFloatBE(isNaN(playerState.health) ? 0 : playerState.health, bufferX);
-        bufferX += 4;
-
-        buffer.writeUInt32BE(isNaN(playerState.faceExpressionId) ? 0 : playerState.faceExpressionId, bufferX);
         bufferX += 4;
 
         buffer.writeInt8(playerState.pvpMode ? 1 : 0, bufferX);
@@ -577,9 +574,6 @@ module.exports = {
         const health = buffer.readFloatBE(bufferX);
         bufferX += 4;
 
-        const faceExpressionId = buffer.readUInt32BE(bufferX);
-        bufferX += 4;
-
         const pvpMode = !!buffer.readInt8(bufferX);
         bufferX += 1;
 
@@ -602,7 +596,6 @@ module.exports = {
             visArray,
             swapLists,
             health,
-            faceExpressionId,
             pvpMode,
             outfitId,
             characterType,

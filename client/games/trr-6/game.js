@@ -57,7 +57,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
         const ENTITY_VIS_ARRAY = 0x100;
         const ENTITY_NULL_130 = 0x130;
         const ENTITY_ATTR_PTR = 0x178;
-        const ENTITY_FACE_EXPRESSION_ID = 0x180;
         const ENTITY_RENDER_DATA = 0x1200;
         const RENDER_DATA_SIZE = 0x1000;
         const RENDER_DATA_ENTITY_BACKREF = 0x300;
@@ -482,15 +481,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                 return game.readMemoryVariable("PlayerHealth", "tomb6.dll");
             }),
 
-            getFaceExpressionIdBackup: () => game._readBackupCached('faceExpressionId', () => {
-                if (!game.isGameplayStable()) return null;
-
-                const lara = game.getLara();
-                if (!game._ptrLooksValid(lara)) return null;
-
-                return lara.add(ENTITY_FACE_EXPRESSION_ID).readU32();
-            }),
-
             getOutfitIdBackup: () => game._readBackupCached('outfitId', () => {
                 if (!game.isGameplayStable()) return null;
 
@@ -550,7 +540,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         savedHDMesh: ptr(0),
                         savedLegacySwaps: null,
                         savedHDSwaps: null,
-                        savedFaceExpressionId: undefined,
                         attrState: game.allocMemory(ATTR_STATE_SIZE),
                     });
                 }
@@ -1264,10 +1253,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                     }
                 }
 
-                if (typeof playerData.faceExpressionId === 'number') {
-                    conn.slot.savedFaceExpressionId = playerData.faceExpressionId;
-                }
-
                 if (conn.characterType !== 0x18
                     && typeof playerData.outfitId === 'number'
                     && playerData.outfitId >= 0 && playerData.outfitId < 16
@@ -1645,10 +1630,6 @@ module.exports = async (session, manifest, userData, memoryAddresses, supportedF
                         entity.add(ENTITY_LEGACY_SWAPS).writePointer(mainLegacySwaps);
                     if (!mainHDSwaps.isNull())
                         entity.add(ENTITY_HD_SWAPS).writePointer(mainHDSwaps);
-
-                    if (typeof slot.savedFaceExpressionId === 'number') {
-                        entity.add(ENTITY_FACE_EXPRESSION_ID).writeU32(slot.savedFaceExpressionId);
-                    }
 
                     if (conn._hasBoneData && slot.boneCount > 0) {
                         const engineBonePtr = entity.add(ENTITY_BONE_MATRICES).readPointer();

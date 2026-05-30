@@ -605,7 +605,6 @@ class BaseGameClient {
                             positions: await this.gameFunctions.getLaraPositionsBackup(),
                             visArray: await this.gameFunctions.getVisArrayBackup(),
                             health: await this.gameFunctions.getHealthBackup(),
-                            faceExpressionId: await this.gameFunctions.getFaceExpressionIdBackup(),
                             outfitId: await this.gameFunctions.getOutfitIdBackup(),
                             characterType: await this.gameFunctions.getCharacterTypeBackup(),
                             swapLists: await this.gameFunctions.getSwapListsBackup(),
