@@ -289,13 +289,13 @@ function renderTr6ContentCard(uiState) {
         case 'installed':
             tr6StatusEl.textContent = '✓ Installed' + (m && m.displayVersion ? ' (' + m.displayVersion + ')' : '');
             tr6Section.classList.add('state-installed');
-            tr6MessageEl.textContent = 'Custom maps verified.';
+            tr6MessageEl.textContent = 'Multiplayer maps verified.';
             tr6RevalidateBtn.classList.remove('hidden');
             break;
         case 'not_installed':
             tr6StatusEl.textContent = 'Required';
             tr6Section.classList.add('state-warning');
-            tr6MessageEl.textContent = 'Custom maps required for multiplayer.' +
+            tr6MessageEl.textContent = 'Multiplayer maps required.' +
                 (sizeMB !== null ? ' Download size: ~' + sizeMB + ' MB.' : '');
             tr6PrimaryBtn.textContent = sizeMB !== null ? 'Download (' + sizeMB + ' MB)' : 'Download';
             tr6PrimaryBtn.dataset.action = 'download';
@@ -314,7 +314,7 @@ function renderTr6ContentCard(uiState) {
         case 'outdated':
             tr6StatusEl.textContent = 'Update available';
             tr6Section.classList.add('state-warning');
-            tr6MessageEl.textContent = 'A newer maps pack is required for this client version.';
+            tr6MessageEl.textContent = 'Newer maps required for this version.';
             tr6PrimaryBtn.textContent = 'Download update';
             tr6PrimaryBtn.dataset.action = 'download';
             tr6PrimaryBtn.classList.remove('hidden');

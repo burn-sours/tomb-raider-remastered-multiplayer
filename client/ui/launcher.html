@@ -66,8 +66,22 @@
                 <div id="mpOptions" class="conditional hidden">
                     <div id="tr6ContentSection" class="content-card hidden">
                         <div class="content-card-header">
-                            <span class="content-card-title">Custom Maps Pack</span>
-                            <span class="content-card-status" id="tr6ContentStatus">Checking…</span>
+                            <div class="content-card-heading">
+                                <span class="content-card-title">Multiplayer Maps</span>
+                                <span class="content-card-status" id="tr6ContentStatus">Checking…</span>
+                            </div>
+                            <div class="content-card-tools">
+                                <button id="tr6ContentRevalidateBtn" class="content-card-tool hidden" type="button" title="Re-verify">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4a8 8 0 1 0 7.74 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                    </svg>
+                                </button>
+                                <button id="tr6ContentOpenFolderBtn" class="content-card-tool" type="button" title="Open maps folder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                         <p class="content-card-message" id="tr6ContentMessage"></p>
                         <div class="content-progress hidden" id="tr6ContentProgress">
@@ -77,8 +91,6 @@
                         <div class="content-actions">
                             <button id="tr6ContentPrimaryBtn" class="content-action-primary hidden" type="button"></button>
                             <button id="tr6ContentCancelBtn" class="content-action-secondary hidden" type="button">Cancel</button>
-                            <button id="tr6ContentRevalidateBtn" class="content-action-link hidden" type="button">Re-verify</button>
-                            <button id="tr6ContentOpenFolderBtn" class="content-action-link" type="button">Open folder</button>
                         </div>
                     </div>
                     <div class="field-group">

@@ -820,9 +820,53 @@ input[disabled], select[disabled] {
 
 .content-card-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
+}
+
+.content-card-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.content-card-tools {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.content-card-tool {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.content-card-tool:hover {
+    color: #f5f3f0;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.content-card-tool svg {
+    display: block;
+    width: 14px !important;
+    height: 14px !important;
+    margin: 0;
+    fill: currentColor;
+}
+
+.content-card-tool.hidden {
+    display: none;
 }
 
 .content-card-title {
@@ -845,6 +889,7 @@ input[disabled], select[disabled] {
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.05);
     white-space: nowrap;
+    align-self: flex-start;
 }
 
 .content-card.state-installed .content-card-status {
@@ -867,6 +912,14 @@ input[disabled], select[disabled] {
     color: #d1d5db;
     margin: 0;
     line-height: 1.45;
+}
+
+.content-card-message:empty {
+    display: none;
+}
+
+.content-actions:not(:has(> :not(.hidden))) {
+    display: none;
 }
 
 .content-progress {
@@ -941,24 +994,7 @@ input[disabled], select[disabled] {
     border-color: #fb6010;
 }
 
-.content-action-link {
-    background: none;
-    border: none;
-    color: #9ca3af;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    padding: 4px 6px;
-    cursor: pointer;
-    transition: color 0.15s ease;
-}
-
-.content-action-link:hover {
-    color: #f5f3f0;
-}
-
 .content-action-primary.hidden,
-.content-action-secondary.hidden,
-.content-action-link.hidden {
+.content-action-secondary.hidden {
     display: none;
 }
