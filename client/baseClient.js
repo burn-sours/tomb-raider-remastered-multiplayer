@@ -86,12 +86,28 @@ class BaseGameClient {
         });
     }
 
+    async _resolveTarget(customExePath = null) {
+        const device = await frida.getLocalDevice();
+        const name = path.basename(customExePath || this.manifest.executable).toLowerCase();
+        const candidates = (await device.enumerateProcesses()).filter(p => p.name.toLowerCase() === name);
+        if (!customExePath) return candidates[0] || null;
+        if (candidates.length === 0) return null;
+
+        const want = path.normalize(customExePath).toLowerCase();
+        const detailed = await device.enumerateProcesses({
+            pids: candidates.map(p => p.pid),
+            scope: 'full',
+        });
+        const exact = detailed.find(p => p.parameters?.path && path.normalize(p.parameters.path).toLowerCase() === want);
+        if (exact) return exact;
+
+        if (detailed.length === 1) return detailed[0];
+        return null;
+    }
+
     async isProcessRunning(customExePath = null) {
-        const target = customExePath ? path.basename(customExePath) : this.manifest.executable;
         try {
-            const device = await frida.getLocalDevice();
-            const processes = await device.enumerateProcesses();
-            return processes.some(p => p.name === target);
+            return !!(await this._resolveTarget(customExePath));
         } catch (err) {
             console.error('Error checking if game is running:', err);
             return false;
@@ -99,8 +115,10 @@ class BaseGameClient {
     }
 
     async setupSession(manualPatch = null, customExePath = null) {
-        const target = customExePath ? path.basename(customExePath) : this.manifest.executable;
-        this.session = await frida.attach(target);
+        const proc = await this._resolveTarget(customExePath);
+        if (!proc) throw new Error('Target process not found' + (customExePath ? ` (${customExePath})` : ''));
+
+        this.session = await frida.attach(proc.pid);
 
         const hashScript = await this.session.createScript(`
             rpc.exports = {
