@@ -18,6 +18,16 @@ module.exports = {
         }
     },
     "patches": {
+        "patch5.2-epic": {
+            "name": "Epic v.480433.4 - Challenge Mode Update 2",
+            "patch": "0848504dcbc0b16d4153df6b2665413f63d82370af65a57fb371d0e0bdf500b3",
+            "memory": {
+                "executable": require("./patches/patch5.2-epic/executable"),
+                "tomb1.dll": require("./patches/patch5.2-epic/tr1"),
+                "tomb2.dll": require("./patches/patch5.2-epic/tr2"),
+                "tomb3.dll": require("./patches/patch5.2-epic/tr3"),
+            }
+        },
         "patch5.2": {
             "name": "30 April 2026 - Challenge Mode Update 2",
             "patch": "8592e79cfbde4f5ef0991cb810595a7fa7828ad9f76a1f4a260e5921e5d6c19d",
