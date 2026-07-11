@@ -381,6 +381,13 @@ and `save_program`'d. Then the build is supported *and* ready to port its next u
 * **Fuzzy threshold is a trap.** A real cross-build match often scores only ~0.7; a high
   threshold returns *zero matches* and hides the answer. Search at ~0.3 and rank by
   score + address proximity, then confirm with `diff_functions`.
+* **Verify a fuzzy match actually exists in the TARGET.** Observed live (GOG exe): an agent
+  "confirmed" 7 functions at the *same rva as Steam* with score 1.0 — but the target had no
+  function at those addresses; it had silently diffed Steam-to-Steam. Always `diff_functions`
+  with `program_b` = the **target**, and `get_function_by_address(target, candidate)` to
+  confirm a function starts there. A function match with `delta=0` (target rva == steam rva)
+  in a build you *know* differs is a red flag — the real match is usually a small offset
+  (e.g. `-0x10`).
 * **Non-uniform shifts, and they track PE sections.** No single offset maps one build to
   another — code and each data region move by different amounts. `list_segments` on both
   builds shows *why*: e.g. if the target's `.rdata` grew, `.data`'s base slides by that much,
@@ -399,6 +406,13 @@ and `save_program`'d. Then the build is supported *and* ready to port its next u
   result is almost always wrong — only accept it when a decompile/xref *explicitly* shows the
   same address referenced in the target. The monotonicity + per-region-uniform-shift gate
   catches this (a `delta=0` entry collides/reorders against its shifted siblings).
+  A second way the same false-`delta=0` appears: an agent **decompiles the reference (Steam)
+  program by mistake** and, because Steam *is* labelled, the decompile prints the global **by
+  name** (`ogModelsOffset`) — the agent takes Steam's address as the answer. Tell: the target
+  build isn't labelled yet, so *any* global shown by name in a "target" decompile means it's
+  actually reading the reference. Guard the globals prompt: "the target has no labels; a
+  named global in a target decompile means you queried the wrong program." Same gate catches
+  it (collision/reorder vs shifted siblings).
 * **The sha256 in the manifest is of the *executable***, but per-module RVAs come from the
   DLLs — a matching exe hash still requires each DLL mapped independently.
 * **Blank `"0x"` is the "not done" sentinel** — grep for it to measure remaining work:
