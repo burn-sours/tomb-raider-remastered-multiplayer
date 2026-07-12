@@ -359,6 +359,23 @@ and `save_program`'d. Then the build is supported *and* ready to port its next u
 
 ## 9. Gotchas / things that bite
 
+* **Even the batches *inside one workflow* must run sequentially, not via `parallel()`.**
+  The concurrency hazard is not only across separate workflows — two agent batches in the
+  *same* globals workflow, both doing `get_xrefs_to(Steam,…)` then `get_xrefs_to(Target,…)`,
+  race on the shared current-program: one batch's "Target" xref call silently returns **Steam**
+  data. Observed live (GOG tomb456.exe): two parallel globals batches returned **contradictory
+  deltas for globals 4 bytes apart** — batch 1 said `resWidth`/`ResolutionH`/`GameVersion`
+  were `delta=0`, batch 2 said the same `.data` shifted `-0x21a0` (with `-0x2020` for the
+  `0x17b` zone). Adjacent globals cannot have different deltas, so one batch was contaminated —
+  batch 1, whose "target" evidence even cited a *Steam* address (`GetScreenHeight 14000a688`,
+  the pre-shift VA). The tell is **internal contradiction**: sort results by address and any
+  delta that breaks monotonicity against its neighbors is a wrong-program read. **Fix:** the
+  workflow runs agents in a sequential `for … await agent()` loop (never `parallel()`); within
+  a single agent, calls are already serialized so there is no race. Fuzzy-based *function*
+  matching is program-explicit (source+target named per call) and tolerates parallelism, but
+  xref/decompile-based *globals* resolution does not — keep globals sequential. Arbitrate any
+  suspected contamination by decoding one anchor directly (e.g. read the getter's bytes and
+  compute its rip-relative global) rather than trusting either batch.
 * **NEVER run two Ghidra workflows/agents concurrently — serialize everything.** The MCP
   backend has a *single shared "current program"* state. Under concurrent requests, one
   agent's operation races against another's program switch and silently reads the **wrong
@@ -388,6 +405,16 @@ and `save_program`'d. Then the build is supported *and* ready to port its next u
   confirm a function starts there. A function match with `delta=0` (target rva == steam rva)
   in a build you *know* differs is a red flag — the real match is usually a small offset
   (e.g. `-0x10`).
+* **Tiny functions are not fuzzy-matchable — anchor them via a caller.** A 5-instruction
+  getter (`GetScreenWidth`, `return resWidth;`) fuzzy-matches *hundreds* of equally-scored
+  candidates (observed: 296 hits all ~0.85), so the agent defaults to the same-address
+  Steam-to-Steam self-match and reports a bogus `delta=0`. Resolve these structurally instead:
+  `get_xrefs_to(Steam, getter)` → a caller that stores it in a **function-pointer table**;
+  map that caller to the target; the target table lists the getters **in the same order**,
+  bracketed by siblings you *can* verify (hash-matched neighbours). Observed live (GOG exe):
+  the caller's table had `DAT…468=TickFunction(9f70)` and `DAT…4a0=UpdateTickRef(a0b0)` — both
+  hash-verified at `-0x260` — bracketing `DAT…478=&LAB_a400`/`DAT…480=&LAB_a420`, giving
+  `GetScreenWidth=0xa400`, `GetScreenHeight=0xa420` (both `-0x260`), not the workflow's `0x…660`.
 * **Non-uniform shifts, and they track PE sections.** No single offset maps one build to
   another — code and each data region move by different amounts. `list_segments` on both
   builds shows *why*: e.g. if the target's `.rdata` grew, `.data`'s base slides by that much,

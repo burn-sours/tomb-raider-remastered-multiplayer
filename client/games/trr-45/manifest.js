@@ -14,6 +14,15 @@ module.exports = {
         }
     },
     "patches": {
+        "patch2-hotfix1-gog": {
+            "name": "GOG v.1.0.2a - Patch 2 Hotfix 1",
+            "patch": "5354b545eb25fdccd78723f97430ea897629ab4944c67e129e1a5591e7627181",
+            "memory": {
+                "executable": require("./patches/patch2-hotfix1-gog/executable"),
+                "tomb4.dll": require("./patches/patch2-hotfix1-gog/tr4"),
+                "tomb5.dll": require("./patches/patch2-hotfix1-gog/tr5")
+            }
+        },
         "patch2-hotfix1-epic": {
             "name": "Epic v.250910_21914 - Patch 2 Hotfix 1",
             "patch": "c992deb55e9c83a203a8129042ec1a32be05a438d33bfe43d80ea1e9fdac0694",
