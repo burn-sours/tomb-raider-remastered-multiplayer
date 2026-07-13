@@ -21,10 +21,18 @@ module.exports = {
                     const mod = Process.findModuleByAddress(addr);
                     return mod ? mod.name + "+0x" + addr.sub(mod.base).toString(16) : addr.toString();
                 };
+                const frames = Thread.backtrace(ctx, Backtracer.ACCURATE);
+
+                // Skip benign exceptions thrown inside PlayFab/HTTP online-services stack
+                const onlineSvcNoise = details.type === 'system' && [pc, ...frames].some(addr => {
+                    const mod = Process.findModuleByAddress(addr);
+                    return mod && /^(libhttpclient|playfab)/i.test(mod.name);
+                });
+                if (onlineSvcNoise) return false;
+
                 let header = "[NATIVE EXC] " + details.type + " @ " + fmt(pc);
                 if (details.memory && details.memory.address) header += " accessing=" + details.memory.address;
                 console.error(header);
-                const frames = Thread.backtrace(ctx, Backtracer.ACCURATE);
                 for (let i = 0; i < frames.length && i < 16; i++) {
                     console.error("  [" + i + "] " + fmt(frames[i]));
                 }
