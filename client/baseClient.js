@@ -93,15 +93,15 @@ class BaseGameClient {
         if (!customExePath) return candidates[0] || null;
         if (candidates.length === 0) return null;
 
-        const want = path.normalize(customExePath).toLowerCase();
+        const norm = p => path.normalize(p).replace(/^\\\\\?\\/, '').toLowerCase();
+        const want = norm(customExePath);
         const detailed = await device.enumerateProcesses({
             pids: candidates.map(p => p.pid),
             scope: 'full',
         });
-        const exact = detailed.find(p => p.parameters?.path && path.normalize(p.parameters.path).toLowerCase() === want);
+        const exact = detailed.find(p => p.parameters?.path && norm(p.parameters.path) === want);
         if (exact) return exact;
 
-        if (detailed.length === 1) return detailed[0];
         return null;
     }
 
@@ -120,42 +120,115 @@ class BaseGameClient {
 
         this.session = await frida.attach(proc.pid);
 
-        const hashScript = await this.session.createScript(`
-            rpc.exports = {
-              getExePath: function() {
-                const modules = Process.enumerateModules();
-                if (modules.length > 0) {
-                  return modules[0].path;
-                }
-                return null;
-              }
-            };
-        `);
-        await hashScript.load();
-
-        this.processPath = await hashScript.exports.getExePath();
-        console.log('game path is ', this.processPath);
-
-        const patchHash = crypto.createHash('sha256').update(fs.readFileSync(this.processPath)).digest('hex');
-        this.processHash = patchHash;
-        console.log('game version is ', patchHash);
-
-        let supported = this.getPatchByHash(patchHash);
-        if (!supported) {
-            if (manualPatch) {
-                supported = this.getPatchById(manualPatch);
-            }
+        if (!(await this._claimGuard())) {
+            await this._releaseGuard();
+            await this.session.detach().catch(() => { });
+            this.session = null;
+            const err = new Error('The mod is already injected in this process');
+            err.code = 'ALREADY_INJECTED';
+            throw err;
         }
 
-        this.memoryAddresses = supported?.memory || null;
+        try {
+            const hashScript = await this.session.createScript(`
+                rpc.exports = {
+                  getExePath: function() {
+                    const modules = Process.enumerateModules();
+                    if (modules.length > 0) {
+                      return modules[0].path;
+                    }
+                    return null;
+                  }
+                };
+            `);
+            await hashScript.load();
 
-        await hashScript.unload();
+            this.processPath = await hashScript.exports.getExePath();
+            console.log('game path is ', this.processPath);
 
-        return supported;
+            this.processHash = crypto.createHash('sha256').update(fs.readFileSync(this.processPath)).digest('hex');
+            console.log('game version is ', this.processHash);
+
+            let supported = this.getPatchByHash(this.processHash);
+            if (!supported) {
+                if (manualPatch) {
+                    supported = this.getPatchById(manualPatch);
+                }
+            }
+
+            this.memoryAddresses = supported?.memory || null;
+
+            await hashScript.unload();
+
+            if (!supported) {
+                await this._releaseGuard();
+            }
+
+            return supported;
+        } catch (err) {
+            await this._releaseGuard();
+            await this.session?.detach().catch(() => { });
+            this.session = null;
+            throw err;
+        }
+    }
+
+    async _claimGuard() {
+        try {
+            this.guardScript = await this.session.createScript(`
+                const kernel32 = Process.findModuleByName('kernel32.dll');
+                const pCreate = kernel32 && kernel32.findExportByName('CreateMutexW');
+                const pClose = kernel32 && kernel32.findExportByName('CloseHandle');
+                let handle = null;
+                rpc.exports = {
+                    claim() {
+                        if (!pCreate || !pClose) return true;
+                        const CreateMutexW = new SystemFunction(pCreate, 'pointer', ['pointer', 'int', 'pointer']);
+                        const r = CreateMutexW(ptr(0), 0, Memory.allocUtf16String('Local\\\\BurnsMods_' + Process.id));
+                        if (!r.value.isNull() && r.lastError === 183) {
+                            new NativeFunction(pClose, 'int', ['pointer'])(r.value);
+                            return false;
+                        }
+                        handle = r.value;
+                        return true;
+                    },
+                    release() {
+                        if (handle && pClose) {
+                            new NativeFunction(pClose, 'int', ['pointer'])(handle);
+                            handle = null;
+                        }
+                    }
+                };
+            `);
+            await this.guardScript.load();
+
+            return await this.guardScript.exports.claim();
+        } catch (err) {
+            console.warn('Injection guard unavailable, continuing without it:', err?.message || err);
+            await this._releaseGuard();
+            return true;
+        }
+    }
+
+    async _releaseGuard() {
+        if (!this.guardScript) return;
+
+        try {
+            await this.guardScript.exports?.release();
+        } catch { }
+
+        try {
+            if (!this.guardScript.isDestroyed) {
+                await this.guardScript.unload();
+            }
+        } catch { }
+
+        this.guardScript = null;
     }
 
     resetSession() {
         this.session = null;
+        this.guardScript = null;
         this.processPath = null;
         this.processHash = null;
         this.memoryAddresses = null;
@@ -870,6 +943,8 @@ class BaseGameClient {
         this.pvpDamage = [null, 0, 0];
         this.pvpMode = false;
         this.inPhotoMode = false;
+
+        await this._releaseGuard();
 
         if (this.session) {
             try {

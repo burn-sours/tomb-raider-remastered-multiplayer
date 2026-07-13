@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const {app} = require("electron");
+const { app } = require("electron");
 
 module.exports = {
     /**
@@ -28,7 +28,9 @@ module.exports = {
      */
     writeOptions(data) {
         try {
-            fs.writeFileSync(module.exports.filepath, JSON.stringify(data), 'utf8');
+            const tmp = module.exports.filepath + '.' + process.pid + '.tmp';
+            fs.writeFileSync(tmp, JSON.stringify(data), 'utf8');
+            fs.renameSync(tmp, module.exports.filepath);
         } catch (err) {
             console.error('Error saving settings:', err);
         }

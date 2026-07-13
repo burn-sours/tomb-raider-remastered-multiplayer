@@ -675,6 +675,19 @@ window.api.on("connectionFailed", () => {
     gameToggle.classList.remove("disabled");
 });
 
+window.api.on("modAlreadyInjected", () => {
+    window.api.errorBox("Already launched", "The mod is already running in this game. Stop it first, or restart the game if the problem persists.");
+    launchButton.innerText = "Launch Mods";
+    launchButton.removeAttribute("disabled");
+    stopModsButton.classList.add("hidden");
+    selectExeButton.classList.remove("hidden");
+    alreadyInjected = false;
+    isLaunching = false;
+    document.querySelectorAll("input, select").forEach(input => input.removeAttribute("disabled"));
+    multiplayerCheckbox.parentNode.removeAttribute("disabled");
+    gameToggle.classList.remove("disabled");
+});
+
 window.api.on("versionOutdated", () => {
     console.error("Version outdated");
     window.api.errorBox("Version mismatch", "A new version is available. To play Multiplayer, please download the updated launcher at https://www.laracrofts.com");

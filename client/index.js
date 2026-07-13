@@ -1,9 +1,14 @@
 const { app, dialog, shell, ipcMain } = require('electron');
-const gotTheLock = app.requestSingleInstanceLock();
-if (!gotTheLock) app.exit();
 
 const fs = require('fs');
 const path = require('path');
+
+try {
+    app.setPath('sessionData', path.join(app.getPath('temp'), `burns-mods--${process.pid}`));
+} catch (err) {
+    console.error('Could not set per-instance session dir:', err);
+}
+
 const logsDir = path.join(app.getPath('userData'), 'logs');
 const logger = require('../shared/logger')(logsDir);
 const { spawn } = require("child_process");
@@ -37,9 +42,6 @@ let activeGameClient = null;
 let activeUserData = {};
 
 ui.setupApplicationMenu({ logsDir });
-
-app.on('before-quit', () => app.releaseSingleInstanceLock());
-app.on('second-instance', () => ui.focus());
 
 ui.setupEvents({
     "launchGame": (e, launchOptions) => launchGame(launchOptions),
@@ -275,6 +277,12 @@ async function setupFrida() {
                 return false;
             }
         } catch (err) {
+            if (err?.code === 'ALREADY_INJECTED') {
+                console.warn('Mod already injected in process — aborting second injection.');
+                ui.broadcast('modAlreadyInjected', {});
+                activeGameClient?.resetSession();
+                return false;
+            }
             activeGameClient?.resetSession();
             await delay(100);
         }
@@ -282,9 +290,13 @@ async function setupFrida() {
 
     console.log('Setting up scripts...');
 
-    await activeGameClient.setupGameScript(activeUserData);
-
-    await activeGameClient.setupGame();
+    try {
+        await activeGameClient.setupGameScript(activeUserData);
+        await activeGameClient.setupGame();
+    } catch (err) {
+        await activeGameClient.cleanup();
+        return false;
+    }
 }
 
 async function cleanup() {
