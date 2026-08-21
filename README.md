@@ -2,51 +2,29 @@
 
 [Join Discord](https://discord.gg/DJrkR77HJD) - [Support Burn](https://ko-fi.com/burn_sours) - [Official Website](https://www.laracrofts.com/)
 
-> **Experience Classic Tomb Raider Like Never Before**
-
 This is a free, open-source launcher that brings **multiplayer** and **customizable mods** to Tomb Raider Remastered (I-VI). See other players exploring in real-time, battle in PVP combat, chat in-game, and enhance your gameplay with mods — from super jump to hardcore permadeath mode.
-
-**🎮 Supported Games:**
-- Tomb Raider I, II, III (Remastered)
-- Tomb Raider IV: The Last Revelation (Remastered)
-- Tomb Raider V: Chronicles (Remastered)
-- Tomb Raider VI: Angel of Darkness  (Remastered)
 
 ---
 
-## Features
+## Multiplayer
 
-### 🌐 Multiplayer
-
-**Play Tomb Raider Remastered with friends for the first time ever!**
-
-- **Real-Time:** See other players exploring tombs simultaneously
+- **Real-Time:** Watch other Laras jump, climb, swim, and fight in perfect sync
 - **In-Game Chat:** Press F8 to communicate with other players
 - **Lobby System:** Create private sessions with custom lobby codes
-- **PVP Combat:** Toggle player-vs-player mode with F10
+- **PVP Combat:** Toggle player-vs-player mode
 - **Community Server:** Connect instantly to the official server, or host your own private server
-- **Synchronized Animations:** Watch other Laras jump, climb, swim, and fight in perfect sync
 
-### ⚡ Gameplay Mods
+## Gameplay Mods
 
-**Customize your adventure with powerful single-player mods:**
-
-#### Super Lara
 - **Super Jump** - Launch Lara to incredible heights
 - **No Fall Damage** - Survive any fall without taking damage
 - **Spider Lara** - Climb any surface like a spider (TR II-V)
 - **Glitch Lara** - QWOP-style movement glitch for hilarious chaos (TR I-III)
-- **Swim Fly [F11]** - Soar through the air with swim-fly
-
-#### Challenge Modes
+- **Swim Fly** - Soar through the air with swim-fly
 - **Perma-damage Mode** - One health bar, for hardcore difficulty
 - **Perma-poison Mode** - Continuous poison effect (TR IV-V)
-
-#### Quality of Life
 - **Infinite Health** - Auto-heal Lara to maximum health
 - **Infinite Oxygen** - Never worry about drowning again
-
-#### Speed Enhancements
 - **Super Speed** - Accelerate movement with customizable options:
   - Faster climbing and shimmying
   - Quicker pushblock movement
@@ -141,18 +119,6 @@ This project is **100% open source** under the GPL-3.0 license. We welcome contr
 > ☕ **Ko-Fi** - [Support ongoing development](https://ko-fi.com/burn_sours)
 
 > 🌐 **Website** - [Burn's Website](https://www.laracrofts.com/)
-
----
-
-## Technical Overview
-
-**Architecture:**
-- **Client:** Electron-based launcher with Frida game integration
-- **Server:** Node.js UDP relay server (non-authoritative)
-- **Protocol:** Binary UDP packets with zstd compression
-- **Injection:** Runtime memory modification via Frida (no file patching)
-
-Want technical details? Check out the [Contributing Guide](docs/CONTRIBUTING.md).
 
 ---
 

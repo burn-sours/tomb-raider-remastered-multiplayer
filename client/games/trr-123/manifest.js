@@ -18,6 +18,36 @@ module.exports = {
         }
     },
     "patches": {
+        "patch5.3-gog": {
+            "name": "GOG Community Patch - Challenge Mode Update 3",
+            "patch": "bd57d50c5b16e0ed8ffdb7a2fb3cc0315cb3d9c3e6aed568dbfde308407af0f6",
+            "memory": {
+                "executable": require("./patches/patch5.3-gog/executable"),
+                "tomb1.dll": require("./patches/patch5.3-gog/tr1"),
+                "tomb2.dll": require("./patches/patch5.3-gog/tr2"),
+                "tomb3.dll": require("./patches/patch5.3-gog/tr3"),
+            }
+        },
+        "patch5.3-epic": {
+            "name": "Epic v.512741.6 - Challenge Mode Update 3",
+            "patch": "43a9e0e4507171695c29f256bfd39b1a94f0257c54d4adbf3afe4d187a5c54ed",
+            "memory": {
+                "executable": require("./patches/patch5.3-epic/executable"),
+                "tomb1.dll": require("./patches/patch5.3-epic/tr1"),
+                "tomb2.dll": require("./patches/patch5.3-epic/tr2"),
+                "tomb3.dll": require("./patches/patch5.3-epic/tr3"),
+            }
+        },
+        "patch5.3": {
+            "name": "Steam 20 August 2026 - Challenge Mode Update 3",
+            "patch": "1ced64b0cff648976ff9b54624ed5e651889141639ac516a14d74e0bfb97cae3",
+            "memory": {
+                "executable": require("./patches/patch5.3/executable"),
+                "tomb1.dll": require("./patches/patch5.3/tr1"),
+                "tomb2.dll": require("./patches/patch5.3/tr2"),
+                "tomb3.dll": require("./patches/patch5.3/tr3"),
+            }
+        },
         "patch5.2-gog": {
             "name": "GOG v.1.1.2a - Challenge Mode Update 2",
             "patch": "be16281cd02d47fc03f6c46f47d638e0c84a7fe447d331572b2a7c3dc312037c",
