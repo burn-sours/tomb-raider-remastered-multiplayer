@@ -20,9 +20,6 @@ module.exports = {
             try {
                 const module = game.getGameModule();
 
-                // TR6 doesn't expose LoadLevelAssets, so the LoadedLevel.before
-                // disable above never gets cleared. Self-recover once lara is
-                // valid again (level fully loaded).
                 if (module === "tomb6.dll" && infiniteHealthTrackingDisabled) {
                     infiniteHealthTrackingDisabled = false;
                 }

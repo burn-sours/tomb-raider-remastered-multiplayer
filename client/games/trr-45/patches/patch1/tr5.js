@@ -282,12 +282,18 @@ module.exports = {
             Disable: false,
         },
         LoadedLevel: {
-            Address: "0xf3740",
-            Params: ['pointer'],
+            Address: "0xf4950",
+            Params: [],
             Return: 'void'
         },
         LoadLevelAssets: {
             Address: "0x81c20",
+            Params: ['int'],
+            Return: 'void',
+            Disable: false,
+        },
+        RestoreLevelData: {
+            Address: "0x7b7d0",
             Params: ['int'],
             Return: 'void',
             Disable: false,

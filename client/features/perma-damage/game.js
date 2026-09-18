@@ -2,6 +2,7 @@ module.exports = {
     // language=JavaScript
     template: `
         let permaDamageHealth = 1000;
+        let permaDamageLoadHealth = 1000;
         let permaDamageTrackingDisabled = true;
         let permaDamageInitialized = false;
 
@@ -14,7 +15,7 @@ module.exports = {
             }
 
             if (!userData['perma-damage'] || permaDamageTrackingDisabled) return;
-            if (!game.isLevelSupported(game.readMemoryVariable("Level", manifest.executable))) return;
+            if (!game.isLevelSupported(currentLevel)) return;
 
             const lara = game.getLara();
             if (!lara || lara.isNull()) return;
@@ -23,6 +24,22 @@ module.exports = {
                 permaDamageHealth = lara.add(ENTITY_HEALTH).readS16();
             } catch (err) {
                 console.error("Track health error:", err);
+            }
+        };
+
+        const applyPermaDamageHealth = (module, health) => {
+            const firstLevel = {'tomb1.dll': 2, 'tomb2.dll': 2, 'tomb3.dll': 2, 'tomb4.dll': 2, 'tomb5.dll': 2};
+            const firstExpansionLevel = {'tomb1.dll': 18, 'tomb2.dll': 19, 'tomb3.dll': 21, 'tomb4.dll': 40, 'tomb5.dll': 0};
+            const lara = game.getLara();
+
+            if (lara && !lara.isNull() && game.isLevelSupported(currentLevel)) {
+                if (lara.add(ENTITY_HEALTH).readS16() > 1000) {
+                    lara.add(ENTITY_HEALTH).writeS16(1000);
+                }
+
+                if ((currentLevel >= firstLevel[module] && currentLevel !== firstExpansionLevel[module]) && health > 0) {
+                    lara.add(ENTITY_HEALTH).writeS16(Math.min(1000, health));
+                }
             }
         };
     `,
@@ -40,22 +57,22 @@ module.exports = {
             // language=JavaScript
             after: `
                 if (!userData['perma-damage']) return;
+                permaDamageLoadHealth = permaDamageHealth;
+                applyPermaDamageHealth(module, permaDamageLoadHealth);
+                permaDamageTrackingDisabled = false;
+            `
+        },
 
-                // Define 1st levels to engage permadamage
-                const firstLevel = {'tomb1.dll': 2, 'tomb2.dll': 2, 'tomb3.dll': 2, 'tomb4.dll': 2, 'tomb5.dll': 2};
-                const firstExpansionLevel = {'tomb1.dll': 18, 'tomb2.dll': 19, 'tomb3.dll': 21, 'tomb4.dll': 40, 'tomb5.dll': 0};
-                const lara = game.getLara();
-
-                if (lara && !lara.isNull() && game.isLevelSupported(currentLevel)) {
-                    if (lara.add(ENTITY_HEALTH).readS16() > 1000) {
-                        lara.add(ENTITY_HEALTH).writeS16(1000);
-                    }
-
-                    if ((currentLevel >= firstLevel[module] && currentLevel !== firstExpansionLevel[module]) && permaDamageHealth > 0) {
-                        lara.add(ENTITY_HEALTH).writeS16(Math.min(1000, permaDamageHealth));
-                    }
-                }
-
+        RestoreLevelData: {
+            // language=JavaScript
+            before: `
+                if (!userData['perma-damage']) return;
+                permaDamageTrackingDisabled = true;
+            `,
+            // language=JavaScript
+            after: `
+                if (!userData['perma-damage']) return;
+                applyPermaDamageHealth(module, permaDamageLoadHealth);
                 permaDamageTrackingDisabled = false;
             `
         },
