@@ -18,6 +18,36 @@ module.exports = {
         }
     },
     "patches": {
+        "patch5.4-gog": {
+            "name": "GOG Day 90 - Challenge Mode Update 4",
+            "patch": "14ce4eb4e1f643036cff6fff1fdd5aa560aa3152b2d9f062aa0ca1c95d8c6c6f",
+            "memory": {
+                "executable": require("./patches/patch5.4-gog/executable"),
+                "tomb1.dll": require("./patches/patch5.4-gog/tr1"),
+                "tomb2.dll": require("./patches/patch5.4-gog/tr2"),
+                "tomb3.dll": require("./patches/patch5.4-gog/tr3"),
+            }
+        },
+        "patch5.4-epic": {
+            "name": "Epic v.541464.17 - Challenge Mode Update 4",
+            "patch": "4431586b499a46dbef9d8ccfd7684aedaf212e9429d0d9d67be5f26e83195254",
+            "memory": {
+                "executable": require("./patches/patch5.4-epic/executable"),
+                "tomb1.dll": require("./patches/patch5.4-epic/tr1"),
+                "tomb2.dll": require("./patches/patch5.4-epic/tr2"),
+                "tomb3.dll": require("./patches/patch5.4-epic/tr3"),
+            }
+        },
+        "patch5.4": {
+            "name": "Steam 6 October 2026 - Challenge Mode Update 4",
+            "patch": "614f9578215a213a0950b0cb1533d7d416fb5eb1daac6e6375da0e08c8e2b729",
+            "memory": {
+                "executable": require("./patches/patch5.4/executable"),
+                "tomb1.dll": require("./patches/patch5.4/tr1"),
+                "tomb2.dll": require("./patches/patch5.4/tr2"),
+                "tomb3.dll": require("./patches/patch5.4/tr3"),
+            }
+        },
         "patch5.3-gog": {
             "name": "GOG Community Patch - Challenge Mode Update 3",
             "patch": "bd57d50c5b16e0ed8ffdb7a2fb3cc0315cb3d9c3e6aed568dbfde308407af0f6",
