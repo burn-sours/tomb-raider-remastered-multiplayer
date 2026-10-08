@@ -1,152 +1,45 @@
 # Burn's Mods & Multiplayer for Tomb Raider Remastered
 
-[Join Discord](https://discord.gg/DJrkR77HJD) - [Support Burn](https://ko-fi.com/burn_sours) - [Official Website](https://www.laracrofts.com/)
+[Discord](https://discord.gg/DJrkR77HJD) · [Website](https://www.laracrofts.com/) · [Ko-fi](https://ko-fi.com/burn_sours)
 
-This is a free, open-source launcher that brings **multiplayer** and **customizable mods** to Tomb Raider Remastered (I-VI). See other players exploring in real-time, battle in PVP combat, chat in-game, and enhance your gameplay with mods — from super jump to hardcore permadeath mode.
+A free launcher that adds multiplayer and mods to Tomb Raider I-VI Remastered. Grab it, pick your game, flick on what you fancy, play.
 
----
+Everything happens at runtime, so your game files and saves stay untouched. Close the launcher and the game's back to normal.
 
-## Multiplayer
+## Getting started
 
-- **Real-Time:** Watch other Laras jump, climb, swim, and fight in perfect sync
-- **In-Game Chat:** Press F8 to communicate with other players
-- **Lobby System:** Create private sessions with custom lobby codes
-- **PVP Combat:** Toggle player-vs-player mode
-- **Community Server:** Connect instantly to the official server, or host your own private server
+1. Grab the latest launcher from the [releases page](https://github.com/burn-sours/tomb-raider-remastered-multiplayer/releases) and run it.
+2. Pick your game and toggle the mods you want.
+3. For multiplayer, turn it on, enter a name and connect to the community server. Set a lobby code if you only want your mates in there. Chat is on F8.
 
-## Gameplay Mods
+Windows only for now. The full rundown of mods and features is on the [website](https://www.laracrofts.com/).
 
-- **Super Jump** - Launch Lara to incredible heights
-- **No Fall Damage** - Survive any fall without taking damage
-- **Spider Lara** - Climb any surface like a spider (TR II-V)
-- **Glitch Lara** - QWOP-style movement glitch for hilarious chaos (TR I-III)
-- **Swim Fly** - Soar through the air with swim-fly
-- **Perma-damage Mode** - One health bar, for hardcore difficulty
-- **Perma-poison Mode** - Continuous poison effect (TR IV-V)
-- **Infinite Health** - Auto-heal Lara to maximum health
-- **Infinite Oxygen** - Never worry about drowning again
-- **Super Speed** - Accelerate movement with customizable options:
-  - Faster climbing and shimmying
-  - Quicker pushblock movement
-  - Increased swimming speed
+## Hosting your own server
 
----
+The launcher connects to the community server by default. If you'd rather run your own, you need a machine that's reachable from the internet. The server listens on port 41236, and players join by picking "Custom Server" in the launcher and entering your address.
 
-## How It Works
+Windows: grab the server exe from the releases page, run it as admin and let it through your firewall and antivirus.
 
-This launcher uses **Frida** (a dynamic instrumentation toolkit) to modify the game **at runtime**, meaning your game files stay completely untouched. When you close the launcher, the game returns to normal. It's **safe, reversible, and non-invasive**.
+Linux: run it from source.
 
----
-
-## Getting Started
-
-### Step 1: Download
-Grab the latest release from the [Releases page](https://github.com/burn-sours/tomb-raider-remastered-multiplayer/releases) (portable executable, no installation required)
-
-### Step 2: Launch
-Run the launcher and select your Tomb Raider game when prompted
-
-### Step 3: Choose Your Mods
-Toggle features on/off in the launcher interface
-
-### Step 4: Play!
-- **Single-Player Mods:** Just click "Launch Mods" and start playing
-- **Multiplayer:** Enable multiplayer, enter your player name, and connect to the community server
-
----
-
-## Hosting a Private Server
-You can run your own private server if you do not wish to participate in the Community Server, or if the Community Server is having connection issues. You must have a reachable address on the internet.
-
-The server runs on port **41236** by default. Players connect by selecting "Custom Server" in the launcher and entering your IP address.
-
-### **Windows:**
-1. Download the standalone server `.exe` from [releases](https://github.com/burn-sours/tomb-raider-remastered-multiplayer/releases)
-2. Run as admin. 
-3. You will need to allow the server application to pass through your antivirus and network firewalls.
-
-
-### **Linux:**
-Run from source:
 ```bash
 npm install --production
 npm run start-server
 ```
 
----
-
-## Building from Source
-
-To build the launcher and server executables yourself:
+## Building from source
 
 ```bash
 npm install
 npm run deploy
 ```
 
-The built executables will be in the `releases/` folder:
-- **Client launcher:** `releases/Burn's Mods Launcher.exe` (Windows portable)
-- **Server:** `releases/Burn's Multiplayer Server.exe` (Windows standalone)
+The launcher installer and the server exe both end up in `releases/`.
 
----
+## Contributing
 
-## Open Source & Community
-
-This project is **100% open source** under the GPL-3.0 license. We welcome contributions from developers, modders, and enthusiasts of all skill levels!
-
-### Ways to Contribute
-
-> 🔧 **Code Contributions** - Add new features, fix bugs, or improve performance
-
-> 💡 **Feature Ideas** - Suggest new mods or multiplayer features
-
-> 🐛 **Bug Reports** - Help us identify and fix issues
-
-> 📖 **Documentation** - Improve documentation
-
-> 🎨 **UI/UX Design** - Enhance the launcher interface
-
-**All contributions that improve the mods are welcome!** Whether you're fixing a typo or implementing a major feature, we appreciate your help making this project better.
-
----
-
-## Community & Support
-
-> 🗨️ **Discord** - [Join our community server](https://discord.gg/DJrkR77HJD) for support, updates, and multiplayer coordination
-
-> 💻 **GitHub Issues** - Report bugs or request features
-
-> ☕ **Ko-Fi** - [Support ongoing development](https://ko-fi.com/burn_sours)
-
-> 🌐 **Website** - [Burn's Website](https://www.laracrofts.com/)
-
----
-
-## FAQ
-
-### Does this work on Linux?
-Currently Windows only, though Linux is coming soon...
-
-### Can I use this with other mods?
-This launcher provides its own mod system. Compatibility with other mods varies.
-
-### Is my saved game safe?
-Yes! The launcher doesn't modify save files. Your progress is completely safe.
-
-### How do I stop the mods?
-Click the "Stop Mods" button in the launcher, or simply close the game.
-
-### Can I run my own server?
-Absolutely! Check the releases for the standalone server executable.
-
-### How can I get involved with the project?
-Check out the [Contributing Guide](docs/CONTRIBUTING.md) to get started!
-
----
+It's all GPL-3.0 and contributions are welcome, whether that's code, bug reports or ideas. Have a read of the [contributing guide](docs/CONTRIBUTING.md) first, and come say hi on Discord before you sink time into anything big.
 
 ## Credits
 
-* **Created by:** burn_sours
-* **License:** GPL-3.0
-
-Want your name here? Help us make this project better!
+Made by burn_sours.
